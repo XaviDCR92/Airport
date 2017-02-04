@@ -1,0 +1,1 @@
+ffmpef -i TRACK01.mp3 -f s16le -acodec pcm_s16le ../Bin/TRACK01.bin

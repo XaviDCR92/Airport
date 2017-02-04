@@ -1,0 +1,13 @@
+Main Menu Structure:
+
+1. Basic
+  1.1. Play
+  1.2. Options
+
+2. Player number selection
+  2.1. One
+  2.2. Two
+
+3. Game modes
+  3.1. Level
+  3.2. Random

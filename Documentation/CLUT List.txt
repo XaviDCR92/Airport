@@ -1,0 +1,9 @@
+ ************ CLUT LIST **************
+  X = 384 , Y = 496	-> LOADING.TIM	(4 bit)
+  X = 384 , Y = 497	-> GAMEPLN.TIM	(8 bit)
+  X = 384 , Y = 498 -> BUBBLE.TIM	(8 bit)
+  X = 384 , Y = 499 -> FONT_1.FNT   (4 bit)
+  X = 384 , Y = 500 -> FONT_2.FNT   (4 bit)
+  X = 384 , Y = 501 -> PLNBLUE.CLT  (8 bit)
+  X = 384 , Y = 502 -> GPL.TIM		(4 bit)
+  X = 384 , Y = 503 -> OPENSRC.TIM	(8 bit)
