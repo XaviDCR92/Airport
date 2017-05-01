@@ -159,6 +159,7 @@ typedef struct
 	
 	bool	(*PadKeyPressed_Callback)(unsigned short);
 	bool	(*PadKeyReleased_Callback)(unsigned short);
+	bool	(*PadKeySinglePress_Callback)(unsigned short);
 	bool	(*PadDirectionKeyPressed_Callback)(void);
 	TYPE_CAMERA Camera;
 }TYPE_PLAYER;

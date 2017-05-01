@@ -14,6 +14,7 @@
 #define END_STACK_PATTERN (uint32_t) 0x18022015
 #define BEGIN_STACK_ADDRESS (uint32_t*) 0x801FFF00
 #define STACK_SIZE 0x1000
+#define I_MASK (*(unsigned int*)0x1F801074)
 
 /* *************************************
  * 	Local Prototypes
@@ -21,6 +22,8 @@
  
 static void SystemCheckTimer(bool * timer, uint64_t * last_timer, uint8_t step);
 static void SystemSetStackPattern(void);
+static void SystemEnableVBlankInterrupt(void);
+static void SystemDisableVBlankInterrupt(void);
 
 /* *************************************
  * 	Local Variables
@@ -41,16 +44,21 @@ static bool five_hundred_ms_timer;
 //Emergency mode flag. Toggled on pad connected/disconnected
 static bool emergency_mode;
 //Critical section is entered (i.e.: when accessing fopen() or other BIOS functions
-static bool system_busy;
+static volatile bool system_busy;
 //Timer array.
 static TYPE_TIMER timer_array[SYSTEM_MAX_TIMERS];
 
-/* *************************************
+/* *******************************************************************
+ * 
  * @name: void SystemInit(void)
- * @date: 19/05/2016
+ * 
  * @author: Xavier Del Campo
- * @brief:
- * *************************************/
+ * 
+ * @brief: Calls main intialization routines.
+ * 
+ * @remarks: To be called before main loop.
+ * 
+ * *******************************************************************/
 
 void SystemInit(void)
 {
@@ -97,6 +105,22 @@ void SystemInit(void)
 	StartRCnt(RCntCNT2);
 }
 
+/* *******************************************************************
+ * 
+ * @name: void SystemInit(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:
+ * 	Calls srand() while avoiding multiple calls by setting internal
+ *	variable rand_seed to true. Internal variable "global_timer" is
+ *	used to generate the new seed.
+ * 
+ * @remarks:
+ * 	It is recommended to call it once user has pressed any key.
+ * 
+ * *******************************************************************/
+
 void SystemSetRandSeed(void)
 {
 	if(rand_seed == false)
@@ -109,31 +133,80 @@ void SystemSetRandSeed(void)
 	}
 }
 
+/* *******************************************************************
+ * 
+ * @name: bool SystemIsRandSeedSet(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:
+ * 	Reportedly, returns whether rand seed has already been set.
+ * 
+ * @remarks:
+ *
+ * @return:
+ *	 Reportedly, returns whether rand seed has already been set.
+ * 
+ * *******************************************************************/
+
 bool SystemIsRandSeedSet(void)
 {
 	return rand_seed;
 }
 
-bool SystemDMAReady(void)
-{
-	return (*((unsigned int*)0x1F801814) & 1<<28);
-}
-
-bool SystemDMABusy(void)
-{
-	return !SystemDMAReady();
-}
+/* *******************************************************************
+ * 
+ * @name: bool SystemRefreshNeeded(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:
+ * 
+ * @remarks:
+ *
+ * @return:
+ *	 Returns whether VSync flag has been enabled.
+ * 
+ * *******************************************************************/
 
 bool SystemRefreshNeeded(void)
 {
 	return refresh_needed;
 }
 
+/* *******************************************************************
+ * 
+ * @name: void ISR_SystemDefaultVBlank(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:
+ * 
+ * @remarks:
+ * 	Called from VSync interrupt. Called 50 times a second in PAL mode,
+ * 	60 times a second in NTSC mode.
+ * 
+ * *******************************************************************/
+
 void ISR_SystemDefaultVBlank(void)
 {
 	refresh_needed = true;
 	SystemIncreaseGlobalTimer();
 }
+
+/* *******************************************************************
+ * 
+ * @name: void SystemIncreaseGlobalTimer(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:
+ * 	Increases internal variable responsible for time handling.
+ * 
+ * @remarks:
+ * 	Usually called from ISR_SystemDefaultVBlank().
+ * 
+ * *******************************************************************/
 
 void SystemIncreaseGlobalTimer(void)
 {
@@ -201,6 +274,9 @@ bool SystemLoadFileToBuffer(char * fname, uint8_t * buffer, uint32_t szBuffer)
 	FILE *f;
 	int32_t size;
 	
+	// Wait for possible previous operation from the GPU before entering this section.
+	while( (SystemIsBusy() == true) || (GfxIsGPUBusy() == true) );
+	
 	if(fname == NULL)
 	{
 		dprintf("SystemLoadFile: NULL fname!\n");
@@ -210,6 +286,9 @@ bool SystemLoadFileToBuffer(char * fname, uint8_t * buffer, uint32_t szBuffer)
 	memset(buffer,0,szBuffer);
 	
 	system_busy = true;
+	
+	SystemDisableVBlankInterrupt();
+	
 	f = fopen(fname, "r");
 	
 	if(f == NULL)
@@ -219,7 +298,7 @@ bool SystemLoadFileToBuffer(char * fname, uint8_t * buffer, uint32_t szBuffer)
 		return false;
 	}
 
-	fseek(f, 0, SEEK_END);	
+	fseek(f, 0, SEEK_END);
 
 	size = ftell(f);
 	
@@ -235,6 +314,8 @@ bool SystemLoadFileToBuffer(char * fname, uint8_t * buffer, uint32_t szBuffer)
 	fread(buffer, sizeof(char), size, f);
 	
 	fclose(f);
+	
+	SystemEnableVBlankInterrupt();
 	
 	system_busy = false;
 	
@@ -275,7 +356,7 @@ bool SystemGetEmergencyMode(void)
 	return emergency_mode;
 }
 
-bool SystemIsBusy(void)
+volatile bool SystemIsBusy(void)
 {
 	return system_busy;
 }
@@ -514,4 +595,36 @@ int32_t SystemIndexOf_U8(uint8_t value, uint8_t * array, uint32_t from, uint32_t
 	}
 	
 	return -1;
+}
+
+void SystemCyclicHandler(void)
+{
+	if(UpdatePads() == false)
+	{
+		SystemSetEmergencyMode(true);
+	}
+	else
+	{
+		SystemSetEmergencyMode(false);
+	}
+	
+	SystemRunTimers();
+	
+	SystemUserTimersHandler();
+	
+	SystemDisableScreenRefresh();
+	
+	MemCardHandler();
+	
+	SystemCheckStack();
+}
+
+void SystemDisableVBlankInterrupt(void)
+{
+	I_MASK &= ~(0x0001);
+}
+
+void SystemEnableVBlankInterrupt(void)
+{
+	I_MASK |= (0x0001);
 }

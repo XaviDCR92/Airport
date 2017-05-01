@@ -36,6 +36,9 @@ bool PadTwoKeyRepeat(unsigned short key, uint8_t time);
 bool PadOneKeyReleased(unsigned short key);
 bool PadTwoKeyReleased(unsigned short key);
 
+bool PadOneKeySinglePress(unsigned short key);
+bool PadTwoKeySinglePress(unsigned short key);
+
 bool PadOneDirectionKeyPressed(void);
 bool PadTwoDirectionKeyPressed(void);
 

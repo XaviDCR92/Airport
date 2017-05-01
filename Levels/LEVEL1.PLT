@@ -7,4 +7,4 @@
 10:30
 #Aircraft arrival (or departure) must be set relative to initial time, in HH:MM format.
 ARRIVAL;PHX1002;40;00:05;0
-DEPARTURE;PHX1000;100;00:05;2
+DEPARTURE;PHX1000;100;00:05;19

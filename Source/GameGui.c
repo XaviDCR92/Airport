@@ -336,7 +336,7 @@ bool GameGuiPauseDialog(TYPE_PLAYER * ptrPlayer)
 	
 	do
 	{
-		if(ptrPlayer->PadKeyReleased_Callback(PAD_CROSS) == true)
+		if(ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS) == true)
 		{
 			return true;
 		}
@@ -347,7 +347,7 @@ bool GameGuiPauseDialog(TYPE_PLAYER * ptrPlayer)
 		
 		GfxDrawScene_Slow();
 		
-	}while(ptrPlayer->PadKeyReleased_Callback(PAD_START) == false);
+	}while(ptrPlayer->PadKeySinglePress_Callback(PAD_START) == false);
 	
 	return false;
 }
@@ -388,7 +388,7 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFl
 	
 	if(ptrPlayer->ShowAircraftData == true)
 	{
-		if(ptrPlayer->PadKeyReleased_Callback(PAD_DOWN) == true)
+		if(ptrPlayer->PadKeySinglePress_Callback(PAD_DOWN) == true)
 		{
 			if( ( (ptrPlayer->SelectedAircraft + 1) < ptrPlayer->ActiveAircraft)
 												&&
@@ -398,7 +398,7 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFl
 			}
 		}
 		
-		if(ptrPlayer->PadKeyReleased_Callback(PAD_UP) == true)
+		if(ptrPlayer->PadKeySinglePress_Callback(PAD_UP) == true)
 		{
 			if(ptrPlayer->SelectedAircraft > ( (ptrPlayer->FlightDataPage) * GAME_GUI_AIRCRAFT_DATA_MAX_PAGE) )
 			{
@@ -406,7 +406,7 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFl
 			}
 		}
 		
-		if(ptrPlayer->PadKeyReleased_Callback(PAD_RIGHT) == true)
+		if(ptrPlayer->PadKeySinglePress_Callback(PAD_RIGHT) == true)
 		{
 			if(ptrPlayer->ActiveAircraft > (GAME_GUI_AIRCRAFT_DATA_MAX_PAGE * (ptrPlayer->FlightDataPage + 1) ) )
 			{
@@ -416,7 +416,7 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFl
 			}
 		}
 		
-		if(ptrPlayer->PadKeyReleased_Callback(PAD_LEFT) == true)
+		if(ptrPlayer->PadKeySinglePress_Callback(PAD_LEFT) == true)
 		{
 			if(ptrPlayer->FlightDataPage != 0)
 			{
@@ -544,7 +544,7 @@ void GameGuiAircraftList(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightDa
 			{
 				FontPrintText( 	&SmallFont,
 								AIRCRAFT_DATA_GSGPOLY4_X0 + 
-								( (AIRCRAFT_DATA_GSGPOLY4_X1 - AIRCRAFT_DATA_GSGPOLY4_X0) >> 1),
+								( (AIRCRAFT_DATA_GSGPOLY4_X1 - AIRCRAFT_DATA_GSGPOLY4_X0) >> 2),
 								AIRCRAFT_DATA_GSGPOLY4_Y0 +
 								( (AIRCRAFT_DATA_GSGPOLY4_Y2 - AIRCRAFT_DATA_GSGPOLY4_Y0) >> 1),
 								"No flights!"	);
@@ -696,23 +696,30 @@ void GameGuiShowAircraftData(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlig
 		{
 			case STATE_FINAL:
 				FontPrintText(	&SmallFont,
-								AIRCRAFT_DATA_DIRECTION_X + 64,
+								AIRCRAFT_DATA_DIRECTION_X + 88,
 								AIRCRAFT_DATA_DIRECTION_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
 								"Landing"	);
 			break;
 			
 			case STATE_TAXIING:
 				FontPrintText(	&SmallFont,
-								AIRCRAFT_DATA_DIRECTION_X + 64,
+								AIRCRAFT_DATA_DIRECTION_X + 88,
 								AIRCRAFT_DATA_DIRECTION_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
 								"Taxiing"	);
 			break;
 			
 			case STATE_LANDED:
 				FontPrintText(	&SmallFont,
-								AIRCRAFT_DATA_DIRECTION_X + 64,
+								AIRCRAFT_DATA_DIRECTION_X + 88,
 								AIRCRAFT_DATA_DIRECTION_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
 								"Arrived"	);
+			break;
+			
+			case STATE_PARKED:
+				FontPrintText(	&SmallFont,
+								AIRCRAFT_DATA_DIRECTION_X + 88,
+								AIRCRAFT_DATA_DIRECTION_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
+								"Parked"	);
 			break;
 			
 			default:

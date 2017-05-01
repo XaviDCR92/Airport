@@ -111,7 +111,6 @@ static void GameGetRunwayArray(void);
 static void GameGetSelectedRunwayArray(uint16_t rwyHeader);
 static void GameAssignRunwaytoAircraft(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
 static bool GameGuiShowAircraftDataSpecialConditions(TYPE_PLAYER * ptrPlayer);
-static uint16_t GameGetTileFromIsoPosition(TYPE_ISOMETRIC_POS * IsoPos);
 static bool GamePathToTile(TYPE_PLAYER * ptrPlayer);
 
 /* *************************************
@@ -195,6 +194,8 @@ void Game(bool two_players)
 		}
 	}
 	
+	GfxDisableSplitScreen();
+	
 	EndAnimation();
 	
 	SfxPlayTrack(INTRO_TRACK);
@@ -217,8 +218,8 @@ bool GamePause(void)
 		// Run player-specific functions for each player
 		if(ptrPlayer->Active == true)
 		{
-			//dprintf("Released callback = 0x%08X\n", ptrPlayer->PadKeyReleased_Callback);
-			if(ptrPlayer->PadKeyReleased_Callback(PAD_START) == true)
+			//dprintf("Released callback = 0x%08X\n", ptrPlayer->PadKeySinglePress_Callback);
+			if(ptrPlayer->PadKeySinglePress_Callback(PAD_START) == true)
 			{
 				dprintf("Player %d set pause_flag to true!\n",i);
 				pause_flag = true;
@@ -261,6 +262,7 @@ void GameInit(void)
 	PlayerData[PLAYER_ONE].Active = true;
 	PlayerData[PLAYER_ONE].PadKeyPressed_Callback = &PadOneKeyPressed;
 	PlayerData[PLAYER_ONE].PadKeyReleased_Callback = &PadOneKeyReleased;
+	PlayerData[PLAYER_ONE].PadKeySinglePress_Callback = &PadOneKeySinglePress;
 	PlayerData[PLAYER_ONE].PadDirectionKeyPressed_Callback = &PadOneDirectionKeyPressed;
 	PlayerData[PLAYER_ONE].FlightDataPage = 0;
 	
@@ -272,6 +274,7 @@ void GameInit(void)
 		PlayerData[PLAYER_TWO].PadKeyReleased_Callback = &PadTwoKeyReleased;
 		PlayerData[PLAYER_TWO].PadDirectionKeyPressed_Callback = &PadTwoDirectionKeyPressed;
 		PlayerData[PLAYER_TWO].FlightDataPage = 0;
+		PlayerData[PLAYER_TWO].PadKeySinglePress_Callback = &PadTwoKeySinglePress;
 		
 		// On 2-player mode, one player controls departure flights and
 		// other player controls arrival flights.
@@ -549,12 +552,18 @@ void GameClockFlights(void)
 void GameGraphics(void)
 {
 	int i;
+	bool split_screen = false;
 	
 	while(	(GfxIsGPUBusy() == true)
 					||
 			(SystemRefreshNeeded() == false)	);
-
-	GsSortCls(0,0,NORMAL_LUMINANCE >> 1);
+			
+	if( (PlayerData[PLAYER_ONE].Active == true)
+						&&
+		(PlayerData[PLAYER_TWO].Active == true) )
+	{
+		split_screen = true;
+	}
 	
 	if(GfxGetGlobalLuminance() < NORMAL_LUMINANCE)
 	{
@@ -564,24 +573,34 @@ void GameGraphics(void)
 	for(i = 0; i < MAX_PLAYERS ; i++)
 	{
 		if(PlayerData[i].Active == true)
-		{
+		{	
+			if(split_screen == true)
+			{
+				GfxSetSplitScreen(i);
+			}
+			
+			GsSortCls(0,0,GfxGetGlobalLuminance() >> 1);
+
 			GameRenderLevel(&PlayerData[i]);
 			AircraftRender(&PlayerData[i]);
+			
+			GameGuiAircraftNotificationRequest(&FlightData);
+	
+			GameGuiBubble(&FlightData);
+			
+			GameGuiClock(GameHour,GameMinutes);
+			
+			/*for(i = 0; i < MAX_PLAYERS ; i++)
+			{*/
+				GameGuiAircraftList(&PlayerData[i], &FlightData);
+			//}
+			
+			GfxDrawScene_Fast();
+			while(GfxIsGPUBusy() == true);
 		}
 	}
 	
-	GameGuiAircraftNotificationRequest(&FlightData);
-	
-	GameGuiBubble(&FlightData);
-	
-	GameGuiClock(GameHour,GameMinutes);
-	
-	for(i = 0; i < MAX_PLAYERS ; i++)
-	{
-		GameGuiAircraftList(&PlayerData[i], &FlightData);
-	}
-	
-	GfxDrawScene();	
+	SystemCyclicHandler();
 }
 
 void GameLoadLevel(void)
@@ -658,6 +677,11 @@ char* GetGameLevelTitle(void)
 void GameAircraftState(void)
 {
 	uint8_t i;
+	uint16_t target[2] = {0};
+	// Arrays are copied to AircraftAddNew, so we create a first and only
+	// target which is the parking tile itself, and the second element
+	// is just the NULL character.
+	// Not an ideal solution, but the best one currently available.
 	
 	for(i = 0; i < FlightData.nAircraft ; i++)
 	{
@@ -670,6 +694,16 @@ void GameAircraftState(void)
 			if(FlightData.FlightDirection[i] == DEPARTURE)
 			{
 				FlightData.State[i] = STATE_PARKED;
+				
+				target[0] = FlightData.Parking[i];
+				
+				dprintf("Target assigned = %d", target[0]);
+				
+				if(AircraftAddNew(&FlightData, i, target) == false)
+				{
+					dprintf("Exceeded maximum aircraft number!\n");
+					return;
+				}
 			}
 			else if(FlightData.FlightDirection[i] == ARRIVAL)
 			{
@@ -947,11 +981,11 @@ void GameStateShowAircraft(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlight
 {
 	if(ptrPlayer->ShowAircraftData == true)
 	{
-		if(ptrPlayer->PadKeyReleased_Callback(PAD_TRIANGLE) == true)
+		if(ptrPlayer->PadKeySinglePress_Callback(PAD_TRIANGLE) == true)
 		{
 			ptrPlayer->ShowAircraftData = false;
 		}
-		else if(ptrPlayer->PadKeyReleased_Callback(PAD_SQUARE) == true)
+		else if(ptrPlayer->PadKeySinglePress_Callback(PAD_SQUARE) == true)
 		{
 			dprintf("Aircraft state = %d. STATE_IDLE = %d\n",
 					ptrFlightData->State[ptrPlayer->SelectedAircraft],
@@ -965,7 +999,7 @@ void GameStateShowAircraft(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlight
 		}
 	}
 	
-	if(ptrPlayer->PadKeyReleased_Callback(PAD_CIRCLE) == true)
+	if(ptrPlayer->PadKeySinglePress_Callback(PAD_CIRCLE) == true)
 	{
 		if(GameGuiShowAircraftDataSpecialConditions(ptrPlayer) == false)
 		{
@@ -981,7 +1015,7 @@ void GameStateLockTarget(TYPE_PLAYER * ptrPlayer)
 	{
 		CameraMoveToIsoPos(ptrPlayer, AircraftGetIsoPos(ptrPlayer->LockedAircraft) );
 		
-		if(ptrPlayer->PadKeyReleased_Callback(PAD_SQUARE) == true)
+		if(ptrPlayer->PadKeySinglePress_Callback(PAD_SQUARE) == true)
 		{
 			ptrPlayer->LockTarget = false;
 			ptrPlayer->LockedAircraft = 0;
@@ -1010,7 +1044,7 @@ void GameStateSelectTaxiwayRunway(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * pt
 			ptrPlayer->InvalidPath = true;
 		}
 		
-		if(ptrPlayer->PadKeyReleased_Callback(PAD_TRIANGLE) == true)
+		if(ptrPlayer->PadKeySinglePress_Callback(PAD_TRIANGLE) == true)
 		{
 			// State exit.
 			ptrPlayer->SelectTaxiwayRunway = false;
@@ -1019,7 +1053,7 @@ void GameStateSelectTaxiwayRunway(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * pt
 			ptrPlayer->WaypointIdx = 0;
 			ptrPlayer->LastWaypointIdx = 0;
 		}
-		else if(ptrPlayer->PadKeyReleased_Callback(PAD_CROSS) == true)
+		else if(ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS) == true)
 		{
 			if(ptrPlayer->InvalidPath == false)
 			{
@@ -1035,32 +1069,36 @@ void GameStateSelectTaxiwayRunway(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * pt
 				
 				target_tile = GameLevelBuffer[ptrPlayer->Waypoints[ptrPlayer->LastWaypointIdx]];
 				
-				if(	(target_tile == TILE_RWY_START_1)
-										||
-					(target_tile == (TILE_RWY_START_1 | TILE_MIRROR_FLAG) )
-										||
-					(target_tile == TILE_RWY_START_2)
-										||
-					(target_tile == (TILE_RWY_START_2 | TILE_MIRROR_FLAG) ) )
+				switch(target_tile)
 				{
-					// TODO: Assign path to aircraft
-					AircraftFromFlightDataIndexAddTargets(ptrPlayer->LockedAircraft, ptrPlayer->Waypoints);
-					dprintf("Added these targets to aircraft %d:\n", ptrPlayer->LockedAircraft);
+					case TILE_RWY_START_1:
+						// Fall through
+					case TILE_RWY_START_1 | TILE_MIRROR_FLAG:
+						// Fall through
+					case TILE_RWY_START_2:
+						// Fall through
+					case TILE_RWY_START_2 | TILE_MIRROR_FLAG:
+						AircraftFromFlightDataIndexAddTargets(ptrPlayer->LockedAircraft, ptrPlayer->Waypoints);
+						dprintf("Added these targets to aircraft %d:\n", ptrPlayer->LockedAircraft);
+						
+						for(i = 0; i < PLAYER_MAX_WAYPOINTS; i++)
+						{
+							dprintf("%d ",ptrPlayer->Waypoints[i]);
+						}
+						
+						dprintf("\n");
+						
+						ptrPlayer->SelectTaxiwayParking = false;
+						// Clear waypoints array.
+						memset(ptrPlayer->Waypoints, 0, sizeof(uint16_t) * PLAYER_MAX_WAYPOINTS);
+						ptrPlayer->WaypointIdx = 0;
+						ptrPlayer->LastWaypointIdx = 0;
+						
+						ptrFlightData->State[ptrPlayer->LockedAircraft] = STATE_TAXIING;
+					break;
 					
-					for(i = 0; i < PLAYER_MAX_WAYPOINTS; i++)
-					{
-						dprintf("%d ",ptrPlayer->Waypoints[i]);
-					}
-					
-					dprintf("\n");
-					
-					ptrPlayer->SelectTaxiwayParking = false;
-					// Clear waypoints array.
-					memset(ptrPlayer->Waypoints, 0, sizeof(uint16_t) * PLAYER_MAX_WAYPOINTS);
-					ptrPlayer->WaypointIdx = 0;
-					ptrPlayer->LastWaypointIdx = 0;
-					
-					ptrFlightData->State[ptrPlayer->LockedAircraft] = STATE_TAXIING;
+					default:
+					break;
 				}
 			}
 		}
@@ -1086,7 +1124,7 @@ void GameStateSelectTaxiwayParking(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * p
 			ptrPlayer->InvalidPath = true;
 		}
 		
-		if(ptrPlayer->PadKeyReleased_Callback(PAD_TRIANGLE) == true)
+		if(ptrPlayer->PadKeySinglePress_Callback(PAD_TRIANGLE) == true)
 		{
 			// State exit.
 			ptrPlayer->SelectTaxiwayParking = false;
@@ -1095,7 +1133,7 @@ void GameStateSelectTaxiwayParking(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * p
 			ptrPlayer->WaypointIdx = 0;
 			ptrPlayer->LastWaypointIdx = 0;
 		}
-		else if(ptrPlayer->PadKeyReleased_Callback(PAD_CROSS) == true)
+		else if(ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS) == true)
 		{
 			if(ptrPlayer->InvalidPath == false)
 			{
@@ -1158,11 +1196,11 @@ void GameStateSelectRunway(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlight
 		ptrPlayer->LockTarget = false;
 		ptrPlayer->LockedAircraft = 0;
 		
-		if(ptrPlayer->PadKeyReleased_Callback(PAD_TRIANGLE) == true)
+		if(ptrPlayer->PadKeySinglePress_Callback(PAD_TRIANGLE) == true)
 		{
 			ptrPlayer->SelectRunway = false;
 		}
-		else if(ptrPlayer->PadKeyReleased_Callback(PAD_CROSS) == true)
+		else if(ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS) == true)
 		{
 			ptrPlayer->SelectRunway = false;
 			
@@ -1191,14 +1229,14 @@ void GameStateSelectRunway(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlight
 				}
 			}
 		}
-		else if(ptrPlayer->PadKeyReleased_Callback(PAD_LEFT) == true)
+		else if(ptrPlayer->PadKeySinglePress_Callback(PAD_LEFT) == true)
 		{
 			if(ptrPlayer->SelectedRunway != 0)
 			{
 				ptrPlayer->SelectedRunway--;
 			}
 		}
-		else if(ptrPlayer->PadKeyReleased_Callback(PAD_RIGHT) == true)
+		else if(ptrPlayer->PadKeySinglePress_Callback(PAD_RIGHT) == true)
 		{
 			if(ptrPlayer->SelectedRunway < GAME_MAX_RUNWAYS)
 			{
@@ -1248,7 +1286,7 @@ void GameSelectAircraftFromList(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrF
 	
 	if(ptrPlayer->ShowAircraftData == true)
 	{
-		if(ptrPlayer->PadKeyReleased_Callback(PAD_CROSS) == true)
+		if(ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS) == true)
 		{
 			if(ptrPlayer->ActiveAircraft != 0)
 			{
@@ -1467,6 +1505,10 @@ void GameTargetsReached(uint8_t index)
 			FlightData.State[index] = STATE_LANDED;
 		break;
 		
+		case STATE_TAXIING:
+			FlightData.State[index] = STATE_PARKED;
+		break;
+		
 		default:
 		break;
 	}
@@ -1491,6 +1533,11 @@ bool GameGuiShowAircraftDataSpecialConditions(TYPE_PLAYER * ptrPlayer)
 uint16_t GameGetTileFromIsoPosition(TYPE_ISOMETRIC_POS * IsoPos)
 {
 	uint16_t tile;
+	
+	if(IsoPos == NULL)
+	{
+		return 0;
+	}
 	
 	if(	(IsoPos->x < 0) || (IsoPos->y < 0) )
 	{
@@ -1613,7 +1660,19 @@ bool GamePathToTile(TYPE_PLAYER * ptrPlayer)
 			
 			if(SystemContains_u16(temp_tile, ptrPlayer->Waypoints, PLAYER_MAX_WAYPOINTS) == false)
 			{
+				for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
+				{
+					if(temp_tile == AircraftGetTileFromFlightDataIndex(i))
+					{
+						return false;	// Check pending!
+					}
+				}
+				
 				GamePlayerAddWaypoint_Ex(ptrPlayer, temp_tile);
+			}
+			else
+			{
+				return false;	// Tile is already included in the list of temporary tiles?
 			}
 		}
 		
@@ -1631,7 +1690,20 @@ bool GamePathToTile(TYPE_PLAYER * ptrPlayer)
 			
 			if(SystemContains_u16(temp_tile, ptrPlayer->Waypoints, PLAYER_MAX_WAYPOINTS) == false)
 			{
+				for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
+				{
+					if(temp_tile == AircraftGetTileFromFlightDataIndex(i))
+					{
+						return false;	// Check pending!
+					}
+				}
+				
 				GamePlayerAddWaypoint_Ex(ptrPlayer, temp_tile);
+			}
+			else
+			{
+				// TEST - Check pending!
+				return false;	// Tile is already included in the list of temporary tiles?
 			}
 		}
 	}
@@ -1651,7 +1723,20 @@ bool GamePathToTile(TYPE_PLAYER * ptrPlayer)
 			
 			if(SystemContains_u16(temp_tile, ptrPlayer->Waypoints, PLAYER_MAX_WAYPOINTS) == false)
 			{
+				for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
+				{
+					if(temp_tile == AircraftGetTileFromFlightDataIndex(i))
+					{
+						return false;	// Check pending!
+					}
+				}
+				
 				GamePlayerAddWaypoint_Ex(ptrPlayer, temp_tile);
+			}
+			else
+			{
+				// TEST - Check pending!
+				return false;	// Tile is already included in the list of temporary tiles?
 			}
 		}
 		
@@ -1669,7 +1754,20 @@ bool GamePathToTile(TYPE_PLAYER * ptrPlayer)
 			
 			if(SystemContains_u16(temp_tile, ptrPlayer->Waypoints, PLAYER_MAX_WAYPOINTS) == false)
 			{
+				for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
+				{
+					if(temp_tile == AircraftGetTileFromFlightDataIndex(i))
+					{
+						return false;	// Check pending!
+					}
+				}
+
 				GamePlayerAddWaypoint_Ex(ptrPlayer, temp_tile);
+			}
+			else
+			{
+				// TEST - Check pending!
+				return false;	// Tile is already included in the list of temporary tiles?
 			}
 		}
 	}

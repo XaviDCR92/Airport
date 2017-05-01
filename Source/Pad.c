@@ -177,6 +177,16 @@ bool PadTwoKeyPressed(unsigned short key)
 	return (bool)( pad2 & key );
 }
 
+bool PadOneKeySinglePress(unsigned short key)
+{
+	return (bool)( !(previous_pad1 & key) && (pad1 & key) );
+}
+
+bool PadTwoKeySinglePress(unsigned short key)
+{
+	return (bool)( !(previous_pad2 & key) && (pad2 & key) );
+}
+
 bool PadOneKeyRepeat(unsigned short key, uint8_t time)
 {
 	uint8_t key_index = PadGetKeyIndex(key);

@@ -58,10 +58,10 @@ static const fix16_t AircraftSpeedsTable[] = {	0			/* IDLE */		,
  * 	Local prototypes
  * *************************************/
 
-static void AircraftDirection(TYPE_AIRCRAFT_DATA * ptrAircraft);
+static void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft);
 static AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char * strFlightNumber);
-static void AircraftAttitude(TYPE_AIRCRAFT_DATA * ptrAircraft);
-static void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA * ptrAircraft);
+static void AircraftAttitude(TYPE_AIRCRAFT_DATA* ptrAircraft);
+static void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* ptrAircraft);
 
 void AircraftInit(void)
 {
@@ -96,7 +96,7 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA * ptrFlightData,
 						uint8_t FlightDataIndex,
 						uint16_t * targets		)
 {
-	TYPE_AIRCRAFT_DATA * ptrAircraft = &AircraftData[AircraftIndex];
+	TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[AircraftIndex];
 	uint8_t level_columns = GameGetLevelColumns();
 	uint8_t i;
 	
@@ -127,6 +127,12 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA * ptrFlightData,
 		ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
 		
 		ptrAircraft->Speed = AircraftSpeedsTable[AIRCRAFT_SPEED_APPROACH];
+	}
+	else if(ptrFlightData->FlightDirection[FlightDataIndex] == DEPARTURE)
+	{
+		ptrAircraft->IsoPos.x = GameGetXFromTile(ptrFlightData->Parking[FlightDataIndex]);
+		ptrAircraft->IsoPos.y = GameGetYFromTile(ptrFlightData->Parking[FlightDataIndex]);
+		ptrAircraft->IsoPos.z = 0;
 	}
 	
 	ptrAircraft->State = ptrFlightData->State[FlightDataIndex];
@@ -177,7 +183,7 @@ AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char * strFlightNumber)
 
 void AircraftHandler(void)
 {
-	TYPE_AIRCRAFT_DATA * ptrAircraft;
+	TYPE_AIRCRAFT_DATA* ptrAircraft;
 	uint8_t i;
 	
 	for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
@@ -196,7 +202,7 @@ void AircraftHandler(void)
 
 void AircraftRender(TYPE_PLAYER * ptrPlayer)
 {
-	TYPE_AIRCRAFT_DATA * ptrAircraft;
+	TYPE_AIRCRAFT_DATA* ptrAircraft;
 	TYPE_CARTESIAN_POS cartPos;
 	
 	uint8_t i;
@@ -228,7 +234,7 @@ void AircraftRender(TYPE_PLAYER * ptrPlayer)
 	}
 }
 
-void AircraftDirection(TYPE_AIRCRAFT_DATA * ptrAircraft)
+void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 {
 	TYPE_ISOMETRIC_FIX16_POS targetPos;
 	
@@ -291,7 +297,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA * ptrAircraft)
 	}
 }
 
-void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA * ptrAircraft)
+void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* ptrAircraft)
 {
 	switch(ptrAircraft->Livery)
 	{
@@ -331,7 +337,7 @@ void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA * ptrAircraft)
 	}
 }
 
-void AircraftAttitude(TYPE_AIRCRAFT_DATA * ptrAircraft)
+void AircraftAttitude(TYPE_AIRCRAFT_DATA* ptrAircraft)
 {
 	if(ptrAircraft->State == STATE_FINAL)
 	{
@@ -347,7 +353,7 @@ TYPE_ISOMETRIC_POS AircraftGetIsoPos(uint8_t FlightDataIdx)
 	// Aircraft position data is stored in fix16_t data type instead of "short" data type.
 	// So we must perform a conversion first for convenience.
 	TYPE_ISOMETRIC_POS retIsoPos;
-	TYPE_ISOMETRIC_FIX16_POS fix16IsoPos = AircraftData[FlightDataIdx].IsoPos;
+	TYPE_ISOMETRIC_FIX16_POS fix16IsoPos = AircraftFromFlightDataIndex(FlightDataIdx)->IsoPos;
 	
 	retIsoPos.x = (short)fix16_to_int(fix16IsoPos.x);
 	retIsoPos.y = (short)fix16_to_int(fix16IsoPos.y);
@@ -356,14 +362,33 @@ TYPE_ISOMETRIC_POS AircraftGetIsoPos(uint8_t FlightDataIdx)
 	return retIsoPos;
 }
 
-void AircraftAddTargets(TYPE_AIRCRAFT_DATA * ptrAircraft, uint16_t * targets)
+void AircraftAddTargets(TYPE_AIRCRAFT_DATA* ptrAircraft, uint16_t * targets)
 {	
 	memcpy(ptrAircraft->Target, targets, sizeof(uint16_t) * AIRCRAFT_MAX_TARGETS);
 }
 
-TYPE_AIRCRAFT_DATA * AircraftFromFlightDataIndex(uint8_t index)
+uint16_t AircraftGetTileFromFlightDataIndex(uint8_t index)
 {
-	return &AircraftData[index];
+	TYPE_ISOMETRIC_POS isoPos = AircraftGetIsoPos(index);
+	return GameGetTileFromIsoPosition(&isoPos);
+}
+
+TYPE_AIRCRAFT_DATA* AircraftFromFlightDataIndex(uint8_t index)
+{
+	uint8_t i;
+	TYPE_AIRCRAFT_DATA* ptrAircraft;
+	
+	for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
+	{
+		ptrAircraft = &AircraftData[i];
+		
+		if(ptrAircraft->FlightDataIdx == index)
+		{
+			return ptrAircraft;
+		}
+	}
+	
+	return NULL;
 }
 
 void AircraftFromFlightDataIndexAddTargets(uint8_t index, uint16_t * targets)

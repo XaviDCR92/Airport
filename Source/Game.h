@@ -44,5 +44,6 @@ uint8_t 	GameGetLevelColumns(void);
 fix16_t 	GameGetXFromTile(uint16_t tile);
 fix16_t 	GameGetYFromTile(uint16_t tile);
 void 		GameTargetsReached(uint8_t index);
+uint16_t	GameGetTileFromIsoPosition(TYPE_ISOMETRIC_POS * IsoPos);
 
 #endif //__GAME_HEADER__

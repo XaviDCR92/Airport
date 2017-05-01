@@ -13,6 +13,7 @@
 #define UPLOAD_IMAGE_FLAG 1
 #define MAX_LUMINANCE 0xFF
 #define ROTATE_BIT_SHIFT 12
+#define GPUSTAT (*(unsigned int*)0x1F801814)
 
 /* *************************************
  * 	Structs and enums
@@ -87,7 +88,6 @@ void GfxSwapBuffers(void)
 		GsSetDispEnv(&DispEnv);
 		GsSetDrawEnv(&DrawEnv);
 	}
-
 }
 
 
@@ -122,34 +122,20 @@ void GfxDrawScene_Fast(void)
 	GsDrawList();
 }
 
+bool GfxReadyForDMATransfer(void)
+{
+	return (GPUSTAT & 1<<28);
+}
+
 void GfxDrawScene(void)
 {
 	while(	(SystemRefreshNeeded() == false) 
 				||
-			(GsIsDrawing() == true)
-				||
-			(SystemDMAReady() == false)		);
+			(GfxIsGPUBusy() == true)		);
 			
 	GfxDrawScene_Fast();
 	
-	if(UpdatePads() == false)
-	{
-		SystemSetEmergencyMode(true);
-	}
-	else
-	{
-		SystemSetEmergencyMode(false);
-	}
-	
-	SystemRunTimers();
-	
-	SystemUserTimersHandler();
-	
-	SystemDisableScreenRefresh();
-	
-	MemCardHandler();
-	
-	SystemCheckStack();
+	SystemCyclicHandler();
 }
 
 void GfxDrawScene_Slow(void)
@@ -283,7 +269,7 @@ int GfxRotateFromDegrees(int deg)
 
 bool GfxIsGPUBusy(void)
 {
-	return (GsIsDrawing() || gfx_busy || SystemDMABusy() );
+	return (GsIsDrawing() || gfx_busy || (GfxReadyForDMATransfer() == false) );
 }
 
 bool GfxSpriteFromFile(char * fname, GsSprite * spr)
@@ -416,6 +402,8 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 
 void GfxSaveDisplayData(GsSprite *spr)
 {
+	while(GfxIsGPUBusy() == true);
+	
 	MoveImage(	DispEnv.x,
 				DispEnv.y,
 				GFX_SECOND_DISPLAY_X,
@@ -523,4 +511,41 @@ TYPE_ISOMETRIC_POS GfxCartesianToIsometric(TYPE_CARTESIAN_POS * ptrCartPos)
 	IsoPos.z = 0;
 	
 	return IsoPos;
+}
+
+void GfxSetSplitScreen(uint8_t playerIndex)
+{
+	
+	switch(playerIndex)
+	{
+		case 0:
+			// PLAYER_ONE
+			DrawEnv.x = 0;
+			DrawEnv.w = X_SCREEN_RESOLUTION >> 1;
+		break;
+		
+		case 1:
+			// PLAYER_TWO
+			DrawEnv.x = X_SCREEN_RESOLUTION >> 1;
+			DrawEnv.w = X_SCREEN_RESOLUTION >> 1;
+		break;
+		
+		default:
+		break;
+	}
+	
+	dprintf("Player idx = %d, x = %d, w = %d\n",
+			playerIndex,
+			DrawEnv.x,
+			DrawEnv.w);
+	
+	GsSetDrawEnv(&DrawEnv);
+}
+
+void GfxDisableSplitScreen(void)
+{
+	DrawEnv.x = 0;
+	DrawEnv.w = X_SCREEN_RESOLUTION;
+	
+	GsSetDrawEnv(&DrawEnv);
 }

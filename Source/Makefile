@@ -47,7 +47,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $< -o $@ $(DEFINE) $(CC_FLAGS)
 	
 $(PROJECT).elf: 
-	$(LINKER) Obj/*.o -o Exe/$(PROJECT).elf $(LIBS)
+	$(LINKER) Obj/*.o -o Exe/$(PROJECT).elf $(LIBS) -Wl,--gc-sections
 	
 $(PROJECT).exe:
 	$(ELF2EXE) Exe/$(PROJECT).elf Exe/$(PROJECT).exe $(ELF2EXE_FLAGS)

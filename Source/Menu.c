@@ -121,10 +121,13 @@ static char * MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
 									"cdrom:\\DATA\\SPRITES\\PSXDISK.TIM;1"	,
 									"cdrom:\\DATA\\SPRITES\\INTROFNT.TIM;1"	,
 									"cdrom:\\DATA\\SPRITES\\BUTTONS.TIM;1"	,
+#ifndef NO_INTRO
 									"cdrom:\\DATA\\SPRITES\\GPL.TIM;1"		,
 									"cdrom:\\DATA\\SPRITES\\OPENSRC.TIM;1"	,
 									"cdrom:\\DATA\\SOUNDS\\TRAYCL.VAG;1"	,
-									"cdrom:\\DATA\\SOUNDS\\SPINDISK.VAG;1"	};
+									"cdrom:\\DATA\\SOUNDS\\SPINDISK.VAG;1"	
+#endif // NO_INTRO
+									};
 									
 static void * MainMenuDest[] = {	(GsSprite*)&MenuSpr			,
 									(SsVag*)&BellSnd			,
@@ -132,10 +135,13 @@ static void * MainMenuDest[] = {	(GsSprite*)&MenuSpr			,
 									(GsSprite*)&PsxDisk			,
 									(GsSprite*)&PSXSDKIntroFont	,
 									(GsSprite*)&PSXButtons		,
+#ifndef NO_INTRO
 									(GsSprite*)&GPL_Logo		,
 									(GsSprite*)&OpenSource_Logo	,
 									(SsVag*)&TrayClSnd			,
-									(SsVag*)&SpinDiskSnd		};
+									(SsVag*)&SpinDiskSnd		
+#endif // NO_INTRO
+									};
 
 static TYPE_MMBtn MainMenuBtn[MAIN_MENU_BUTTONS_MAX];
 static MainMenuLevel menuLevel;
@@ -254,12 +260,13 @@ void MainMenu(void)
 	
 	while(1)
 	{
+		while(GfxIsGPUBusy() == true);
+		
 		MainMenuButtonHandler();
 		
 		switch(menuLevel)
 		{
 			case PLAY_OPTIONS_LEVEL:
-				while(SystemDMAReady() == false);
 				
 				GsSortCls(0,0,40);				
 				MainMenuDrawButton(&MainMenuBtn[PLAY_BUTTON_INDEX]);
@@ -269,7 +276,6 @@ void MainMenu(void)
 			break;
 			
 			case ONE_TWO_PLAYERS_LEVEL:
-				while(SystemDMAReady() == false);
 				
 				GsSortCls(0,0,40);				
 				MainMenuDrawButton(&MainMenuBtn[ONE_PLAYER_BUTTON_INDEX]);
@@ -320,9 +326,9 @@ void MainMenuButtonHandler(void)
 		}
 	}
 	
-	if(	(PadOneKeyReleased(PAD_CROSS) == true)
+	if(	(PadOneKeySinglePress(PAD_CROSS) == true)
 				||
-		(PadOneKeyReleased(PAD_TRIANGLE) == true)	)
+		(PadOneKeySinglePress(PAD_TRIANGLE) == true)	)
 	{
 		SfxPlaySound(&AcceptSnd);
 	}
@@ -335,7 +341,7 @@ void MainMenuButtonHandler(void)
 		
 		case ONE_TWO_PLAYERS_LEVEL:
 			max_buttons = MAIN_MENU_ONE_TWO_PLAYERS_LEVEL_BUTTONS;
-			if(PadOneKeyReleased(PAD_TRIANGLE) == true)
+			if(PadOneKeySinglePress(PAD_TRIANGLE) == true)
 			{
 				menuLevel = PLAY_OPTIONS_LEVEL;
 				MainMenuMinimumBtn = PLAY_BUTTON_INDEX;
@@ -351,14 +357,14 @@ void MainMenuButtonHandler(void)
 	MainMenuBtn[previous_btn_selected].was_selected = MainMenuBtn[previous_btn_selected].selected;
 	MainMenuBtn[btn_selected].was_selected = MainMenuBtn[btn_selected].selected;
 	
-	if(PadOneKeyReleased(PAD_LEFT)	&& (btn_selected > 0) )
+	if(PadOneKeySinglePress(PAD_LEFT)	&& (btn_selected > 0) )
 	{
 		MainMenuBtn[btn_selected].selected = false;
 		previous_btn_selected = btn_selected;
 		btn_selected--;
 		SfxPlaySound(&BellSnd);
 	}
-	else if(PadOneKeyReleased(PAD_RIGHT) 
+	else if(PadOneKeySinglePress(PAD_RIGHT) 
 				&&
 			(btn_selected < (max_buttons - 1 + MainMenuMinimumBtn) ) )
 	{
@@ -379,7 +385,7 @@ void MainMenuButtonHandler(void)
 		btn_selected = (max_buttons - 1 + MainMenuMinimumBtn);
 	}
 	
-	if(PadOneKeyReleased(PAD_CROSS) )
+	if(PadOneKeySinglePress(PAD_CROSS) )
 	{
 		if(menuLevel == ONE_TWO_PLAYERS_LEVEL)
 		{
