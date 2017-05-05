@@ -53,7 +53,7 @@ GsSprite PSXButtons;
  * 	Local Prototypes
  * *************************************/
 
-static void GfxSwapBuffers(void);
+
 
 /* *************************************
  * 	Local Variables
@@ -119,6 +119,11 @@ void GfxDrawScene_Fast(void)
 {	
 	GfxSwapBuffers();
 	FontCyclic();
+	GsDrawList();
+}
+
+void GfxDrawScene_NoSwap(void)
+{
 	GsDrawList();
 }
 
@@ -319,11 +324,11 @@ bool GfxIsInsideScreenArea(short x, short y, short w, short h)
 {
 	if( ( (x + w) >= 0) 
 			&&
-		(x < X_SCREEN_RESOLUTION)
+		(x < DrawEnv.w)
 			&&
 		( (y + h) >= 0)
 			&&
-		(y < Y_SCREEN_RESOLUTION)	)
+		(y < DrawEnv.h)	)
 	{
 		return true;
 	}
@@ -515,7 +520,6 @@ TYPE_ISOMETRIC_POS GfxCartesianToIsometric(TYPE_CARTESIAN_POS * ptrCartPos)
 
 void GfxSetSplitScreen(uint8_t playerIndex)
 {
-	
 	switch(playerIndex)
 	{
 		case 0:
@@ -533,11 +537,6 @@ void GfxSetSplitScreen(uint8_t playerIndex)
 		default:
 		break;
 	}
-	
-	dprintf("Player idx = %d, x = %d, w = %d\n",
-			playerIndex,
-			DrawEnv.x,
-			DrawEnv.w);
 	
 	GsSetDrawEnv(&DrawEnv);
 }

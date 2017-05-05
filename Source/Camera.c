@@ -17,10 +17,10 @@
  * 	Local Prototypes
  * *************************************/
 
-static void CameraUpdateSpeed(TYPE_PLAYER * ptrPlayer);
-static bool CameraSpecialConditions(TYPE_PLAYER * ptrPlayer);
+static void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer);
+static bool CameraSpecialConditions(TYPE_PLAYER* ptrPlayer);
 
-void CameraInit(TYPE_PLAYER * ptrPlayer)
+void CameraInit(TYPE_PLAYER* ptrPlayer)
 {
 	// Center camera on screen
 	ptrPlayer->Camera.X_Offset = CAMERA_INITIAL_X_OFFSET;
@@ -30,13 +30,13 @@ void CameraInit(TYPE_PLAYER * ptrPlayer)
 	ptrPlayer->Camera.Speed_Timer = SPEED_CALCULATION_TIME;
 }
 
-void CameraApplyCoordinatesToSprite(TYPE_PLAYER * ptrPlayer, GsSprite * spr)
+void CameraApplyCoordinatesToSprite(TYPE_PLAYER* ptrPlayer, GsSprite * spr)
 {
 	spr->x += (short)ptrPlayer->Camera.X_Offset;
 	spr->y += (short)ptrPlayer->Camera.Y_Offset;
 }
 
-void CameraApplyCoordinatesToRectangle(TYPE_PLAYER * ptrPlayer, GsRectangle * rect)
+void CameraApplyCoordinatesToRectangle(TYPE_PLAYER* ptrPlayer, GsRectangle * rect)
 {
 	dprintf("Rectangle {%d, %d}\n",
 			rect->x,
@@ -46,7 +46,7 @@ void CameraApplyCoordinatesToRectangle(TYPE_PLAYER * ptrPlayer, GsRectangle * re
 	rect->y += (short)ptrPlayer->Camera.Y_Offset;
 }
 
-void CameraUpdateSpeed(TYPE_PLAYER * ptrPlayer)
+void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer)
 {
 	if(ptrPlayer->PadDirectionKeyPressed_Callback() == true)
 	{
@@ -128,7 +128,7 @@ void CameraUpdateSpeed(TYPE_PLAYER * ptrPlayer)
 	}
 }
 
-void CameraHandler(TYPE_PLAYER * ptrPlayer)
+void CameraHandler(TYPE_PLAYER* ptrPlayer)
 {
 	if(CameraSpecialConditions(ptrPlayer) == true)
 	{
@@ -151,7 +151,7 @@ void CameraHandler(TYPE_PLAYER * ptrPlayer)
 	ptrPlayer->Camera.Y_Offset += ptrPlayer->Camera.Y_Speed;
 }
 
-bool CameraSpecialConditions(TYPE_PLAYER * ptrPlayer)
+bool CameraSpecialConditions(TYPE_PLAYER* ptrPlayer)
 {
 	if(	(ptrPlayer->ShowAircraftData == true)
 					||
@@ -165,7 +165,7 @@ bool CameraSpecialConditions(TYPE_PLAYER * ptrPlayer)
 	return false;
 }
 
-TYPE_ISOMETRIC_POS CameraGetIsoPos(TYPE_PLAYER * ptrPlayer)
+TYPE_ISOMETRIC_POS CameraGetIsoPos(TYPE_PLAYER* ptrPlayer)
 {
 	TYPE_ISOMETRIC_POS IsoPos;
 	TYPE_CARTESIAN_POS CartPos;
@@ -180,7 +180,7 @@ TYPE_ISOMETRIC_POS CameraGetIsoPos(TYPE_PLAYER * ptrPlayer)
 	return IsoPos;
 }
 
-void CameraMoveToIsoPos(TYPE_PLAYER * ptrPlayer, TYPE_ISOMETRIC_POS IsoPos)
+void CameraMoveToIsoPos(TYPE_PLAYER* ptrPlayer, TYPE_ISOMETRIC_POS IsoPos)
 {
 	TYPE_CARTESIAN_POS CartPos = GfxIsometricToCartesian(&IsoPos);
 	

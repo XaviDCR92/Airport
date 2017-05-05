@@ -40,6 +40,10 @@ void GfxDrawScene(void);
 // after it.
 void GfxDrawScene_Slow(void);
 
+void GfxDrawScene_NoSwap(void);
+
+void GfxSwapBuffers(void);
+
 // Only renders screen and does not update any pad data or timer data.
 // To be used in ISR!
 void GfxDrawScene_Fast(void);

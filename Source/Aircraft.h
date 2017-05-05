@@ -16,7 +16,7 @@
  
 void AircraftInit(void);
 void AircraftHandler(void);
-void AircraftRender(TYPE_PLAYER * ptrPlayer);
+void AircraftRender(TYPE_PLAYER* ptrPlayer);
 TYPE_AIRCRAFT_DATA* AircraftFromFlightDataIndex(uint8_t index);
 void AircraftFromFlightDataIndexAddTargets(uint8_t index, uint16_t * targets);
 void AircraftAddTargets(TYPE_AIRCRAFT_DATA* ptrAircraft, uint16_t * targets);

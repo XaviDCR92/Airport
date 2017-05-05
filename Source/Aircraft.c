@@ -62,6 +62,7 @@ static void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft);
 static AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char * strFlightNumber);
 static void AircraftAttitude(TYPE_AIRCRAFT_DATA* ptrAircraft);
 static void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* ptrAircraft);
+static void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft);
 
 void AircraftInit(void)
 {
@@ -125,8 +126,6 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA * ptrFlightData,
 		ptrAircraft->IsoPos.z = targets[0] % level_columns;
 		ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 1;
 		ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
-		
-		ptrAircraft->Speed = AircraftSpeedsTable[AIRCRAFT_SPEED_APPROACH];
 	}
 	else if(ptrFlightData->FlightDirection[FlightDataIndex] == DEPARTURE)
 	{
@@ -197,10 +196,36 @@ void AircraftHandler(void)
 		
 		AircraftDirection(ptrAircraft);
 		AircraftAttitude(ptrAircraft);
+		AircraftSpeed(ptrAircraft);
 	}
 }
 
-void AircraftRender(TYPE_PLAYER * ptrPlayer)
+void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft)
+{
+	switch(ptrAircraft->State)
+	{
+		case STATE_FINAL:
+			ptrAircraft->Speed = AircraftSpeedsTable[AIRCRAFT_SPEED_DESCENT];
+		break;
+		
+		case STATE_TAKEOFF:
+			ptrAircraft->Speed = AircraftSpeedsTable[AIRCRAFT_SPEED_TAKEOFF];
+		break;
+		
+		case STATE_TAXIING:
+			ptrAircraft->Speed = AircraftSpeedsTable[AIRCRAFT_SPEED_TAXIING];
+		break;
+		
+		case STATE_UNBOARDING:
+		case STATE_IDLE:
+		case STATE_LANDED:
+		default:
+			ptrAircraft->Speed = 0;
+		break;
+	}
+}
+
+void AircraftRender(TYPE_PLAYER* ptrPlayer)
 {
 	TYPE_AIRCRAFT_DATA* ptrAircraft;
 	TYPE_CARTESIAN_POS cartPos;
@@ -291,7 +316,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 			if(ptrAircraft->Target[++ptrAircraft->TargetIdx] == 0)
 			{
 				dprintf("All targets reached!\n");
-				GameTargetsReached(ptrAircraft->FlightDataIdx);
+				ptrAircraft->State = GameTargetsReached(ptrAircraft->FlightDataIdx);
 			}
 		}
 	}

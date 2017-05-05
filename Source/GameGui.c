@@ -111,6 +111,16 @@ enum
 	AIRCRAFT_DATA_GSGPOLY4_Y1 = AIRCRAFT_DATA_GSGPOLY4_Y0,
 	AIRCRAFT_DATA_GSGPOLY4_Y2 = (Y_SCREEN_RESOLUTION >> 1) + 96,
 	AIRCRAFT_DATA_GSGPOLY4_Y3 = AIRCRAFT_DATA_GSGPOLY4_Y2,
+	
+	AIRCRAFT_DATA_GSGPOLY4_X0_2PLAYER = (X_SCREEN_RESOLUTION >> 2) - (96 >> 1),
+	AIRCRAFT_DATA_GSGPOLY4_X1_2PLAYER = (X_SCREEN_RESOLUTION >> 2) + (96 >> 1),
+	AIRCRAFT_DATA_GSGPOLY4_X2_2PLAYER = AIRCRAFT_DATA_GSGPOLY4_X0,
+	AIRCRAFT_DATA_GSGPOLY4_X3_2PLAYER = AIRCRAFT_DATA_GSGPOLY4_X1,
+	
+	AIRCRAFT_DATA_GSGPOLY4_Y0_2PLAYER = (Y_SCREEN_RESOLUTION >> 2) - (96 >> 1),
+	AIRCRAFT_DATA_GSGPOLY4_Y1_2PLAYER = AIRCRAFT_DATA_GSGPOLY4_Y0,
+	AIRCRAFT_DATA_GSGPOLY4_Y2_2PLAYER = (Y_SCREEN_RESOLUTION >> 2) + (96 >> 1),
+	AIRCRAFT_DATA_GSGPOLY4_Y3_2PLAYER = AIRCRAFT_DATA_GSGPOLY4_Y2,
 };
 
 enum
@@ -184,7 +194,7 @@ enum
  * *************************************/
 
 static void GameGuiPrepareNotificationString(TYPE_FLIGHT_DATA * ptrFlightData, uint8_t offset);
-static void GameGuiShowAircraftData(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
+static void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
 
 /* **************************************
  * 	Local variables						*
@@ -326,7 +336,7 @@ void GameGuiAircraftNotificationRequest(TYPE_FLIGHT_DATA * ptrFlightData)
 	}
 }
 
-bool GameGuiPauseDialog(TYPE_PLAYER * ptrPlayer)
+bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer)
 {	
 	GfxSaveDisplayData(&SecondDisplay);
 				
@@ -352,7 +362,7 @@ bool GameGuiPauseDialog(TYPE_PLAYER * ptrPlayer)
 	return false;
 }
 
-void GameGuiActiveAircraftList(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
+void GameGuiActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
 {
 	uint8_t i;
 	uint8_t j = 0;
@@ -374,7 +384,7 @@ void GameGuiActiveAircraftList(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFl
 	}
 }
 
-void GameGuiActiveAircraftPage(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
+void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
 {
 	while(ptrPlayer->ActiveAircraft < ptrPlayer->SelectedAircraft)
 	{
@@ -428,32 +438,34 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFl
 	}
 }
 
-void GameGuiAircraftList(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
+void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
 {
 	short y_offset;
 	uint8_t page_aircraft;
 	
 	if(ptrPlayer->ShowAircraftData == true)
 	{
-			// Prepare RGB data and (X,Y) coordinates for aircraft
-			// data list request rectangle.
-			AircraftDataGPoly4.r[0] = AIRCRAFT_DATA_GSGPOLY4_R0;
-			AircraftDataGPoly4.r[1] = AIRCRAFT_DATA_GSGPOLY4_R1;
-			AircraftDataGPoly4.r[2] = AIRCRAFT_DATA_GSGPOLY4_R2;
-			AircraftDataGPoly4.r[3] = AIRCRAFT_DATA_GSGPOLY4_R3;
+		// Prepare RGB data and (X,Y) coordinates for aircraft
+		// data list request rectangle.
+		AircraftDataGPoly4.r[0] = AIRCRAFT_DATA_GSGPOLY4_R0;
+		AircraftDataGPoly4.r[1] = AIRCRAFT_DATA_GSGPOLY4_R1;
+		AircraftDataGPoly4.r[2] = AIRCRAFT_DATA_GSGPOLY4_R2;
+		AircraftDataGPoly4.r[3] = AIRCRAFT_DATA_GSGPOLY4_R3;
+		
+		AircraftDataGPoly4.g[0] = AIRCRAFT_DATA_GSGPOLY4_G0;
+		AircraftDataGPoly4.g[1] = AIRCRAFT_DATA_GSGPOLY4_G1;
+		AircraftDataGPoly4.g[2] = AIRCRAFT_DATA_GSGPOLY4_G2;
+		AircraftDataGPoly4.g[3] = AIRCRAFT_DATA_GSGPOLY4_G3;
+		
+		AircraftDataGPoly4.b[0] = AIRCRAFT_DATA_GSGPOLY4_B0;
+		AircraftDataGPoly4.b[1] = AIRCRAFT_DATA_GSGPOLY4_B1;
+		AircraftDataGPoly4.b[2] = AIRCRAFT_DATA_GSGPOLY4_B2;
+		AircraftDataGPoly4.b[3] = AIRCRAFT_DATA_GSGPOLY4_B3;
+		
+		AircraftDataGPoly4.attribute |= ENABLE_TRANS | TRANS_MODE(0);
 			
-			AircraftDataGPoly4.g[0] = AIRCRAFT_DATA_GSGPOLY4_G0;
-			AircraftDataGPoly4.g[1] = AIRCRAFT_DATA_GSGPOLY4_G1;
-			AircraftDataGPoly4.g[2] = AIRCRAFT_DATA_GSGPOLY4_G2;
-			AircraftDataGPoly4.g[3] = AIRCRAFT_DATA_GSGPOLY4_G3;
-			
-			AircraftDataGPoly4.b[0] = AIRCRAFT_DATA_GSGPOLY4_B0;
-			AircraftDataGPoly4.b[1] = AIRCRAFT_DATA_GSGPOLY4_B1;
-			AircraftDataGPoly4.b[2] = AIRCRAFT_DATA_GSGPOLY4_B2;
-			AircraftDataGPoly4.b[3] = AIRCRAFT_DATA_GSGPOLY4_B3;
-			
-			AircraftDataGPoly4.attribute |= ENABLE_TRANS | TRANS_MODE(0);
-			
+		if(GameTwoPlayersActive() == true)
+		{
 			AircraftDataGPoly4.x[0] = AIRCRAFT_DATA_GSGPOLY4_X0;
 			AircraftDataGPoly4.x[1] = AIRCRAFT_DATA_GSGPOLY4_X1;
 			AircraftDataGPoly4.x[2] = AIRCRAFT_DATA_GSGPOLY4_X2;
@@ -463,8 +475,21 @@ void GameGuiAircraftList(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightDa
 			AircraftDataGPoly4.y[1] = AIRCRAFT_DATA_GSGPOLY4_Y1;
 			AircraftDataGPoly4.y[2] = AIRCRAFT_DATA_GSGPOLY4_Y2;
 			AircraftDataGPoly4.y[3] = AIRCRAFT_DATA_GSGPOLY4_Y3;
+		}
+		else
+		{	
+			AircraftDataGPoly4.x[0] = AIRCRAFT_DATA_GSGPOLY4_X0_2PLAYER;
+			AircraftDataGPoly4.x[1] = AIRCRAFT_DATA_GSGPOLY4_X1_2PLAYER;
+			AircraftDataGPoly4.x[2] = AIRCRAFT_DATA_GSGPOLY4_X2_2PLAYER;
+			AircraftDataGPoly4.x[3] = AIRCRAFT_DATA_GSGPOLY4_X3_2PLAYER;
 			
-			GsSortGPoly4(&AircraftDataGPoly4);
+			AircraftDataGPoly4.y[0] = AIRCRAFT_DATA_GSGPOLY4_Y0_2PLAYER;
+			AircraftDataGPoly4.y[1] = AIRCRAFT_DATA_GSGPOLY4_Y1_2PLAYER;
+			AircraftDataGPoly4.y[2] = AIRCRAFT_DATA_GSGPOLY4_Y2_2PLAYER;
+			AircraftDataGPoly4.y[3] = AIRCRAFT_DATA_GSGPOLY4_Y3_2PLAYER;
+		}
+		
+		GsSortGPoly4(&AircraftDataGPoly4);
 			
 			if(ptrPlayer->ActiveAircraft != 0)
 			{
@@ -650,7 +675,7 @@ void GameGuiClock(uint8_t hour, uint8_t min)
 	FontPrintText(&RadioFont,CLOCK_X,CLOCK_Y,strClock);
 }
 
-void GameGuiShowAircraftData(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
+void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
 {
 	uint8_t init_flight = ptrPlayer->FlightDataPage * GAME_GUI_AIRCRAFT_DATA_MAX_PAGE;
 	uint8_t i;
@@ -720,6 +745,13 @@ void GameGuiShowAircraftData(TYPE_PLAYER * ptrPlayer, TYPE_FLIGHT_DATA * ptrFlig
 								AIRCRAFT_DATA_DIRECTION_X + 88,
 								AIRCRAFT_DATA_DIRECTION_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
 								"Parked"	);
+			break;
+			
+			case STATE_UNBOARDING:
+				FontPrintText(	&SmallFont,
+								AIRCRAFT_DATA_DIRECTION_X + 88,
+								AIRCRAFT_DATA_DIRECTION_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
+								"Unboarding"	);
 			break;
 			
 			default:
