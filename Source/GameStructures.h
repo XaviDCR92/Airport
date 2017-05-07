@@ -157,6 +157,8 @@ typedef struct
 	uint8_t WaypointIdx;
 	// Another internal index to keep last desired selected point by user when defining a path.
 	uint8_t LastWaypointIdx;
+	// Player ID (PLAYER_ONE = 0, PLAYER_TWO = 1)
+	uint8_t Id;
 	
 	bool	(*PadKeyPressed_Callback)(unsigned short);
 	bool	(*PadKeyReleased_Callback)(unsigned short);

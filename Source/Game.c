@@ -265,6 +265,7 @@ void GameInit(void)
 	PlayerData[PLAYER_ONE].PadKeySinglePress_Callback = &PadOneKeySinglePress;
 	PlayerData[PLAYER_ONE].PadDirectionKeyPressed_Callback = &PadOneDirectionKeyPressed;
 	PlayerData[PLAYER_ONE].FlightDataPage = 0;
+	PlayerData[PLAYER_ONE].Id = PLAYER_ONE;
 	
 	PlayerData[PLAYER_TWO].Active = TwoPlayersActive? true : false;
 	
@@ -280,6 +281,7 @@ void GameInit(void)
 		// other player controls arrival flights.
 		PlayerData[PLAYER_ONE].FlightDirection = DEPARTURE;
 		PlayerData[PLAYER_TWO].FlightDirection = ARRIVAL;
+		PlayerData[PLAYER_TWO].Id = PLAYER_TWO;
 	}
 	else
 	{
