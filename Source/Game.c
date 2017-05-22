@@ -76,8 +76,10 @@ enum
 {
 	MOUSE_W = 8,
 	MOUSE_H = 8,
-	MOUSE_X = X_SCREEN_RESOLUTION - (X_SCREEN_RESOLUTION >> 1),
-	MOUSE_Y = Y_SCREEN_RESOLUTION - (Y_SCREEN_RESOLUTION >> 1),
+	MOUSE_X = (X_SCREEN_RESOLUTION >> 1),
+	MOUSE_Y = (Y_SCREEN_RESOLUTION >> 1),
+	MOUSE_X_2PLAYER = (X_SCREEN_RESOLUTION >> 2),
+	MOUSE_Y_2PLAYER = (Y_SCREEN_RESOLUTION >> 1)
 };
 
 /* *************************************
@@ -305,8 +307,17 @@ void GameInit(void)
 	firstActiveAircraft = 0;
 	lastActiveAircraft = 0;
 	
-	GameMouseSpr.x = MOUSE_X;
-	GameMouseSpr.y = MOUSE_Y;
+	if(GameTwoPlayersActive() == true)
+	{
+		GameMouseSpr.x = MOUSE_X;
+		GameMouseSpr.y = MOUSE_Y;
+	}
+	else
+	{
+		GameMouseSpr.x = MOUSE_X_2PLAYER;
+		GameMouseSpr.y = MOUSE_Y_2PLAYER;
+	}
+	
 	GameMouseSpr.w = MOUSE_W;
 	GameMouseSpr.h = MOUSE_H;
 	GameMouseSpr.attribute = COLORMODE(COLORMODE_16BPP);
@@ -556,9 +567,7 @@ void GameGraphics(void)
 	int i;
 	bool split_screen = false;
 	
-	while(	(GfxIsGPUBusy() == true)
-					||
-			(SystemRefreshNeeded() == false)	);
+	while(GfxIsGPUBusy() == true);
 			
 	if(TwoPlayersActive == true)
 	{
@@ -583,15 +592,8 @@ void GameGraphics(void)
 
 			GameRenderLevel(&PlayerData[i]);
 			AircraftRender(&PlayerData[i]);
-			
-			/*for(i = 0; i < MAX_PLAYERS ; i++)
-			{*/
-				GameGuiAircraftList(&PlayerData[i], &FlightData);
-			//}
-			
-			GfxDrawScene_NoSwap();
-			
-			while(GfxIsGPUBusy() == true);
+
+			GameGuiAircraftList(&PlayerData[i], &FlightData);
 		}
 	}
 	
@@ -603,13 +605,7 @@ void GameGraphics(void)
 	
 	GameGuiClock(GameHour,GameMinutes);
 	
-	GfxDrawScene_NoSwap();
-	
-	while(GfxIsGPUBusy() == true);
-	
-	GfxSwapBuffers();
-	
-	SystemCyclicHandler();
+	GfxDrawScene();
 }
 
 void GameLoadLevel(void)

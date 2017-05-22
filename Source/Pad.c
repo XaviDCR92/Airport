@@ -10,7 +10,7 @@
 
 #define PAD_ONE 0
 #define PAD_TWO 1
-#define PAD_CHEAT_TIMEOUT 2
+#define PAD_CHEAT_TIMEOUT 20 // 2 units * 100 ms/unit = 2000 ms
 #define PAD_MAX_CHEATS 16
 
 /* **************************************
@@ -82,13 +82,13 @@ static uint8_t pad1_keys_repeat[NUMBER_OF_KEYS];
 static uint8_t pad2_keys_repeat[NUMBER_OF_KEYS];
 // These arrays include last 16 buttons pressed by user and keeps them
 // for cheating purposes. They are cleaned if no keys are pressed during
-// PAD_CHEAT_TIMEOUT seconds.
+// PAD_CHEAT_TIMEOUT milliseconds.
 static unsigned short pad1_cheat_array[CHEAT_ARRAY_SIZE];
 static unsigned short pad2_cheat_array[CHEAT_ARRAY_SIZE];
 
 // Pointers to timers which clean padX_cheat_array.
-static TYPE_TIMER * pad1_cheat_timer;
-static TYPE_TIMER * pad2_cheat_timer;
+static TYPE_TIMER* pad1_cheat_timer;
+static TYPE_TIMER* pad2_cheat_timer;
 
 static TYPE_CHEAT * cheatsArray[PAD_MAX_CHEATS];
 
@@ -349,7 +349,7 @@ uint8_t PadGetKeyIndex(unsigned short key)
 	}
 }
 
-unsigned short * PadOneGetAddress(void)
+unsigned short* PadOneGetAddress(void)
 {
 	return &pad1;
 }
@@ -367,7 +367,8 @@ void PadInit(void)
 {
 	pad1_cheat_timer = SystemCreateTimer(PAD_CHEAT_TIMEOUT,true /* Repeat flag */,&PadOneCleanCheatArray);
 	pad2_cheat_timer = SystemCreateTimer(PAD_CHEAT_TIMEOUT,true /* Repeat flag */,&PadTwoCleanCheatArray);
-	memset(cheatsArray,0, sizeof(TYPE_CHEAT) * PAD_MAX_CHEATS);
+	
+	memset(cheatsArray,0, sizeof(cheatsArray));
 }
 
 void PadCheatHandler(uint8_t n_pad)
@@ -380,23 +381,23 @@ void PadCheatHandler(uint8_t n_pad)
 	uint8_t keys_released = 0;
 	unsigned short key;
 	uint8_t j;
-	bool (*released_callback)(unsigned short);
+	bool (*pressed_callback)(unsigned short);
 	void (*clean_callback)(void);
 	bool success = false;
-	unsigned short * cheat_array;
-	TYPE_TIMER * timer;
+	unsigned short* cheat_array;
+	TYPE_TIMER* timer;
 	
 	switch(n_pad)
 	{
 		case PAD_ONE:
-			released_callback = &PadOneKeyReleased;
+			pressed_callback = &PadOneKeySinglePress;
 			cheat_array = pad1_cheat_array;
 			clean_callback = &PadOneCleanCheatArray;
 			timer = pad1_cheat_timer;
 		break;
 		
 		case PAD_TWO:
-			released_callback = &PadTwoKeyReleased;
+			pressed_callback = &PadTwoKeySinglePress;
 			cheat_array = pad2_cheat_array;
 			clean_callback = &PadTwoCleanCheatArray;
 			timer = pad2_cheat_timer;
@@ -404,7 +405,7 @@ void PadCheatHandler(uint8_t n_pad)
 		
 		default:
 			dprintf("Invalid pad called for PadCheatHandler()!\n");
-			return;
+		return;
 	}
 	
 	for(i = 0; i < PAD_MAX_CHEATS; i++)
@@ -430,7 +431,7 @@ void PadCheatHandler(uint8_t n_pad)
 	
 	for(i = 0; i < sizeof(available_keys) / sizeof(unsigned short); i++)
 	{
-		if(released_callback(available_keys[i]) == true)
+		if(pressed_callback(available_keys[i]) == true)
 		{
 			SystemTimerRestart(timer);
 			key = available_keys[i];
@@ -489,4 +490,9 @@ void PadOneCleanCheatArray(void)
 void PadTwoCleanCheatArray(void)
 {	
 	memset(pad2_cheat_array,0,sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
+}
+
+unsigned short* PadGetPlayerOneCheatArray(void)
+{
+	return pad1_cheat_array;
 }

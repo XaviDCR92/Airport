@@ -72,7 +72,6 @@ typedef enum
 	
 }MMBtn_Offset;
 
-#pragma pack(1)
 typedef struct
 {
 	MMBtn_Offset offset_u;
@@ -90,7 +89,6 @@ typedef struct
 	bool was_selected;
 	
 }TYPE_MMBtn;
-#pragma pack()
 
 /* **************************************
  * 	Local prototypes					*
@@ -251,7 +249,8 @@ void MainMenuInit(void)
 
 void MainMenu(void)
 {
-	
+	unsigned short* cheat_array;
+	uint8_t i;
 	MainMenuInit();
 	
 	#ifndef NO_INTRO
@@ -271,6 +270,11 @@ void MainMenu(void)
 				GsSortCls(0,0,40);				
 				MainMenuDrawButton(&MainMenuBtn[PLAY_BUTTON_INDEX]);
 				MainMenuDrawButton(&MainMenuBtn[OPTIONS_BUTTON_INDEX]);
+				
+				for(cheat_array = PadGetPlayerOneCheatArray(), i = 0; *cheat_array != 0; cheat_array++, i += 16)
+				{
+					GfxDrawButton(i, 220, *cheat_array);
+				}
 			
 				GfxDrawScene();
 			break;
@@ -280,6 +284,12 @@ void MainMenu(void)
 				GsSortCls(0,0,40);				
 				MainMenuDrawButton(&MainMenuBtn[ONE_PLAYER_BUTTON_INDEX]);
 				MainMenuDrawButton(&MainMenuBtn[TWO_PLAYER_BUTTON_INDEX]);
+				
+				for(cheat_array = PadGetPlayerOneCheatArray(), i = 0; *cheat_array != 0; cheat_array++, i += 16)
+				{
+					GfxDrawButton(i, 220, *cheat_array);
+				}
+				
 				GfxDrawScene();
 			break;
 			

@@ -89,7 +89,8 @@ bool SystemContains_u16(uint16_t value, uint16_t * buffer, size_t sz);
 
 // Creates a timer instance wiht a determined value and associates it to a callback
 // Once time expires, callback is automatically called right after GfxDrawScene().
-TYPE_TIMER * SystemCreateTimer(uint32_t seconds, bool rf, void (*timer_callback)(void) );
+// Time is expressed so that t = 100 ms e.g.: 2 seconds = 20.
+TYPE_TIMER* SystemCreateTimer(uint32_t t, bool rf, void (*timer_callback)(void) );
 
 // Reportedly, sets all timer data to zero.
 void SystemResetTimers(void);
@@ -98,13 +99,13 @@ void SystemResetTimers(void);
 void SystemUserTimersHandler(void);
 
 // Sets timer remaining time to initial value.
-void SystemTimerRestart(TYPE_TIMER * timer);
+void SystemTimerRestart(TYPE_TIMER* timer);
 
 // Flushes a timer pointed to by timer.
-void SystemTimerRemove(TYPE_TIMER * timer);
+void SystemTimerRemove(TYPE_TIMER* timer);
 
 // Compares two arrays of unsigned short type.
-bool SystemArrayCompare(unsigned short * arr1, unsigned short * arr2, size_t sz);
+bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz);
 
 // Prints stack pointer address using dprintf()
 void SystemPrintStackPointerAddress(void);

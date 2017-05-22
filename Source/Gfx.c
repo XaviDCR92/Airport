@@ -14,6 +14,7 @@
 #define MAX_LUMINANCE 0xFF
 #define ROTATE_BIT_SHIFT 12
 #define GPUSTAT (*(unsigned int*)0x1F801814)
+#define D2_CHCR (*(unsigned int*)0x1F8010A8)
 
 /* *************************************
  * 	Structs and enums
@@ -85,8 +86,8 @@ void GfxSwapBuffers(void)
 				DrawEnv.y = DOUBLE_BUFFERING_SWAP_Y;
 			}
 			
-		GsSetDispEnv(&DispEnv);
-		GsSetDrawEnv(&DrawEnv);
+		GsSetDispEnv_DMA(&DispEnv);
+		GsSetDrawEnv_DMA(&DrawEnv);
 	}
 }
 
@@ -122,14 +123,9 @@ void GfxDrawScene_Fast(void)
 	GsDrawList();
 }
 
-void GfxDrawScene_NoSwap(void)
-{
-	GsDrawList();
-}
-
 bool GfxReadyForDMATransfer(void)
 {
-	return (GPUSTAT & 1<<28);
+	return ( (GPUSTAT & 1<<28) && !(D2_CHCR & 1<<24) );
 }
 
 void GfxDrawScene(void)
@@ -522,14 +518,12 @@ void GfxSetSplitScreen(uint8_t playerIndex)
 {
 	switch(playerIndex)
 	{
-		case 0:
-			// PLAYER_ONE
+		case PLAYER_ONE:
 			DrawEnv.x = 0;
 			DrawEnv.w = X_SCREEN_RESOLUTION >> 1;
 		break;
 		
-		case 1:
-			// PLAYER_TWO
+		case PLAYER_TWO:
 			DrawEnv.x = X_SCREEN_RESOLUTION >> 1;
 			DrawEnv.w = X_SCREEN_RESOLUTION >> 1;
 		break;
@@ -538,7 +532,7 @@ void GfxSetSplitScreen(uint8_t playerIndex)
 		break;
 	}
 	
-	GsSetDrawEnv(&DrawEnv);
+	GsSetDrawEnv_DMA(&DrawEnv);
 }
 
 void GfxDisableSplitScreen(void)
@@ -546,5 +540,5 @@ void GfxDisableSplitScreen(void)
 	DrawEnv.x = 0;
 	DrawEnv.w = X_SCREEN_RESOLUTION;
 	
-	GsSetDrawEnv(&DrawEnv);
+	GsSetDrawEnv_DMA(&DrawEnv);
 }

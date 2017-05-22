@@ -391,12 +391,12 @@ bool SystemContains_u16(uint16_t value, uint16_t * buffer, size_t sz)
 	return false;
 }
 
-TYPE_TIMER * SystemCreateTimer(uint32_t seconds, bool rf, void (*timer_callback)(void) )
+TYPE_TIMER* SystemCreateTimer(uint32_t t, bool rf, void (*timer_callback)(void) )
 {
 	bool success = false;
 	uint8_t i;
 	
-	if(seconds == 0)
+	if(t == 0)
 	{
 		dprintf("Cannot create timer with time == 0!\n");
 		return NULL;
@@ -407,8 +407,8 @@ TYPE_TIMER * SystemCreateTimer(uint32_t seconds, bool rf, void (*timer_callback)
 		if(timer_array[i].busy == false)
 		{
 			timer_array[i].Timeout_Callback = timer_callback;
-			timer_array[i].time = seconds;
-			timer_array[i].orig_time = seconds;
+			timer_array[i].time = t;
+			timer_array[i].orig_time = t;
 			timer_array[i].repeat_flag = rf;
 			timer_array[i].busy = true;
 			success = true;
@@ -447,7 +447,7 @@ void SystemUserTimersHandler(void)
 	{
 		if(timer_array[i].busy == true)
 		{
-			if(System1SecondTick() == true)
+			if(System100msTick() == true)
 			{
 				timer_array[i].time--;
 				
@@ -472,12 +472,12 @@ void SystemUserTimersHandler(void)
 	}
 }
 
-void SystemTimerRestart(TYPE_TIMER * timer)
+void SystemTimerRestart(TYPE_TIMER* timer)
 {
 	timer->time = timer->orig_time;
 }
 
-void SystemTimerRemove(TYPE_TIMER * timer)
+void SystemTimerRemove(TYPE_TIMER* timer)
 {
 	timer->time = 0;
 	timer->orig_time = 0;
@@ -486,7 +486,7 @@ void SystemTimerRemove(TYPE_TIMER * timer)
 	timer->repeat_flag = false;
 }
 
-bool SystemArrayCompare(unsigned short * arr1, unsigned short * arr2, size_t sz)
+bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz)
 {
 	size_t i;
 	

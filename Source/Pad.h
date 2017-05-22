@@ -51,7 +51,9 @@ bool PadTwoIsVibrationEnabled(void);
 
 bool PadAddCheat(TYPE_CHEAT * cheat);
 
+unsigned short* PadGetPlayerOneCheatArray(void);
+
 // Experimental (to be removed)
-unsigned short * PadOneGetAddress(void);
+unsigned short* PadOneGetAddress(void);
 
 #endif //__PAD_HEADER__
