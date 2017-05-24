@@ -84,10 +84,11 @@ typedef enum t_livery
 
 typedef enum t_direction
 {
-	AIRCRAFT_DIR_NORTH = 0,
+	AIRCRAFT_DIR_NO_DIRECTION = 0,
+	AIRCRAFT_DIR_NORTH,
 	AIRCRAFT_DIR_SOUTH,
 	AIRCRAFT_DIR_EAST,
-	AIRCRAFT_DIR_WEST
+	AIRCRAFT_DIR_WEST,
 }AIRCRAFT_DIRECTION;
 
 typedef enum t_aircraftAttitude
@@ -114,6 +115,10 @@ typedef struct t_aircraftData
 	fix16_t Speed;
 	short TargetSpeed;
 	bool TargetReached;
+	// Used for target reached detection
+	fix16_t XPos_Old;
+	// Used for target reached detection
+	fix16_t YPos_Old;
 }TYPE_AIRCRAFT_DATA;
 
 typedef struct
@@ -135,6 +140,7 @@ typedef struct
 		bool LockTarget;
 	
 	// Stores indexes for player-specific active aircraft
+	// Used to relate SelectedAircraft agains FlightData index
 	uint8_t	ActiveAircraftList[GAME_MAX_AIRCRAFT];
 	// Flight direction to be managed by player (see 2-player mode)
 	FL_DIR	FlightDirection;
@@ -157,8 +163,6 @@ typedef struct
 	uint8_t WaypointIdx;
 	// Another internal index to keep last desired selected point by user when defining a path.
 	uint8_t LastWaypointIdx;
-	// Player ID (PLAYER_ONE = 0, PLAYER_TWO = 1)
-	uint8_t Id;
 	
 	bool	(*PadKeyPressed_Callback)(unsigned short);
 	bool	(*PadKeyReleased_Callback)(unsigned short);

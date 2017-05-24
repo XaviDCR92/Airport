@@ -320,6 +320,8 @@ void MainMenuRestoreInitValues(void)
 	MainMenuBtn[TWO_PLAYER_BUTTON_INDEX].selected = false;
 	MainMenuBtn[TWO_PLAYER_BUTTON_INDEX].was_selected = false;
 	MainMenuBtn[TWO_PLAYER_BUTTON_INDEX].timer = 0;	
+	
+	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
 }
 
 void MainMenuButtonHandler(void)

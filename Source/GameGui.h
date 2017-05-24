@@ -29,6 +29,7 @@
 
 void GameGuiInit(void);
 bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer);
+bool GameGuiShowAircraftDataSpecialConditions(TYPE_PLAYER* ptrPlayer);
 void GameGuiAircraftNotificationRequest(TYPE_FLIGHT_DATA * ptrFlightData);
 void GameGuiBubble(TYPE_FLIGHT_DATA * ptrFlightData);
 void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);

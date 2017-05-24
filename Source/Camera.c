@@ -12,6 +12,7 @@
 #define MAX_CAMERA_SPEED 5
 #define MIN_CAMERA_SPEED 1
 #define CAMERA_INITIAL_X_OFFSET (X_SCREEN_RESOLUTION >> 1)
+#define CAMERA_INITIAL_X_OFFSET_2PLAYER (X_SCREEN_RESOLUTION >> 2)
 
 /* *************************************
  * 	Local Prototypes
@@ -41,7 +42,7 @@ void CameraApplyCoordinatesToRectangle(TYPE_PLAYER* ptrPlayer, GsRectangle * rec
 	dprintf("Rectangle {%d, %d}\n",
 			rect->x,
 			rect->y	);
-			
+
 	rect->x += (short)ptrPlayer->Camera.X_Offset;
 	rect->y += (short)ptrPlayer->Camera.Y_Offset;
 }
@@ -61,7 +62,7 @@ void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer)
 				ptrPlayer->Camera.X_Speed++;
 			}
 		}
-			
+
 		if(ptrPlayer->PadKeyPressed_Callback(PAD_UP) == true)
 		{
 			if(ptrPlayer->Camera.Y_Speed < 0)
@@ -73,7 +74,7 @@ void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer)
 				ptrPlayer->Camera.Y_Speed++;
 			}
 		}
-			
+
 		if(ptrPlayer->PadKeyPressed_Callback(PAD_DOWN) == true)
 		{
 			if(ptrPlayer->Camera.Y_Speed > 0)
@@ -85,7 +86,7 @@ void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer)
 				ptrPlayer->Camera.Y_Speed--;
 			}
 		}
-		
+
 		if(ptrPlayer->PadKeyPressed_Callback(PAD_RIGHT) == true)
 		{
 			if(ptrPlayer->Camera.X_Speed > 0)
@@ -112,11 +113,11 @@ void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer)
 			ptrPlayer->Camera.X_Speed++;
 		}
 	}
-	
+
 	if(	(ptrPlayer->PadKeyPressed_Callback(PAD_UP) == false)
 			&&
 		(ptrPlayer->PadKeyPressed_Callback(PAD_DOWN) == false)	)
-	{		
+	{
 		if(ptrPlayer->Camera.Y_Speed > 0)
 		{
 			ptrPlayer->Camera.Y_Speed--;
@@ -136,7 +137,7 @@ void CameraHandler(TYPE_PLAYER* ptrPlayer)
 		ptrPlayer->Camera.Y_Speed = 0;
 		return;
 	}
-	
+
 	if(ptrPlayer->Camera.Speed_Timer < SPEED_CALCULATION_TIME)
 	{
 		ptrPlayer->Camera.Speed_Timer++;
@@ -146,7 +147,7 @@ void CameraHandler(TYPE_PLAYER* ptrPlayer)
 		ptrPlayer->Camera.Speed_Timer = 0;
 		CameraUpdateSpeed(ptrPlayer);
 	}
-	
+
 	ptrPlayer->Camera.X_Offset += ptrPlayer->Camera.X_Speed;
 	ptrPlayer->Camera.Y_Offset += ptrPlayer->Camera.Y_Speed;
 }
@@ -158,10 +159,10 @@ bool CameraSpecialConditions(TYPE_PLAYER* ptrPlayer)
 		(ptrPlayer->SelectRunway == true)		)
 	{
 		// Camera cannot be handled when these states are activated
-	
+
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -169,21 +170,29 @@ TYPE_ISOMETRIC_POS CameraGetIsoPos(TYPE_PLAYER* ptrPlayer)
 {
 	TYPE_ISOMETRIC_POS IsoPos;
 	TYPE_CARTESIAN_POS CartPos;
-	
-	CartPos.x = CAMERA_INITIAL_X_OFFSET - ptrPlayer->Camera.X_Offset;
-	CartPos.y = (Y_SCREEN_RESOLUTION >> 1) - ptrPlayer->Camera.Y_Offset;
-	
+
+	if(GameTwoPlayersActive() == true)
+	{
+		CartPos.x = CAMERA_INITIAL_X_OFFSET_2PLAYER - ptrPlayer->Camera.X_Offset;
+		CartPos.y = (Y_SCREEN_RESOLUTION >> 1) - ptrPlayer->Camera.Y_Offset;
+	}
+	else
+	{
+		CartPos.x = CAMERA_INITIAL_X_OFFSET - ptrPlayer->Camera.X_Offset;
+		CartPos.y = (Y_SCREEN_RESOLUTION >> 1) - ptrPlayer->Camera.Y_Offset;
+	}
+
 	/*dprintf("CartPos = {%d, %d}\n", CartPos.x, CartPos.y);*/
-	
+
 	IsoPos = GfxCartesianToIsometric(&CartPos);
-	
+
 	return IsoPos;
 }
 
 void CameraMoveToIsoPos(TYPE_PLAYER* ptrPlayer, TYPE_ISOMETRIC_POS IsoPos)
 {
 	TYPE_CARTESIAN_POS CartPos = GfxIsometricToCartesian(&IsoPos);
-	
+
 	/*dprintf("Isometric pos = {%d, %d, %d}, "
 			"Cartesian pos = {%d, %d}\n",
 			IsoPos.x,
@@ -191,10 +200,18 @@ void CameraMoveToIsoPos(TYPE_PLAYER* ptrPlayer, TYPE_ISOMETRIC_POS IsoPos)
 			IsoPos.z,
 			CartPos.x,
 			CartPos.y	);*/
-	
-	ptrPlayer->Camera.X_Offset = CAMERA_INITIAL_X_OFFSET - CartPos.x;
-	ptrPlayer->Camera.Y_Offset = (Y_SCREEN_RESOLUTION >> 1) - CartPos.y;
-	
+
+	if(GameTwoPlayersActive() == true)
+	{
+		ptrPlayer->Camera.X_Offset = CAMERA_INITIAL_X_OFFSET_2PLAYER - CartPos.x;
+		ptrPlayer->Camera.Y_Offset = (Y_SCREEN_RESOLUTION >> 1) - CartPos.y;
+	}
+	else
+	{
+		ptrPlayer->Camera.X_Offset = CAMERA_INITIAL_X_OFFSET - CartPos.x;
+		ptrPlayer->Camera.Y_Offset = (Y_SCREEN_RESOLUTION >> 1) - CartPos.y;
+	}
+
 	/*dprintf("Moving camera to {%d, %d}\n",
 			ptrPlayer->Camera.X_Offset,
 			ptrPlayer->Camera.Y_Offset	);*/

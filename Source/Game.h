@@ -44,7 +44,10 @@ uint8_t 	GameGetLastActiveAircraft(void);
 uint8_t 	GameGetLevelColumns(void);
 fix16_t 	GameGetXFromTile(uint16_t tile);
 fix16_t 	GameGetYFromTile(uint16_t tile);
+short		GameGetXFromTile_short(uint16_t tile);
+short		GameGetYFromTile_short(uint16_t tile);
 FL_STATE	GameTargetsReached(uint8_t index);
 uint16_t	GameGetTileFromIsoPosition(TYPE_ISOMETRIC_POS * IsoPos);
+FL_STATE	GameGetFlightDataStateFromIdx(uint8_t FlightDataIdx);
 
 #endif //__GAME_HEADER__

@@ -37,13 +37,13 @@ bool SystemRefreshNeeded(void);
 bool SystemLoadFile(char *fname);
 
 // Loads a file into desired buffer
-bool SystemLoadFileToBuffer(char * fname, uint8_t * buffer, uint32_t szBuffer);
+bool SystemLoadFileToBuffer(char * fname, uint8_t* buffer, uint32_t szBuffer);
 
 // Clears VSync flag after each frame
 void SystemDisableScreenRefresh(void);
 
 // Returns file buffer address
-uint8_t * SystemGetBufferAddress(void);
+uint8_t* SystemGetBufferAddress(void);
 
 // Tells whether srand() has been called using a pseudo-random value
 bool SystemIsRandSeedSet(void);
@@ -82,10 +82,10 @@ uint64_t SystemGetGlobalTimer(void);
 volatile bool SystemIsBusy(void);
 
 // Returns whether indicated value is contained inside buffer
-bool SystemContains_u8(uint8_t value, uint8_t * buffer, size_t sz);
+bool SystemContains_u8(uint8_t value, uint8_t* buffer, size_t sz);
 
 // Overload for uint16_t
-bool SystemContains_u16(uint16_t value, uint16_t * buffer, size_t sz);
+bool SystemContains_u16(uint16_t value, uint16_t* buffer, size_t sz);
 
 // Creates a timer instance wiht a determined value and associates it to a callback
 // Once time expires, callback is automatically called right after GfxDrawScene().
@@ -119,10 +119,10 @@ void SystemCheckStack(void);
 int32_t SystemIndexOfStringArray(char * str, char ** array);
 
 // Function overload for uint16_t data type.
-int32_t SystemIndexOf_U16(uint16_t value, uint16_t * array, uint32_t sz);
+int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz);
 
 // Function overload for uint8_t data type.
-int32_t SystemIndexOf_U8(uint8_t value, uint8_t * array, uint32_t from, uint32_t sz);
+int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t sz);
 
 void SystemCyclicHandler(void);
 

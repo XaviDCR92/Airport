@@ -269,7 +269,7 @@ void SystemCheckTimer(bool * timer, uint64_t * last_timer, uint8_t step)
 	}	
 }
 
-bool SystemLoadFileToBuffer(char * fname, uint8_t * buffer, uint32_t szBuffer)
+bool SystemLoadFileToBuffer(char * fname, uint8_t* buffer, uint32_t szBuffer)
 {
 	FILE *f;
 	int32_t size;
@@ -329,7 +329,7 @@ bool SystemLoadFile(char *fname)
 	return SystemLoadFileToBuffer(fname,file_buffer,sizeof(file_buffer));
 }
 
-uint8_t * SystemGetBufferAddress(void)
+uint8_t* SystemGetBufferAddress(void)
 {
 	return file_buffer;
 }
@@ -361,7 +361,7 @@ volatile bool SystemIsBusy(void)
 	return system_busy;
 }
 
-bool SystemContains_u8(uint8_t value, uint8_t * buffer, size_t sz)
+bool SystemContains_u8(uint8_t value, uint8_t* buffer, size_t sz)
 {
 	size_t i = 0;
 	
@@ -376,7 +376,7 @@ bool SystemContains_u8(uint8_t value, uint8_t * buffer, size_t sz)
 	return false;
 }
 
-bool SystemContains_u16(uint16_t value, uint16_t * buffer, size_t sz)
+bool SystemContains_u16(uint16_t value, uint16_t* buffer, size_t sz)
 {
 	size_t i = 0;
 	
@@ -567,7 +567,7 @@ int32_t SystemIndexOfStringArray(char * str, char ** array)
 	return -1;
 }
 
-int32_t SystemIndexOf_U16(uint16_t value, uint16_t * array, uint32_t sz)
+int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz)
 {
 	int32_t i;
 	
@@ -582,7 +582,7 @@ int32_t SystemIndexOf_U16(uint16_t value, uint16_t * array, uint32_t sz)
 	return -1;
 }
 
-int32_t SystemIndexOf_U8(uint8_t value, uint8_t * array, uint32_t from, uint32_t sz)
+int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t sz)
 {
 	int32_t i;
 	

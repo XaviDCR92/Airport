@@ -107,13 +107,13 @@ static void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA 
 static void GameStateSelectRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
 static void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
 static void GameStateSelectTaxiwayParking(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
-static void GameStateLockTarget(TYPE_PLAYER* ptrPlayer);
+static void GameStateLockTarget(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
 static void GameSelectAircraft(TYPE_PLAYER* ptrPlayer);
 static void GameGetRunwayArray(void);
 static void GameGetSelectedRunwayArray(uint16_t rwyHeader);
 static void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
-static bool GameGuiShowAircraftDataSpecialConditions(TYPE_PLAYER* ptrPlayer);
 static bool GamePathToTile(TYPE_PLAYER* ptrPlayer);
+static void GameDrawMouse(TYPE_PLAYER* ptrPlayer);
 
 /* *************************************
  * 	Global Variables
@@ -267,7 +267,6 @@ void GameInit(void)
 	PlayerData[PLAYER_ONE].PadKeySinglePress_Callback = &PadOneKeySinglePress;
 	PlayerData[PLAYER_ONE].PadDirectionKeyPressed_Callback = &PadOneDirectionKeyPressed;
 	PlayerData[PLAYER_ONE].FlightDataPage = 0;
-	PlayerData[PLAYER_ONE].Id = PLAYER_ONE;
 	
 	PlayerData[PLAYER_TWO].Active = TwoPlayersActive? true : false;
 	
@@ -283,7 +282,6 @@ void GameInit(void)
 		// other player controls arrival flights.
 		PlayerData[PLAYER_ONE].FlightDirection = DEPARTURE;
 		PlayerData[PLAYER_TWO].FlightDirection = ARRIVAL;
-		PlayerData[PLAYER_TWO].Id = PLAYER_TWO;
 	}
 	else
 	{
@@ -309,13 +307,13 @@ void GameInit(void)
 	
 	if(GameTwoPlayersActive() == true)
 	{
-		GameMouseSpr.x = MOUSE_X;
-		GameMouseSpr.y = MOUSE_Y;
+		GameMouseSpr.x = MOUSE_X_2PLAYER;
+		GameMouseSpr.y = MOUSE_Y_2PLAYER;
 	}
 	else
 	{
-		GameMouseSpr.x = MOUSE_X_2PLAYER;
-		GameMouseSpr.y = MOUSE_Y_2PLAYER;
+		GameMouseSpr.x = MOUSE_X;
+		GameMouseSpr.y = MOUSE_Y;
 	}
 	
 	GameMouseSpr.w = MOUSE_W;
@@ -506,7 +504,7 @@ void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
 									// which use this are currently active.
 	ptrPlayer->InvalidPath = false; // Do the same thing for "InvalidPath".
 
-	GameStateLockTarget(ptrPlayer);
+	GameStateLockTarget(ptrPlayer, ptrFlightData);
 	GameStateSelectRunway(ptrPlayer, ptrFlightData);
 	GameStateSelectTaxiwayRunway(ptrPlayer, ptrFlightData);
 	GameStateSelectTaxiwayParking(ptrPlayer, ptrFlightData);
@@ -576,6 +574,7 @@ void GameGraphics(void)
 	
 	if(GfxGetGlobalLuminance() < NORMAL_LUMINANCE)
 	{
+		// Fading from black effect on startup.
 		GfxIncreaseGlobalLuminance(1);
 	}
 	
@@ -588,16 +587,30 @@ void GameGraphics(void)
 				GfxSetSplitScreen(i);
 			}
 			
+			// Draw half split screen for each player
+			// only if 2-player mode is active. Else, render
+			// the whole screen as usual.
+			
 			GsSortCls(0,0,GfxGetGlobalLuminance() >> 1);
 
 			GameRenderLevel(&PlayerData[i]);
+
 			AircraftRender(&PlayerData[i]);
 
 			GameGuiAircraftList(&PlayerData[i], &FlightData);
+			
+			GameDrawMouse(&PlayerData[i]);
 		}
 	}
 	
-	GfxDisableSplitScreen();
+	// Avoid changing drawing environment twice on 1-player mode
+	// as it doesn't make any sense.
+	if(split_screen == true)
+	{
+		GfxDisableSplitScreen();
+	}
+	
+	// Draw common elements for both players (messages, clock...)
 	
 	GameGuiAircraftNotificationRequest(&FlightData);
 	
@@ -611,7 +624,7 @@ void GameGraphics(void)
 void GameLoadLevel(void)
 {	
 	uint8_t i = 0;
-	uint8_t * ptrBuffer;
+	uint8_t* ptrBuffer;
 	char LevelHeader[LEVEL_MAGIC_NUMBER_SIZE + 1];
 	
 	/* TODO - Very important */
@@ -945,13 +958,6 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 		}
 	}
 	
-	if(	(ptrPlayer->SelectTaxiwayParking == true)
-						||
-		(ptrPlayer->SelectTaxiwayRunway == true) 	)
-	{
-		GfxSortSprite(&GameMouseSpr);
-	}
-	
 	/*if(PadOneKeyReleased(PAD_CROSS) == true)
 	{
 		for(i = 0; i < GameLevelSize; i++)
@@ -990,18 +996,6 @@ void GameStateShowAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightD
 		{
 			ptrPlayer->ShowAircraftData = false;
 		}
-		else if(ptrPlayer->PadKeySinglePress_Callback(PAD_SQUARE) == true)
-		{
-			dprintf("Aircraft state = %d. STATE_IDLE = %d\n",
-					ptrFlightData->State[ptrPlayer->SelectedAircraft],
-					STATE_IDLE);
-					
-			if(ptrFlightData->State[ptrPlayer->SelectedAircraft] != STATE_IDLE)
-			{
-				ptrPlayer->LockTarget = true;
-				ptrPlayer->LockedAircraft = ptrPlayer->SelectedAircraft;
-			}
-		}
 	}
 	
 	if(ptrPlayer->PadKeySinglePress_Callback(PAD_CIRCLE) == true)
@@ -1014,13 +1008,38 @@ void GameStateShowAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightD
 	}
 }
 
-void GameStateLockTarget(TYPE_PLAYER* ptrPlayer)
+void GameStateLockTarget(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
+	uint8_t AircraftIdx = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
+	
 	if(ptrPlayer->LockTarget == true)
 	{
 		CameraMoveToIsoPos(ptrPlayer, AircraftGetIsoPos(ptrPlayer->LockedAircraft) );
-		
-		if(ptrPlayer->PadKeySinglePress_Callback(PAD_SQUARE) == true)
+	}
+	
+	if(ptrPlayer->PadKeySinglePress_Callback(PAD_SQUARE) == true)
+	{		
+		if(ptrPlayer->LockTarget == false)
+		{
+			if( (ptrFlightData->State[AircraftIdx] != STATE_IDLE)
+											&&
+				(ptrFlightData->State[AircraftIdx] != STATE_APPROACH) )
+			{
+				ptrPlayer->LockTarget = true;
+				ptrPlayer->LockedAircraft = AircraftIdx;
+			}
+		}
+		else
+		{
+			ptrPlayer->LockTarget = false;
+			ptrPlayer->LockedAircraft = 0;
+		}
+	}
+	else if(ptrPlayer->PadDirectionKeyPressed_Callback() == true)
+	{
+		if( (ptrPlayer->LockTarget == true)
+						&&
+			(ptrPlayer->ShowAircraftData == false) )
 		{
 			ptrPlayer->LockTarget = false;
 			ptrPlayer->LockedAircraft = 0;
@@ -1194,12 +1213,17 @@ void GameStateSelectRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightD
 {	
 	uint8_t i;
 	bool success;
+	TYPE_ISOMETRIC_POS IsoPos = {	GameGetXFromTile_short(GameRwy[ptrPlayer->SelectedRunway]),
+									GameGetYFromTile_short(GameRwy[ptrPlayer->SelectedRunway]),
+									0	};
 	
 	if(ptrPlayer->SelectRunway == true)
-	{
+	{		
 		// Under this mode, always reset locking target.
 		ptrPlayer->LockTarget = false;
 		ptrPlayer->LockedAircraft = 0;
+		
+		CameraMoveToIsoPos(ptrPlayer, IsoPos);
 		
 		if(ptrPlayer->PadKeySinglePress_Callback(PAD_TRIANGLE) == true)
 		{
@@ -1243,7 +1267,7 @@ void GameStateSelectRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightD
 		}
 		else if(ptrPlayer->PadKeySinglePress_Callback(PAD_RIGHT) == true)
 		{
-			if(ptrPlayer->SelectedRunway < GAME_MAX_RUNWAYS)
+			if(ptrPlayer->SelectedRunway < (GAME_MAX_RUNWAYS - 1))
 			{
 				if(GameRwy[ptrPlayer->SelectedRunway + 1] != 0)
 				{
@@ -1287,7 +1311,8 @@ void GameGetRunwayArray(void)
 
 void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
 {
-	FL_STATE aircraftState = ptrFlightData->State[ptrPlayer->SelectedAircraft];
+	uint8_t AircraftIdx = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
+	FL_STATE aircraftState = ptrFlightData->State[AircraftIdx];
 	
 	if(ptrPlayer->ShowAircraftData == true)
 	{
@@ -1323,6 +1348,9 @@ void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFl
 					break;
 				}
 			}
+			
+			dprintf("aircraftState = %d\n", aircraftState);
+			dprintf("AircraftIdx = %d\n", AircraftIdx);
 		}
 	}
 }
@@ -1470,9 +1498,9 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFl
 	}
 }
 
-fix16_t GameGetXFromTile(uint16_t tile)
+short GameGetXFromTile_short(uint16_t tile)
 {
-	fix16_t retVal;
+	short retVal;
 	
 	tile %= GameLevelColumns;
 	
@@ -1481,14 +1509,12 @@ fix16_t GameGetXFromTile(uint16_t tile)
 	// Always point to tile center
 	retVal += TILE_SIZE >> 1;
 	
-	retVal = fix16_from_int(retVal);
-	
 	return retVal;
 }
 
-fix16_t GameGetYFromTile(uint16_t tile)
+short GameGetYFromTile_short(uint16_t tile)
 {
-	fix16_t retVal;
+	short retVal;
 	
 	tile /= GameLevelColumns;
 	
@@ -1497,9 +1523,17 @@ fix16_t GameGetYFromTile(uint16_t tile)
 	// Always point to tile center
 	retVal += TILE_SIZE >> 1;
 	
-	retVal = fix16_from_int(retVal);
-	
 	return retVal;
+}
+
+fix16_t GameGetXFromTile(uint16_t tile)
+{
+	return fix16_from_int(GameGetXFromTile_short(tile));
+}
+
+fix16_t GameGetYFromTile(uint16_t tile)
+{
+	return fix16_from_int(GameGetYFromTile_short(tile));
 }
 
 FL_STATE GameTargetsReached(uint8_t index)
@@ -1521,22 +1555,6 @@ FL_STATE GameTargetsReached(uint8_t index)
 	}
 	
 	return retState;
-}
-
-bool GameGuiShowAircraftDataSpecialConditions(TYPE_PLAYER* ptrPlayer)
-{
-	// Aircraft list data cannot be shown under these conditions.
-	
-	if(	(ptrPlayer->SelectRunway == true)
-						||
-		(ptrPlayer->SelectTaxiwayParking == true)
-						||
-		(ptrPlayer->SelectTaxiwayRunway == true)	)
-	{
-		return true;
-	}
-	
-	return false;
 }
 
 uint16_t GameGetTileFromIsoPosition(TYPE_ISOMETRIC_POS * IsoPos)
@@ -1824,7 +1842,8 @@ bool GamePathToTile(TYPE_PLAYER* ptrPlayer)
 
 void GameSelectAircraft(TYPE_PLAYER* ptrPlayer)
 {
-	TYPE_ISOMETRIC_POS IsoPos = AircraftGetIsoPos(ptrPlayer->SelectedAircraft);
+	uint8_t AircraftIdx = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
+	TYPE_ISOMETRIC_POS IsoPos = AircraftGetIsoPos(AircraftIdx);
 	
 	CameraMoveToIsoPos(ptrPlayer, IsoPos);
 	
@@ -1836,4 +1855,24 @@ void GameSelectAircraft(TYPE_PLAYER* ptrPlayer)
 bool GameTwoPlayersActive(void)
 {
 	return TwoPlayersActive;
+}
+
+void GameDrawMouse(TYPE_PLAYER* ptrPlayer)
+{
+	if(	(ptrPlayer->SelectTaxiwayParking == true)
+						||
+		(ptrPlayer->SelectTaxiwayRunway == true) 	)
+	{
+		GfxSortSprite(&GameMouseSpr);
+	}
+}
+
+FL_STATE GameGetFlightDataStateFromIdx(uint8_t FlightDataIdx)
+{
+	if(FlightDataIdx >= GAME_MAX_AIRCRAFT)
+	{
+		return STATE_IDLE; // Error: could cause buffer overrun
+	}
+
+	return FlightData.State[FlightDataIdx];
 }

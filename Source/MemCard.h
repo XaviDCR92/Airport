@@ -96,7 +96,7 @@ typedef struct t_MemCard
 	
 	uint8_t Icons[MEMCARD_NUMBER_OF_ICONS][MEMCARD_ICON_SIZE];
 	uint8_t CLUT[MEMCARD_NUMBER_OF_ICONS][MEMCARD_CLUT_SIZE];
-	uint8_t * Data; // Buffer pointed to by "Data" must be 128 KB or higher!
+	uint8_t* Data; // Buffer pointed to by "Data" must be 128 KB or higher!
 	GsTPoly4 IconTPoly;
 }TYPE_BLOCK_DATA;
 

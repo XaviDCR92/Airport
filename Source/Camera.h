@@ -9,6 +9,7 @@
 #include "System.h"
 #include "Pad.h"
 #include "GameStructures.h"
+#include "Game.h"
 
 /* *************************************
  * 	Defines
@@ -23,6 +24,6 @@ void CameraHandler(TYPE_PLAYER* ptrPlayer);
 void CameraApplyCoordinatesToSprite(TYPE_PLAYER* ptrPlayer, GsSprite * spr);
 void CameraApplyCoordinatesToRectangle(TYPE_PLAYER* ptrPlayer, GsRectangle * rect);
 TYPE_ISOMETRIC_POS CameraGetIsoPos(TYPE_PLAYER* ptrPlayer);
-void CameraMoveToIsoPos(TYPE_PLAYER* ptrPlayer, TYPE_ISOMETRIC_POS ptrIsoPos);
+void CameraMoveToIsoPos(TYPE_PLAYER* ptrPlayer, TYPE_ISOMETRIC_POS IsoPos);
 
 #endif //__CAM_HEADER__
