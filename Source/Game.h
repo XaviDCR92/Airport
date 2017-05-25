@@ -49,5 +49,6 @@ short		GameGetYFromTile_short(uint16_t tile);
 FL_STATE	GameTargetsReached(uint8_t index);
 uint16_t	GameGetTileFromIsoPosition(TYPE_ISOMETRIC_POS * IsoPos);
 FL_STATE	GameGetFlightDataStateFromIdx(uint8_t FlightDataIdx);
+uint32_t	GameGetScore(void);
 
 #endif //__GAME_HEADER__

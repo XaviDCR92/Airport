@@ -13,6 +13,10 @@
 #define NOTIFICATION_BUFFER_SIZE		200
 #define GAME_GUI_AIRCRAFT_DATA_MAX_PAGE 5
 
+#define SLOW_SCORE_LOW_SPEED_MARGIN		100
+#define SLOW_SCORE_LOW_SPEED			5
+#define SLOW_SCORE_HIGH_SPEED			10
+
 /* **************************************
  * 	Structs and enums					*
  * *************************************/
@@ -87,6 +91,12 @@ enum
 
 enum
 {
+	SCORE_X = (X_SCREEN_RESOLUTION >> 1) - 64,
+	SCORE_Y = 16,
+};
+
+enum
+{
 	AIRCRAFT_DATA_GSGPOLY4_R0 = 0,
 	AIRCRAFT_DATA_GSGPOLY4_R1 = AIRCRAFT_DATA_GSGPOLY4_R0,
 	AIRCRAFT_DATA_GSGPOLY4_R2 = 0,
@@ -154,7 +164,7 @@ enum
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X2 = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X0,
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X3 = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X1,
 	
-	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H = 32,
+	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H = 42,
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_Y0 = AIRCRAFT_DATA_GSGPOLY4_Y0 + AIRCRAFT_DATA_FLIGHT_GSGPOLY4_GAP,
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_Y1 = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_Y0,
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_Y2 = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_Y0 + AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H,
@@ -189,7 +199,13 @@ enum
 	AIRCRAFT_DATA_PASSENGERS_Y = AIRCRAFT_DATA_FLIGHT_NUMBER_TEXT_Y,
 	
 	AIRCRAFT_DATA_PASSENGERS_X_2PLAYER = AIRCRAFT_DATA_FLIGHT_NUMBER_TEXT_X_2PLAYER + 64,
-	AIRCRAFT_DATA_PASSENGERS_Y_2PLAYER = AIRCRAFT_DATA_FLIGHT_NUMBER_TEXT_Y_2PLAYER
+	AIRCRAFT_DATA_PASSENGERS_Y_2PLAYER = AIRCRAFT_DATA_FLIGHT_NUMBER_TEXT_Y_2PLAYER,
+
+	AIRCRAFT_DATA_REMAINING_TIME_X = AIRCRAFT_DATA_DIRECTION_X,
+	AIRCRAFT_DATA_REMAINING_TIME_Y = AIRCRAFT_DATA_DIRECTION_Y + AIRCRAFT_DATA_FLIGHT_GSGPOLY4_GAP,
+
+	AIRCRAFT_DATA_REMAINING_TIME_X_2PLAYER = AIRCRAFT_DATA_DIRECTION_X_2PLAYER,
+	AIRCRAFT_DATA_REMAINING_TIME_Y_2PLAYER = AIRCRAFT_DATA_DIRECTION_Y_2PLAYER + AIRCRAFT_DATA_FLIGHT_GSGPOLY4_GAP
 };
 
 enum
@@ -244,6 +260,7 @@ static void * GameFileDest[] = {(GsSprite*)&BubbleSpr	,
 								(GsSprite*)&ArrowsSpr	};
 
 static char strNotificationRequest[NOTIFICATION_BUFFER_SIZE];
+static uint32_t slowScore; // It will update slowly to actual score value
 
 void GameGuiInit(void)
 {
@@ -278,6 +295,8 @@ void GameGuiInit(void)
 	PauseRect.g[3] = PAUSE_DIALOG_G3;
 	
 	PauseRect.attribute |= ENABLE_TRANS | TRANS_MODE(0);
+
+	slowScore = 0;
 }
 
 void GameGuiAircraftNotificationRequest(TYPE_FLIGHT_DATA * ptrFlightData)
@@ -767,6 +786,8 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFligh
 	short AircraftDataPassengers_X;
 	short AircraftDataPassengers_Y;
 	short AircraftDataState_X_Offset;
+	short AircraftDataRemainingTime_X;
+	short AircraftDataRemainingTime_Y;
 	
 	if(GameTwoPlayersActive() == true)
 	{
@@ -777,6 +798,8 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFligh
 		AircraftDataPassengers_X = AIRCRAFT_DATA_PASSENGERS_X_2PLAYER;
 		AircraftDataPassengers_Y = AIRCRAFT_DATA_PASSENGERS_Y_2PLAYER;
 		AircraftDataState_X_Offset = 54;
+		AircraftDataRemainingTime_X = AIRCRAFT_DATA_REMAINING_TIME_X_2PLAYER;
+		AircraftDataRemainingTime_Y = AIRCRAFT_DATA_REMAINING_TIME_Y_2PLAYER;
 	}
 	else
 	{
@@ -787,6 +810,8 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFligh
 		AircraftDataPassengers_X = AIRCRAFT_DATA_PASSENGERS_X;
 		AircraftDataPassengers_Y = AIRCRAFT_DATA_PASSENGERS_Y;
 		AircraftDataState_X_Offset = 88;
+		AircraftDataRemainingTime_X = AIRCRAFT_DATA_REMAINING_TIME_X;
+		AircraftDataRemainingTime_Y = AIRCRAFT_DATA_REMAINING_TIME_Y;
 	}
 	
 	FontSetFlags(&SmallFont,FONT_NOFLAGS);
@@ -883,6 +908,12 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFligh
 						AircraftDataPassengers_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
 						"%d pax.",
 						ptrFlightData->Passengers[ptrPlayer->ActiveAircraftList[i]]	);
+
+		FontPrintText(	&SmallFont,
+						AircraftDataRemainingTime_X,
+						AircraftDataRemainingTime_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
+						"Time: %d sec.",
+						ptrFlightData->RemainingTime[ptrPlayer->ActiveAircraftList[i]] );
 	}
 }
 
@@ -900,4 +931,54 @@ bool GameGuiShowAircraftDataSpecialConditions(TYPE_PLAYER* ptrPlayer)
 	}
 	
 	return false;
+}
+
+void GameGuiCalculateSlowScore(void)
+{
+	uint32_t currentScore = GameGetScore();
+	uint32_t scoreSpeed;
+
+	if(abs(slowScore - currentScore) < SLOW_SCORE_LOW_SPEED_MARGIN)
+	{
+		scoreSpeed = SLOW_SCORE_LOW_SPEED;
+
+		if(abs(slowScore - currentScore) < SLOW_SCORE_LOW_SPEED)
+		{
+			slowScore = currentScore;
+			return;
+		}
+	}
+	else
+	{
+		scoreSpeed = SLOW_SCORE_HIGH_SPEED;
+	}
+
+	slowScore = (slowScore > currentScore)? (slowScore - scoreSpeed) : (slowScore + scoreSpeed);
+}
+
+void GameGuiShowScore(void)
+{
+	FontPrintText(	&RadioFont,
+					SCORE_X,
+					SCORE_Y,
+					"Score: %d", slowScore );
+}
+
+void GameGuiDrawUnboardingSequence(TYPE_PLAYER* ptrPlayer)
+{
+	uint8_t i;
+
+	if(ptrPlayer->Unboarding == true)
+	{
+		for(i = ptrPlayer->UnboardingSequenceIdx; i < GAME_MAX_SEQUENCE_KEYS; i++)
+		{
+			if(ptrPlayer->UnboardingSequence[i] == 0)
+			{
+				break;
+			}
+
+			// TODO: Draw above the plane
+			GfxDrawButton(64, Y_SCREEN_RESOLUTION - 32, ptrPlayer->UnboardingSequence[i]);
+		}
+	}
 }

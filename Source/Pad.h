@@ -39,6 +39,9 @@ bool PadTwoKeyReleased(unsigned short key);
 bool PadOneKeySinglePress(unsigned short key);
 bool PadTwoKeySinglePress(unsigned short key);
 
+unsigned short PadOneGetLastKeySinglePressed(void);
+unsigned short PadTwoGetLastKeySinglePressed(void);
+
 bool PadOneDirectionKeyPressed(void);
 bool PadTwoDirectionKeyPressed(void);
 

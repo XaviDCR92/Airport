@@ -82,6 +82,23 @@ enum
 	MOUSE_Y_2PLAYER = (Y_SCREEN_RESOLUTION >> 1)
 };
 
+enum
+{
+	LOST_FLIGHT_PENALTY = 4000,
+	SCORE_REWARD_TAXIING = 200,
+	SCORE_REWARD_FINAL = 400,
+	SCORE_REWARD_UNLOADING = 300,
+	SCORE_REWARD_FINISH_FLIGHT = 1000
+};
+
+enum
+{
+	UNBOARDING_KEY_SEQUENCE_EASY = 4,
+	UNBOARDING_KEY_SEQUENCE_MEDIUM = 6,
+	UNBOARDING_KEY_SEQUENCE_HARD = GAME_MAX_SEQUENCE_KEYS,
+	UNBOARDING_PASSENGERS_PER_SEQUENCE = 25
+};
+
 /* *************************************
  * 	Local Prototypes
  * *************************************/
@@ -108,18 +125,22 @@ static void GameStateSelectRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptr
 static void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
 static void GameStateSelectTaxiwayParking(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
 static void GameStateLockTarget(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
-static void GameSelectAircraft(TYPE_PLAYER* ptrPlayer);
+static TYPE_ISOMETRIC_POS GameSelectAircraft(TYPE_PLAYER* ptrPlayer);
+static void GameSelectAircraftWaypoint(TYPE_PLAYER* ptrPlayer);
 static void GameGetRunwayArray(void);
 static void GameGetSelectedRunwayArray(uint16_t rwyHeader);
 static void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
 static bool GamePathToTile(TYPE_PLAYER* ptrPlayer);
 static void GameDrawMouse(TYPE_PLAYER* ptrPlayer);
+static void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
+static void GameGenerateUnboardingSequence(TYPE_PLAYER* ptrPlayer);
 
 /* *************************************
  * 	Global Variables
  * *************************************/
 
 bool GameStartupFlag;
+uint32_t GameScore;
 
 /* *************************************
  * 	Local Variables
@@ -266,7 +287,11 @@ void GameInit(void)
 	PlayerData[PLAYER_ONE].PadKeyReleased_Callback = &PadOneKeyReleased;
 	PlayerData[PLAYER_ONE].PadKeySinglePress_Callback = &PadOneKeySinglePress;
 	PlayerData[PLAYER_ONE].PadDirectionKeyPressed_Callback = &PadOneDirectionKeyPressed;
+	PlayerData[PLAYER_ONE].PadLastKeySinglePressed_Callback = &PadOneGetLastKeySinglePressed;
 	PlayerData[PLAYER_ONE].FlightDataPage = 0;
+	PlayerData[PLAYER_ONE].UnboardingSequenceIdx = 0;
+	
+	memset(PlayerData[PLAYER_ONE].UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS * sizeof(unsigned short) );
 	
 	PlayerData[PLAYER_TWO].Active = TwoPlayersActive? true : false;
 	
@@ -277,6 +302,10 @@ void GameInit(void)
 		PlayerData[PLAYER_TWO].PadDirectionKeyPressed_Callback = &PadTwoDirectionKeyPressed;
 		PlayerData[PLAYER_TWO].FlightDataPage = 0;
 		PlayerData[PLAYER_TWO].PadKeySinglePress_Callback = &PadTwoKeySinglePress;
+		PlayerData[PLAYER_TWO].PadLastKeySinglePressed_Callback = &PadTwoGetLastKeySinglePressed;
+		PlayerData[PLAYER_TWO].UnboardingSequenceIdx = 0;
+		
+		memset(PlayerData[PLAYER_TWO].UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS * sizeof(unsigned short) );
 		
 		// On 2-player mode, one player controls departure flights and
 		// other player controls arrival flights.
@@ -322,6 +351,8 @@ void GameInit(void)
 	GameMouseSpr.r = NORMAL_LUMINANCE;
 	GameMouseSpr.g = NORMAL_LUMINANCE;
 	GameMouseSpr.b = NORMAL_LUMINANCE;
+
+	GameScore = 0;
 	
 	GameGetRunwayArray();
 	
@@ -386,6 +417,7 @@ void GameCalculations(void)
 	GameAircraftState();
 	GameActiveAircraft();
 	GameFirstLastAircraftIndex();
+	GameGuiCalculateSlowScore();
 	AircraftHandler();
 	
 	for(i = 0 ; i < MAX_PLAYERS ; i++)
@@ -397,20 +429,10 @@ void GameCalculations(void)
 		}
 	}
 	
-	if(PadOneKeyReleased(PAD_CIRCLE) == true)
+	/*if(PadOneKeyReleased(PAD_CIRCLE) == true)
 	{
 		for(i = 0; i < FlightData.nAircraft ; i++)
-		{
-			/*typedef struct
-			{
-				FL_DIR FlightDirection[GAME_MAX_AIRCRAFT];
-				char strFlightNumber[GAME_MAX_AIRCRAFT][GAME_MAX_CHARACTERS];
-				uint8_t Passengers[GAME_MAX_AIRCRAFT];
-				uint8_t Hours[GAME_MAX_AIRCRAFT];
-				uint8_t Minutes[GAME_MAX_AIRCRAFT];
-				uint8_t Parking[GAME_MAX_AIRCRAFT];
-			}TYPE_FLIGHT_DATA;*/
-			
+		{	
 			dprintf("\n*****************\n");
 			dprintf("\tAIRCRAFT %d\n",i);
 			dprintf("*****************\n");
@@ -465,7 +487,7 @@ void GameCalculations(void)
 		}
 		
 		dprintf("Active aircraft: %d\n",FlightData.ActiveAircraft);
-	}
+	}*/
 	
 }
 
@@ -513,6 +535,7 @@ void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
 	GameGuiActiveAircraftList(ptrPlayer, ptrFlightData);
 	GameGuiActiveAircraftPage(ptrPlayer, ptrFlightData);
 	GameSelectAircraftFromList(ptrPlayer, ptrFlightData);
+	GameStateUnboarding(ptrPlayer, ptrFlightData);
 }
 
 void GameClock(void)
@@ -555,6 +578,13 @@ void GameClockFlights(void)
 			if(FlightData.Minutes[i] > 0)
 			{
 				FlightData.Minutes[i]--;
+			}
+
+			if( (FlightData.State[i] != STATE_IDLE)
+								&&
+				(FlightData.RemainingTime[i] > 0) )
+			{
+				FlightData.RemainingTime[i]--;
 			}
 		}
 	}
@@ -600,6 +630,8 @@ void GameGraphics(void)
 			GameGuiAircraftList(&PlayerData[i], &FlightData);
 			
 			GameDrawMouse(&PlayerData[i]);
+
+			GameGuiDrawUnboardingSequence(&PlayerData[i]);
 		}
 	}
 	
@@ -617,6 +649,8 @@ void GameGraphics(void)
 	GameGuiBubble(&FlightData);
 	
 	GameGuiClock(GameHour,GameMinutes);
+
+	GameGuiShowScore();
 	
 	GfxDrawScene();
 }
@@ -707,7 +741,9 @@ void GameAircraftState(void)
 					&&
 			(FlightData.Minutes[i] == 0)
 					&&
-			(FlightData.State[i] == STATE_IDLE)	)
+			(FlightData.State[i] == STATE_IDLE)
+					&&
+			(FlightData.RemainingTime[i] > 0)	)
 		{
 			if(FlightData.FlightDirection[i] == DEPARTURE)
 			{
@@ -730,6 +766,15 @@ void GameAircraftState(void)
 			
 			// Create notification request for incoming aircraft
 			FlightData.NotificationRequest[i] = true;
+		}
+
+		if( (FlightData.State[i] != STATE_IDLE)
+							&&
+			(FlightData.RemainingTime[i] == 0)	)
+		{
+			// Player(s) lost a flight!
+			FlightData.State[i] = STATE_IDLE;
+			GameScore = (GameScore < LOST_FLIGHT_PENALTY)? 0 : (GameScore - LOST_FLIGHT_PENALTY);
 		}
 	}
 }
@@ -1119,6 +1164,7 @@ void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptr
 						ptrPlayer->LastWaypointIdx = 0;
 						
 						ptrFlightData->State[ptrPlayer->LockedAircraft] = STATE_TAXIING;
+						GameScore += SCORE_REWARD_TAXIING;
 					break;
 					
 					default:
@@ -1203,6 +1249,7 @@ void GameStateSelectTaxiwayParking(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * pt
 					ptrPlayer->LastWaypointIdx = 0;
 					
 					ptrFlightData->State[ptrPlayer->LockedAircraft] = STATE_TAXIING;
+					GameScore += SCORE_REWARD_TAXIING;
 				}
 			}
 		}
@@ -1330,13 +1377,22 @@ void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFl
 					
 					case STATE_PARKED:
 						ptrPlayer->SelectTaxiwayRunway = true;
-						GameSelectAircraft(ptrPlayer);
+						// Move camera to selected aircraft and add first waypoint.
+						GameSelectAircraftWaypoint(ptrPlayer);
 					break;
 					
 					case STATE_LANDED:
 						ptrPlayer->SelectTaxiwayParking = true;
 						// Move camera to selected aircraft and add first waypoint.
+						GameSelectAircraftWaypoint(ptrPlayer);
+					break;
+
+					case STATE_UNBOARDING:
+						ptrPlayer->Unboarding = true;
+						// Move camera to selected aircraft.
 						GameSelectAircraft(ptrPlayer);
+						// Generate first unboarding key sequence
+						GameGenerateUnboardingSequence(ptrPlayer);
 					break;
 					
 					default:
@@ -1459,6 +1515,7 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFl
 	if(ptrFlightData->State[aircraftIndex] == STATE_APPROACH)
 	{		
 		ptrFlightData->State[aircraftIndex] = STATE_FINAL;
+		GameScore += SCORE_REWARD_FINAL;
 		
 		GameGetSelectedRunwayArray(assignedRwy);
 		
@@ -1840,12 +1897,19 @@ bool GamePathToTile(TYPE_PLAYER* ptrPlayer)
 	return true;
 }
 
-void GameSelectAircraft(TYPE_PLAYER* ptrPlayer)
+TYPE_ISOMETRIC_POS GameSelectAircraft(TYPE_PLAYER* ptrPlayer)
 {
 	uint8_t AircraftIdx = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
 	TYPE_ISOMETRIC_POS IsoPos = AircraftGetIsoPos(AircraftIdx);
 	
 	CameraMoveToIsoPos(ptrPlayer, IsoPos);
+	
+	return IsoPos;
+}
+
+void GameSelectAircraftWaypoint(TYPE_PLAYER* ptrPlayer)
+{
+	TYPE_ISOMETRIC_POS IsoPos = GameSelectAircraft(ptrPlayer);
 	
 	ptrPlayer->SelectedTile = GameGetTileFromIsoPosition(&IsoPos);
 	
@@ -1875,4 +1939,62 @@ FL_STATE GameGetFlightDataStateFromIdx(uint8_t FlightDataIdx)
 	}
 
 	return FlightData.State[FlightDataIdx];
+}
+
+uint32_t GameGetScore(void)
+{
+	return GameScore;
+}
+
+void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
+{
+	if(ptrPlayer->Unboarding == true)
+	{
+		if(ptrPlayer->PadKeySinglePress_Callback(PAD_CIRCLE) == true)
+		{
+			ptrPlayer->Unboarding = false;
+			ptrPlayer->UnboardingSequenceIdx = 0;	// Player will need to repeat sequence
+													// if he/she decides to leave without finishing
+		}
+
+		if(SystemContains_u16(ptrPlayer->PadLastKeySinglePressed_Callback(), ptrPlayer->UnboardingSequence, GAME_MAX_SEQUENCE_KEYS) == true)
+		{
+			if(++ptrPlayer->UnboardingSequenceIdx >= UNBOARDING_KEY_SEQUENCE_MEDIUM)
+			{
+				if(ptrFlightData->Passengers[ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft]] > UNBOARDING_PASSENGERS_PER_SEQUENCE)
+				{
+					ptrFlightData->Passengers[ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft]] -= UNBOARDING_PASSENGERS_PER_SEQUENCE;
+					GameScore += SCORE_REWARD_UNLOADING;
+				}
+				else
+				{
+					ptrFlightData->Passengers[ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft]] = 0;
+					ptrFlightData->State[ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft]] = STATE_IDLE;
+
+					GameScore += SCORE_REWARD_FINISH_FLIGHT;
+				}
+				
+				ptrPlayer->UnboardingSequenceIdx = 0;
+			}
+		}
+	}
+}
+
+void GameGenerateUnboardingSequence(TYPE_PLAYER* ptrPlayer)
+{
+	uint8_t i;
+	unsigned short keyTable[] = {	PAD_CROSS, PAD_SQUARE, PAD_TRIANGLE, PAD_L1,
+									PAD_L2, PAD_R1, PAD_R2 };
+
+	memset(ptrPlayer->UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS * sizeof(unsigned short) );
+
+	ptrPlayer->UnboardingSequenceIdx = 0;
+	
+	// Only medium level implemented. TODO: Implement other levels
+	for(i = 0; i < UNBOARDING_KEY_SEQUENCE_MEDIUM; i++)
+	{
+		uint8_t randNr = SystemRand(0, (sizeof(keyTable) / sizeof(keyTable[0])));
+		
+		ptrPlayer->UnboardingSequence[i] = randNr;
+	}
 }

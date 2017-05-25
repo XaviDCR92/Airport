@@ -7,9 +7,8 @@
 /* *************************************
  * 	Defines
  * *************************************/
-
-#define PLT_BUFFER_SIZE 0x2800
-#define LINE_MAX 100
+ 
+#define LINE_MAX_CHARACTERS 100
 
 /* **************************************
  * 	Structs and enums					*
@@ -21,7 +20,8 @@ enum
 	FLIGHT_NUMBER_INDEX,
 	PASSENGERS_INDEX,
 	HOURS_MINUTES_INDEX,
-	PARKING_INDEX	
+	PARKING_INDEX,
+	REMAINING_TIME_INDEX
 };
 
 enum
@@ -35,8 +35,6 @@ enum
  * 	Local Variables
  * *************************************/
 
-static char strPltBuffer[PLT_BUFFER_SIZE];
-
 /* *************************************
  * 	Local Prototypes
  * *************************************/
@@ -49,23 +47,26 @@ bool PltParserLoadFile(char * strPath, TYPE_FLIGHT_DATA * ptrFlightData)
 	uint8_t aircraftIndex;
 	bool first_line_read = false;
 	char * buffer;
-	char lineBuffer[LINE_MAX];
+	char lineBuffer[LINE_MAX_CHARACTERS];
 	char * lineBufferPtr;
 	char * pltBufferSavePtr;
 	char strHour[PLT_HOUR_MINUTE_CHARACTERS];
 	char strMinutes[PLT_HOUR_MINUTE_CHARACTERS];
-	
-	if(SystemLoadFileToBuffer(strPath,(uint8_t*)strPltBuffer,PLT_BUFFER_SIZE) == false)
+	uint8_t* strPltBuffer;
+
+	if(SystemLoadFile(strPath) == false)
 	{
 		dprintf("Error loading file %s!\n",strPath);
 		return false;
 	}
+
+	strPltBuffer = SystemGetBufferAddress();
 	
 	PltParserResetBuffers(ptrFlightData);
 	
 	// Now, buffer shall be read from line to line
 	
-	buffer = strtok_r(strPltBuffer,"\n",&pltBufferSavePtr);
+	buffer = strtok_r((char*)strPltBuffer,"\n",&pltBufferSavePtr);
 	
 	aircraftIndex = 0;
 	
@@ -123,7 +124,7 @@ bool PltParserLoadFile(char * strPath, TYPE_FLIGHT_DATA * ptrFlightData)
 		else
 		{
 			// File header (initial game time) has already been read
-			strncpy(lineBuffer, buffer, LINE_MAX);
+			strncpy(lineBuffer, buffer, LINE_MAX_CHARACTERS);
 			
 			lineBufferPtr = strtok(lineBuffer,";");
 			
@@ -140,7 +141,8 @@ bool PltParserLoadFile(char * strPath, TYPE_FLIGHT_DATA * ptrFlightData)
 						FLIGHT_NUMBER_INDEX,
 						PASSENGERS_INDEX,
 						HOURS_MINUTES_INDEX,
-						PARKING_INDEX	
+						PARKING_INDEX,
+						REMAINING_TIME_INDEX
 					};*/
 				switch(i)
 				{
@@ -205,6 +207,10 @@ bool PltParserLoadFile(char * strPath, TYPE_FLIGHT_DATA * ptrFlightData)
 						dprintf("Aircraft %d time set to %.2d:%.2d.\n",	aircraftIndex,
 																		ptrFlightData->Hours[aircraftIndex],
 																		ptrFlightData->Minutes[aircraftIndex]	);
+					break;
+
+					case REMAINING_TIME_INDEX:
+						ptrFlightData->RemainingTime[aircraftIndex] = (uint8_t)atoi(lineBufferPtr);
 					break;
 					
 					

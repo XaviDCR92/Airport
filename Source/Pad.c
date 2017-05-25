@@ -80,6 +80,10 @@ static uint8_t pad2_small_vibration_force;
 // Timers for each key pressed (used for PadXXKeyRepeat() )
 static uint8_t pad1_keys_repeat[NUMBER_OF_KEYS];
 static uint8_t pad2_keys_repeat[NUMBER_OF_KEYS];
+
+static unsigned short pad1_last_key_single_pressed;
+static unsigned short pad2_last_key_single_pressed;
+
 // These arrays include last 16 buttons pressed by user and keeps them
 // for cheating purposes. They are cleaned if no keys are pressed during
 // PAD_CHEAT_TIMEOUT milliseconds.
@@ -179,12 +183,26 @@ bool PadTwoKeyPressed(unsigned short key)
 
 bool PadOneKeySinglePress(unsigned short key)
 {
-	return (bool)( !(previous_pad1 & key) && (pad1 & key) );
+	bool singlePress = (bool)( !(previous_pad1 & key) && (pad1 & key) );
+	
+	if(singlePress == true)
+	{
+		pad1_last_key_single_pressed = key;
+	}
+	
+	return singlePress;
 }
 
 bool PadTwoKeySinglePress(unsigned short key)
 {
-	return (bool)( !(previous_pad2 & key) && (pad2 & key) );
+	bool singlePress = (bool)( !(previous_pad2 & key) && (pad2 & key) );
+	
+	if(singlePress == true)
+	{
+		pad2_last_key_single_pressed = key;
+	}
+	
+	return singlePress;
 }
 
 bool PadOneKeyRepeat(unsigned short key, uint8_t time)
@@ -495,4 +513,14 @@ void PadTwoCleanCheatArray(void)
 unsigned short* PadGetPlayerOneCheatArray(void)
 {
 	return pad1_cheat_array;
+}
+
+unsigned short PadOneGetLastKeySinglePressed(void)
+{
+	return pad1_last_key_single_pressed;
+}
+
+unsigned short PadTwoGetLastKeySinglePressed(void)
+{
+	return pad2_last_key_single_pressed;
 }

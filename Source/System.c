@@ -249,9 +249,9 @@ void SystemRunTimers(void)
 #ifdef _PAL_MODE_
 	SystemCheckTimer(&hundred_ms_timer, &last_100_ms_tick, 2 /* 2 * 50 ms = 100 ms */);
 	SystemCheckTimer(&five_hundred_ms_timer, &last_500_ms_tick, 10 /* 10 * 50 ms = 500 ms */);
-#else
+#else // _PAL_MODE_
 	SystemCheckTimer(&hundred_ms_timer, &last_100_ms_tick, 3);
-#endif //VMODE_PAL
+#endif // _PAL_MODE_
 	
 }
 

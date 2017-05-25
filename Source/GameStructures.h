@@ -10,6 +10,7 @@
 #define CHEAT_ARRAY_SIZE 16
 #define AIRCRAFT_MAX_TARGETS 32
 #define PLAYER_MAX_WAYPOINTS AIRCRAFT_MAX_TARGETS
+#define GAME_MAX_SEQUENCE_KEYS 12
 
 /* *************************************
  * 	Structs and enums
@@ -70,6 +71,7 @@ typedef struct t_flightData
 	uint8_t Hours[GAME_MAX_AIRCRAFT];
 	uint8_t Minutes[GAME_MAX_AIRCRAFT];
 	uint8_t Parking[GAME_MAX_AIRCRAFT];
+	uint16_t RemainingTime[GAME_MAX_AIRCRAFT];
 	uint8_t nAircraft;
 	uint8_t ActiveAircraft;
 	FL_STATE State[GAME_MAX_AIRCRAFT];
@@ -138,6 +140,8 @@ typedef struct
 		bool InvalidPath;
 		// Player has locked the camera at a determined aircraft
 		bool LockTarget;
+		// Player is unboarding passengers
+		bool Unboarding;
 	
 	// Stores indexes for player-specific active aircraft
 	// Used to relate SelectedAircraft agains FlightData index
@@ -163,11 +167,17 @@ typedef struct
 	uint8_t WaypointIdx;
 	// Another internal index to keep last desired selected point by user when defining a path.
 	uint8_t LastWaypointIdx;
+	// If player is unboarding passengers, then a sequence of keys is generated to make unboarding
+	// process a bit more difficult and challenging.
+	unsigned short UnboardingSequence[GAME_MAX_SEQUENCE_KEYS];
+	// Index inside UnboardingSequence[]
+	uint8_t UnboardingSequenceIdx;
 	
 	bool	(*PadKeyPressed_Callback)(unsigned short);
 	bool	(*PadKeyReleased_Callback)(unsigned short);
 	bool	(*PadKeySinglePress_Callback)(unsigned short);
 	bool	(*PadDirectionKeyPressed_Callback)(void);
+	unsigned short	(*PadLastKeySinglePressed_Callback)(void);
 	TYPE_CAMERA Camera;
 }TYPE_PLAYER;
 
