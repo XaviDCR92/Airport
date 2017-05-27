@@ -130,7 +130,7 @@ static void GameSelectAircraftWaypoint(TYPE_PLAYER* ptrPlayer);
 static void GameGetRunwayArray(void);
 static void GameGetSelectedRunwayArray(uint16_t rwyHeader);
 static void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
-static bool GamePathToTile(TYPE_PLAYER* ptrPlayer);
+static bool GamePathToTile(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
 static void GameDrawMouse(TYPE_PLAYER* ptrPlayer);
 static void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
 static void GameGenerateUnboardingSequence(TYPE_PLAYER* ptrPlayer);
@@ -526,6 +526,9 @@ void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
 									// which use this are currently active.
 	ptrPlayer->InvalidPath = false; // Do the same thing for "InvalidPath".
 
+	ptrPlayer->FlightDataSelectedAircraft = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
+
+	GameStateUnboarding(ptrPlayer, ptrFlightData);
 	GameStateLockTarget(ptrPlayer, ptrFlightData);
 	GameStateSelectRunway(ptrPlayer, ptrFlightData);
 	GameStateSelectTaxiwayRunway(ptrPlayer, ptrFlightData);
@@ -535,7 +538,6 @@ void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
 	GameGuiActiveAircraftList(ptrPlayer, ptrFlightData);
 	GameGuiActiveAircraftPage(ptrPlayer, ptrFlightData);
 	GameSelectAircraftFromList(ptrPlayer, ptrFlightData);
-	GameStateUnboarding(ptrPlayer, ptrFlightData);
 }
 
 void GameClock(void)
@@ -737,44 +739,47 @@ void GameAircraftState(void)
 	
 	for(i = 0; i < FlightData.nAircraft ; i++)
 	{
-		if(	(FlightData.Hours[i] == 0)
-					&&
-			(FlightData.Minutes[i] == 0)
-					&&
-			(FlightData.State[i] == STATE_IDLE)
-					&&
-			(FlightData.RemainingTime[i] > 0)	)
+		if(FlightData.Finished[i] == false)
 		{
-			if(FlightData.FlightDirection[i] == DEPARTURE)
+			if(	(FlightData.Hours[i] == 0)
+						&&
+				(FlightData.Minutes[i] == 0)
+						&&
+				(FlightData.State[i] == STATE_IDLE)
+						&&
+				(FlightData.RemainingTime[i] > 0)	)
 			{
-				FlightData.State[i] = STATE_PARKED;
-				
-				target[0] = FlightData.Parking[i];
-				
-				dprintf("Target assigned = %d", target[0]);
-				
-				if(AircraftAddNew(&FlightData, i, target) == false)
+				if(FlightData.FlightDirection[i] == DEPARTURE)
 				{
-					dprintf("Exceeded maximum aircraft number!\n");
-					return;
+					FlightData.State[i] = STATE_PARKED;
+					
+					target[0] = FlightData.Parking[i];
+					
+					dprintf("Target assigned = %d", target[0]);
+					
+					if(AircraftAddNew(&FlightData, i, target) == false)
+					{
+						dprintf("Exceeded maximum aircraft number!\n");
+						return;
+					}
 				}
+				else if(FlightData.FlightDirection[i] == ARRIVAL)
+				{
+					FlightData.State[i] = STATE_APPROACH;
+				}
+				
+				// Create notification request for incoming aircraft
+				FlightData.NotificationRequest[i] = true;
 			}
-			else if(FlightData.FlightDirection[i] == ARRIVAL)
-			{
-				FlightData.State[i] = STATE_APPROACH;
-			}
-			
-			// Create notification request for incoming aircraft
-			FlightData.NotificationRequest[i] = true;
-		}
 
-		if( (FlightData.State[i] != STATE_IDLE)
-							&&
-			(FlightData.RemainingTime[i] == 0)	)
-		{
-			// Player(s) lost a flight!
-			FlightData.State[i] = STATE_IDLE;
-			GameScore = (GameScore < LOST_FLIGHT_PENALTY)? 0 : (GameScore - LOST_FLIGHT_PENALTY);
+			if( (FlightData.State[i] != STATE_IDLE)
+								&&
+				(FlightData.RemainingTime[i] == 0)	)
+			{
+				// Player(s) lost a flight!
+				FlightData.State[i] = STATE_IDLE;
+				GameScore = (GameScore < LOST_FLIGHT_PENALTY)? 0 : (GameScore - LOST_FLIGHT_PENALTY);
+			}
 		}
 	}
 }
@@ -1055,7 +1060,7 @@ void GameStateShowAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightD
 
 void GameStateLockTarget(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
-	uint8_t AircraftIdx = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
+	uint8_t AircraftIdx = ptrPlayer->FlightDataSelectedAircraft;
 	
 	if(ptrPlayer->LockTarget == true)
 	{
@@ -1063,18 +1068,21 @@ void GameStateLockTarget(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 	}
 	
 	if(ptrPlayer->PadKeySinglePress_Callback(PAD_SQUARE) == true)
-	{		
-		if(ptrPlayer->LockTarget == false)
+	{
+		if(ptrPlayer->ShowAircraftData == true)
 		{
-			if( (ptrFlightData->State[AircraftIdx] != STATE_IDLE)
-											&&
-				(ptrFlightData->State[AircraftIdx] != STATE_APPROACH) )
+			if(ptrPlayer->LockTarget == false)
 			{
-				ptrPlayer->LockTarget = true;
-				ptrPlayer->LockedAircraft = AircraftIdx;
+				if( (ptrFlightData->State[AircraftIdx] != STATE_IDLE)
+												&&
+					(ptrFlightData->State[AircraftIdx] != STATE_APPROACH) )
+				{
+					ptrPlayer->LockTarget = true;
+					ptrPlayer->LockedAircraft = AircraftIdx;
+				}
 			}
 		}
-		else
+		else if(ptrPlayer->LockTarget == true)
 		{
 			ptrPlayer->LockTarget = false;
 			ptrPlayer->LockedAircraft = 0;
@@ -1108,7 +1116,7 @@ void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptr
 		
 		ptrPlayer->SelectedTile = GameGetTileFromIsoPosition(&IsoPos);
 		
-		if(GamePathToTile(ptrPlayer) == false)
+		if(GamePathToTile(ptrPlayer, ptrFlightData) == false)
 		{
 			ptrPlayer->InvalidPath = true;
 		}
@@ -1147,8 +1155,8 @@ void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptr
 					case TILE_RWY_START_2:
 						// Fall through
 					case TILE_RWY_START_2 | TILE_MIRROR_FLAG:
-						AircraftFromFlightDataIndexAddTargets(ptrPlayer->LockedAircraft, ptrPlayer->Waypoints);
-						dprintf("Added these targets to aircraft %d:\n", ptrPlayer->LockedAircraft);
+						AircraftFromFlightDataIndexAddTargets(ptrPlayer->FlightDataSelectedAircraft, ptrPlayer->Waypoints);
+						dprintf("Added these targets to aircraft %d:\n", ptrPlayer->FlightDataSelectedAircraft);
 						
 						for(i = 0; i < PLAYER_MAX_WAYPOINTS; i++)
 						{
@@ -1163,7 +1171,7 @@ void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptr
 						ptrPlayer->WaypointIdx = 0;
 						ptrPlayer->LastWaypointIdx = 0;
 						
-						ptrFlightData->State[ptrPlayer->LockedAircraft] = STATE_TAXIING;
+						ptrFlightData->State[ptrPlayer->FlightDataSelectedAircraft] = STATE_TAXIING;
 						GameScore += SCORE_REWARD_TAXIING;
 					break;
 					
@@ -1189,7 +1197,7 @@ void GameStateSelectTaxiwayParking(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * pt
 		
 		ptrPlayer->SelectedTile = GameGetTileFromIsoPosition(&IsoPos);
 		
-		if(GamePathToTile(ptrPlayer) == false)
+		if(GamePathToTile(ptrPlayer, ptrFlightData) == false)
 		{
 			ptrPlayer->InvalidPath = true;
 		}
@@ -1231,9 +1239,9 @@ void GameStateSelectTaxiwayParking(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * pt
 					(target_tile == (TILE_PARKING | TILE_MIRROR_FLAG) ) )
 				{
 					// TODO: Assign path to aircraft
-					AircraftFromFlightDataIndexAddTargets(ptrPlayer->LockedAircraft, ptrPlayer->Waypoints);
+					AircraftFromFlightDataIndexAddTargets(ptrPlayer->FlightDataSelectedAircraft, ptrPlayer->Waypoints);
 					
-					dprintf("Added these targets to aircraft %d:\n", ptrPlayer->LockedAircraft);
+					dprintf("Added these targets to aircraft %d:\n", ptrPlayer->FlightDataSelectedAircraft);
 					
 					for(i = 0; i < PLAYER_MAX_WAYPOINTS; i++)
 					{
@@ -1248,7 +1256,7 @@ void GameStateSelectTaxiwayParking(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * pt
 					ptrPlayer->WaypointIdx = 0;
 					ptrPlayer->LastWaypointIdx = 0;
 					
-					ptrFlightData->State[ptrPlayer->LockedAircraft] = STATE_TAXIING;
+					ptrFlightData->State[ptrPlayer->FlightDataSelectedAircraft] = STATE_TAXIING;
 					GameScore += SCORE_REWARD_TAXIING;
 				}
 			}
@@ -1294,7 +1302,7 @@ void GameStateSelectRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightD
 					{
 						GameAssignRunwaytoAircraft(ptrPlayer, ptrFlightData);
 						success = true;
-						GameUsedRwy[i] = GameRwy[ptrPlayer->SelectedRunway];					
+						GameUsedRwy[i] = GameRwy[ptrPlayer->SelectedRunway];
 						break;
 					}
 				}
@@ -1358,7 +1366,7 @@ void GameGetRunwayArray(void)
 
 void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
 {
-	uint8_t AircraftIdx = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
+	uint8_t AircraftIdx = ptrPlayer->FlightDataSelectedAircraft;
 	FL_STATE aircraftState = ptrFlightData->State[AircraftIdx];
 	
 	if(ptrPlayer->ShowAircraftData == true)
@@ -1490,7 +1498,7 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader)
 void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
 {
 	uint16_t assignedRwy = GameRwy[ptrPlayer->SelectedRunway];
-	uint8_t aircraftIndex = ptrPlayer->SelectedAircraft;
+	uint8_t aircraftIndex = ptrPlayer->FlightDataSelectedAircraft;
 	uint16_t rwyExit;
 	uint32_t i;
 	uint16_t targets[AIRCRAFT_MAX_TARGETS];
@@ -1593,14 +1601,23 @@ fix16_t GameGetYFromTile(uint16_t tile)
 	return fix16_from_int(GameGetYFromTile_short(tile));
 }
 
-FL_STATE GameTargetsReached(uint8_t index)
+FL_STATE GameTargetsReached(uint16_t firstTarget, uint8_t index)
 {
 	FL_STATE retState = STATE_IDLE;
+	uint8_t i;
 	
 	switch(FlightData.State[index])
 	{
 		case STATE_FINAL:
 			FlightData.State[index] = STATE_LANDED;
+
+			for(i = 0; i < GAME_MAX_RUNWAYS; i++)
+			{
+				if(GameUsedRwy[i] == firstTarget)
+				{
+					GameUsedRwy[i] = 0;
+				}
+			}
 		break;
 		
 		case STATE_TAXIING:
@@ -1668,7 +1685,7 @@ void GamePlayerAddWaypoint_Ex(TYPE_PLAYER* ptrPlayer, uint16_t tile)
 	ptrPlayer->Waypoints[ptrPlayer->WaypointIdx++] = tile;
 }
 
-bool GamePathToTile(TYPE_PLAYER* ptrPlayer)
+bool GamePathToTile(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	// Given an input TYPE_PLAYER structure and a selected tile,
 	// it updates current Waypoints array with all tiles between two points.
@@ -1746,9 +1763,13 @@ bool GamePathToTile(TYPE_PLAYER* ptrPlayer)
 			{
 				for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
 				{
-					if(temp_tile == AircraftGetTileFromFlightDataIndex(i))
+					if(ptrFlightData->State[i] != STATE_IDLE)
 					{
-						return false;	// Check pending!
+						if(temp_tile == AircraftGetTileFromFlightDataIndex(i))
+						{
+							dprintf("i = %d, state = %d\n", i, ptrFlightData->State[i]);
+							return false;	// Check pending!
+						}
 					}
 				}
 				
@@ -1776,9 +1797,13 @@ bool GamePathToTile(TYPE_PLAYER* ptrPlayer)
 			{
 				for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
 				{
-					if(temp_tile == AircraftGetTileFromFlightDataIndex(i))
+					if(ptrFlightData->State[i] != STATE_IDLE)
 					{
-						return false;	// Check pending!
+						if(temp_tile == AircraftGetTileFromFlightDataIndex(i))
+						{
+							dprintf("i = %d, state = %d\n", i, ptrFlightData->State[i]);
+							return false;	// Check pending!
+						}
 					}
 				}
 				
@@ -1899,7 +1924,7 @@ bool GamePathToTile(TYPE_PLAYER* ptrPlayer)
 
 TYPE_ISOMETRIC_POS GameSelectAircraft(TYPE_PLAYER* ptrPlayer)
 {
-	uint8_t AircraftIdx = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
+	uint8_t AircraftIdx = ptrPlayer->FlightDataSelectedAircraft;
 	TYPE_ISOMETRIC_POS IsoPos = AircraftGetIsoPos(AircraftIdx);
 	
 	CameraMoveToIsoPos(ptrPlayer, IsoPos);
@@ -1947,7 +1972,7 @@ uint32_t GameGetScore(void)
 }
 
 void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
-{
+{	
 	if(ptrPlayer->Unboarding == true)
 	{
 		if(ptrPlayer->PadKeySinglePress_Callback(PAD_CIRCLE) == true)
@@ -1957,25 +1982,50 @@ void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 													// if he/she decides to leave without finishing
 		}
 
-		if(SystemContains_u16(ptrPlayer->PadLastKeySinglePressed_Callback(), ptrPlayer->UnboardingSequence, GAME_MAX_SEQUENCE_KEYS) == true)
+		ptrPlayer->LockTarget = true;
+		ptrPlayer->LockedAircraft = ptrPlayer->FlightDataSelectedAircraft;
+
+		if(ptrPlayer->PadLastKeySinglePressed_Callback() == ptrPlayer->UnboardingSequence[ptrPlayer->UnboardingSequenceIdx])
 		{
 			if(++ptrPlayer->UnboardingSequenceIdx >= UNBOARDING_KEY_SEQUENCE_MEDIUM)
 			{
-				if(ptrFlightData->Passengers[ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft]] > UNBOARDING_PASSENGERS_PER_SEQUENCE)
+				if(ptrFlightData->Passengers[ptrPlayer->FlightDataSelectedAircraft] > UNBOARDING_PASSENGERS_PER_SEQUENCE)
 				{
-					ptrFlightData->Passengers[ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft]] -= UNBOARDING_PASSENGERS_PER_SEQUENCE;
+					// Player has entered correct sequence. Unboard UNBOARDING_PASSENGERS_PER_SEQUENCE passengers.
+
+					ptrFlightData->Passengers[ptrPlayer->FlightDataSelectedAircraft] -= UNBOARDING_PASSENGERS_PER_SEQUENCE;
 					GameScore += SCORE_REWARD_UNLOADING;
+
+					GameGenerateUnboardingSequence(ptrPlayer);
 				}
 				else
 				{
-					ptrFlightData->Passengers[ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft]] = 0;
-					ptrFlightData->State[ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft]] = STATE_IDLE;
+					// Flight has finished. Remove aircraft and set finished flag
 
+					ptrFlightData->Passengers[ptrPlayer->FlightDataSelectedAircraft] = 0;
+					ptrFlightData->State[ptrPlayer->FlightDataSelectedAircraft] = STATE_IDLE;
+					ptrPlayer->Unboarding = false;
+					ptrFlightData->Finished[ptrPlayer->FlightDataSelectedAircraft] = true;
+					
+					if(AircraftRemove(ptrPlayer->FlightDataSelectedAircraft) == false)
+					{
+						dprintf("Something went wrong when removing aircraft!\n");
+					}
+
+					ptrPlayer->LockTarget = false;
+					ptrPlayer->LockedAircraft = 0;
+					
 					GameScore += SCORE_REWARD_FINISH_FLIGHT;
 				}
 				
 				ptrPlayer->UnboardingSequenceIdx = 0;
 			}
+
+			dprintf("ptrPlayer->UnboardingSequenceIdx = %d\n", ptrPlayer->UnboardingSequenceIdx);
+		}
+		else if(ptrPlayer->PadLastKeySinglePressed_Callback() != 0)
+		{
+			ptrPlayer->UnboardingSequenceIdx = 0; // Player has committed a mistake while entering the sequence. Repeat it!
 		}
 	}
 }
@@ -1983,18 +2033,23 @@ void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 void GameGenerateUnboardingSequence(TYPE_PLAYER* ptrPlayer)
 {
 	uint8_t i;
-	unsigned short keyTable[] = {	PAD_CROSS, PAD_SQUARE, PAD_TRIANGLE, PAD_L1,
-									PAD_L2, PAD_R1, PAD_R2 };
+	unsigned short keyTable[] = {	PAD_CROSS, PAD_SQUARE, PAD_TRIANGLE };
 
-	memset(ptrPlayer->UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS * sizeof(unsigned short) );
+	memset(ptrPlayer->UnboardingSequence, 0, sizeof(ptrPlayer->UnboardingSequence) );
 
 	ptrPlayer->UnboardingSequenceIdx = 0;
+
+	dprintf("Key sequence generated: ");
 	
 	// Only medium level implemented. TODO: Implement other levels
 	for(i = 0; i < UNBOARDING_KEY_SEQUENCE_MEDIUM; i++)
 	{
-		uint8_t randNr = SystemRand(0, (sizeof(keyTable) / sizeof(keyTable[0])));
+		uint8_t randIdx = SystemRand(0, (sizeof(keyTable) / sizeof(keyTable[0])) - 1);
 		
-		ptrPlayer->UnboardingSequence[i] = randNr;
+		ptrPlayer->UnboardingSequence[i] = keyTable[randIdx];
+
+		dprintf("idx = %d, 0x%04X ", randIdx, ptrPlayer->UnboardingSequence[i]);
 	}
+
+	dprintf("\n");
 }

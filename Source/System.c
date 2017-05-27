@@ -20,7 +20,7 @@
  * 	Local Prototypes
  * *************************************/
  
-static void SystemCheckTimer(bool * timer, uint64_t * last_timer, uint8_t step);
+static void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step);
 static void SystemSetStackPattern(void);
 static void SystemEnableVBlankInterrupt(void);
 static void SystemDisableVBlankInterrupt(void);
@@ -238,11 +238,12 @@ bool System500msTick(void)
 	return five_hundred_ms_timer;
 }
 
-void SystemRunTimers(void)
-{
-	static uint64_t last_one_second_tick;
+static uint64_t last_one_second_tick;
 	static uint64_t last_100_ms_tick;
 	static uint64_t last_500_ms_tick;
+
+void SystemRunTimers(void)
+{
 	
 	SystemCheckTimer(&one_second_timer, &last_one_second_tick, REFRESH_FREQUENCY);
 	
@@ -255,18 +256,18 @@ void SystemRunTimers(void)
 	
 }
 
-void SystemCheckTimer(bool * timer, uint64_t * last_timer, uint8_t step)
+void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
 {
 	if(*timer == true)
 	{
 		*timer = false;
-		*last_timer = global_timer;
 	}
 
 	if(global_timer >= (*last_timer + step) )
 	{
 		*timer = true;
-	}	
+		*last_timer = global_timer;
+	}
 }
 
 bool SystemLoadFileToBuffer(char * fname, uint8_t* buffer, uint32_t szBuffer)

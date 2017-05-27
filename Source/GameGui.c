@@ -978,7 +978,7 @@ void GameGuiDrawUnboardingSequence(TYPE_PLAYER* ptrPlayer)
 			}
 
 			// TODO: Draw above the plane
-			GfxDrawButton(64, Y_SCREEN_RESOLUTION - 32, ptrPlayer->UnboardingSequence[i]);
+			GfxDrawButton(128 + (16*i), Y_SCREEN_RESOLUTION - 32, ptrPlayer->UnboardingSequence[i]);
 		}
 	}
 }

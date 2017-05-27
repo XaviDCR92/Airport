@@ -182,27 +182,13 @@ bool PadTwoKeyPressed(unsigned short key)
 }
 
 bool PadOneKeySinglePress(unsigned short key)
-{
-	bool singlePress = (bool)( !(previous_pad1 & key) && (pad1 & key) );
-	
-	if(singlePress == true)
-	{
-		pad1_last_key_single_pressed = key;
-	}
-	
-	return singlePress;
+{	
+	return (bool)( !(previous_pad1 & key) && (pad1 & key) );
 }
 
 bool PadTwoKeySinglePress(unsigned short key)
-{
-	bool singlePress = (bool)( !(previous_pad2 & key) && (pad2 & key) );
-	
-	if(singlePress == true)
-	{
-		pad2_last_key_single_pressed = key;
-	}
-	
-	return singlePress;
+{	
+	return (bool)( !(previous_pad2 & key) && (pad2 & key) );
 }
 
 bool PadOneKeyRepeat(unsigned short key, uint8_t time)
@@ -284,6 +270,24 @@ bool UpdatePads(void)
 	PadCheatHandler(PAD_ONE);
 	
 	PadCheatHandler(PAD_TWO);
+
+	if(!(previous_pad1 & pad1) )
+	{
+		pad1_last_key_single_pressed = pad1;
+	}
+	else
+	{
+		pad1_last_key_single_pressed = 0;
+	}
+
+	if(!(previous_pad2 & pad2) )
+	{
+		pad2_last_key_single_pressed = pad2;
+	}
+	else
+	{
+		pad2_last_key_single_pressed = 0;
+	}
 	
 	// Get now-old pad data
 	previous_pad1 = pad1;

@@ -254,4 +254,5 @@ void PltParserResetBuffers(TYPE_FLIGHT_DATA * ptrFlightData)
 	memset(ptrFlightData->State,STATE_IDLE,GAME_MAX_AIRCRAFT);
 	memset(ptrFlightData->NotificationRequest,0,GAME_MAX_AIRCRAFT);
 	memset(ptrFlightData->Parking,0,GAME_MAX_AIRCRAFT);
+	memset(ptrFlightData->Finished,0,GAME_MAX_AIRCRAFT);
 }

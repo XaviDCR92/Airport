@@ -71,6 +71,9 @@ static volatile bool gfx_busy;
 //Dictates (R,G,B) brigthness to all sprites silently
 static uint8_t global_lum;
 
+static bool five_hundred_ms_show;
+static bool one_second_show;
+
 void GfxSwapBuffers(void)
 {
 	if(DrawEnv.h == Y_SCREEN_RESOLUTION)
@@ -117,7 +120,17 @@ void GfxSetPrimitiveList(void)
 }
 
 void GfxDrawScene_Fast(void)
-{	
+{
+	if(System1SecondTick() == true)
+	{
+		one_second_show = one_second_show? false:true;
+	}
+
+	if(System500msTick() == true)
+	{
+		five_hundred_ms_show = five_hundred_ms_show? false:true;
+	}
+	
 	GfxSwapBuffers();
 	FontCyclic();
 	GsDrawList();
@@ -427,26 +440,12 @@ void GfxSaveDisplayData(GsSprite *spr)
 
 bool Gfx1HzFlash(void)
 {
-	static bool show = false;
-	
-	if(System1SecondTick() == true)
-	{
-		show = show? false:true;
-	}
-	
-	return show;
+	return one_second_show;
 }
 
 bool Gfx2HzFlash(void)
 {
-	static bool show = false;
-	
-	if(System500msTick() == true)
-	{
-		show = show? false:true;
-	}
-	
-	return show;
+	return five_hundred_ms_show;
 }
 
 bool GfxTPageOffsetFromVRAMPosition(GsSprite * spr, short x, short y)

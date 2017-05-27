@@ -76,6 +76,7 @@ typedef struct t_flightData
 	uint8_t ActiveAircraft;
 	FL_STATE State[GAME_MAX_AIRCRAFT];
 	bool NotificationRequest[GAME_MAX_AIRCRAFT];
+	bool Finished[GAME_MAX_AIRCRAFT];
 }TYPE_FLIGHT_DATA;
 
 typedef enum t_livery
@@ -160,6 +161,8 @@ typedef struct
 	uint16_t SelectedRunway;
 	// Tile pointed to by cursor
 	uint16_t SelectedTile;
+	// Conversion between selected aircraft from data list and actual flight data index
+	uint8_t FlightDataSelectedAircraft;
 	// Waypoints added to list when player is tracing a path for an aircraft.
 	// For example: when determining path from runway to parking.
 	uint16_t Waypoints[PLAYER_MAX_WAYPOINTS];

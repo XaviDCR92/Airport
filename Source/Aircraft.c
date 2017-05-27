@@ -182,14 +182,32 @@ AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char * strFlightNumber)
 	return AircraftLiveryTable[liveryIndex];
 }
 
-void AircraftHandler(void)
+bool AircraftRemove(uint8_t aircraftIdx)
 {
-	TYPE_AIRCRAFT_DATA* ptrAircraft;
 	uint8_t i;
 
 	for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
 	{
-		ptrAircraft = &AircraftData[i];
+		TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[i];
+
+		if(ptrAircraft->FlightDataIdx == aircraftIdx)
+		{
+			memset(ptrAircraft, 0, sizeof(TYPE_AIRCRAFT_DATA));
+			ptrAircraft->State = STATE_IDLE;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void AircraftHandler(void)
+{
+	uint8_t i;
+
+	for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
+	{
+		TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[i];
 
 		if(ptrAircraft->State == STATE_IDLE)
 		{
@@ -352,7 +370,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 		if(ptrAircraft->Target[++ptrAircraft->TargetIdx] == 0)
 		{
 			dprintf("All targets reached!\n");
-			ptrAircraft->State = GameTargetsReached(ptrAircraft->FlightDataIdx);
+			ptrAircraft->State = GameTargetsReached(ptrAircraft->Target[0], ptrAircraft->FlightDataIdx);
 		}
 	}
 }
