@@ -50,5 +50,6 @@ FL_STATE 	GameTargetsReached(uint16_t firstTarget, uint8_t index);
 uint16_t	GameGetTileFromIsoPosition(TYPE_ISOMETRIC_POS * IsoPos);
 FL_STATE	GameGetFlightDataStateFromIdx(uint8_t FlightDataIdx);
 uint32_t	GameGetScore(void);
-
+bool		GameInsideLevelFromIsoPos(TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos);
+void		GameRemoveFlight(uint8_t idx);
 #endif //__GAME_HEADER__

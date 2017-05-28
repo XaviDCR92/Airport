@@ -17,6 +17,7 @@
  * *************************************/
 
 #define REFRESH_FREQUENCY 50 //50 Hz PAL / 60 Hz NTSC
+#define DEBUG_PRINT_VAR(var) dprintf(#var " = %d\n", var);
 
 #ifndef bool
 	typedef enum

@@ -178,6 +178,8 @@ typedef struct
 	unsigned short UnboardingSequence[GAME_MAX_SEQUENCE_KEYS];
 	// Index inside UnboardingSequence[]
 	uint8_t UnboardingSequenceIdx;
+	// Show passengers left
+	uint8_t PassengersLeftSelectedAircraft;
 	
 	bool	(*PadKeyPressed_Callback)(unsigned short);
 	bool	(*PadKeyReleased_Callback)(unsigned short);

@@ -238,6 +238,7 @@ enum
 
 static void GameGuiPrepareNotificationString(TYPE_FLIGHT_DATA * ptrFlightData, uint8_t offset);
 static void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
+static void GameGuiClearPassengersLeft(void);
 
 /* **************************************
  * 	Local variables						*
@@ -250,6 +251,8 @@ static GsGPoly4 SelectedAircraftGPoly4;
 static GsSprite ArrowsSpr;
 static GsGPoly4 PauseRect;
 static GsSprite SecondDisplay;
+static TYPE_TIMER* ShowAircraftPassengersTimer;
+static bool GameGuiClearPassengersLeft_Flag;
 
 static char * GameFileList[] = {"cdrom:\\DATA\\SPRITES\\BUBBLE.TIM;1"	,
 								"cdrom:\\DATA\\FONTS\\FONT_1.FNT;1"		,
@@ -295,6 +298,8 @@ void GameGuiInit(void)
 	PauseRect.g[3] = PAUSE_DIALOG_G3;
 	
 	PauseRect.attribute |= ENABLE_TRANS | TRANS_MODE(0);
+
+	ShowAircraftPassengersTimer = SystemCreateTimer(20, true, GameGuiClearPassengersLeft);
 
 	slowScore = 0;
 }
@@ -774,6 +779,28 @@ void GameGuiClock(uint8_t hour, uint8_t min)
 	FontPrintText(&RadioFont,CLOCK_X,CLOCK_Y,strClock);
 }
 
+void GameGuiShowPassengersLeft(TYPE_PLAYER* ptrPlayer)
+{
+	if(GameGuiClearPassengersLeft_Flag == true)
+	{
+		// Reset flag
+		GameGuiClearPassengersLeft_Flag = false;
+		ptrPlayer->PassengersLeftSelectedAircraft = 0;
+	}
+
+	if(ptrPlayer->PassengersLeftSelectedAircraft != 0)
+	{
+		if(GameTwoPlayersActive() == true)
+		{
+			FontPrintText(&SmallFont, 48, Y_SCREEN_RESOLUTION - 64, "%d left", ptrPlayer->PassengersLeftSelectedAircraft);
+		}
+		else
+		{
+			FontPrintText(&SmallFont, 128, Y_SCREEN_RESOLUTION - 64, "%d left", ptrPlayer->PassengersLeftSelectedAircraft);
+		}
+	}
+}
+
 void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
 {
 	uint8_t init_flight = ptrPlayer->FlightDataPage * GAME_GUI_AIRCRAFT_DATA_MAX_PAGE;
@@ -978,7 +1005,19 @@ void GameGuiDrawUnboardingSequence(TYPE_PLAYER* ptrPlayer)
 			}
 
 			// TODO: Draw above the plane
-			GfxDrawButton(128 + (16*i), Y_SCREEN_RESOLUTION - 32, ptrPlayer->UnboardingSequence[i]);
+			if(GameTwoPlayersActive() == true)
+			{
+				GfxDrawButton(48 + (16*i), Y_SCREEN_RESOLUTION - 32, ptrPlayer->UnboardingSequence[i]);
+			}
+			else
+			{
+				GfxDrawButton(128 + (16*i), Y_SCREEN_RESOLUTION - 32, ptrPlayer->UnboardingSequence[i]);
+			}
 		}
 	}
+}
+
+void GameGuiClearPassengersLeft(void)
+{
+	GameGuiClearPassengersLeft_Flag = true;
 }
