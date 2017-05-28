@@ -869,18 +869,18 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFligh
 								"Approach"	);
 			break;
 				
-			case STATE_FINAL:
+			case STATE_READY_FOR_TAKEOFF:
 				FontPrintText(	&SmallFont,
 								AircraftDataDirection_X + AircraftDataState_X_Offset,
 								AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-								"Landing"	);
+								"Takeoff"	);
 			break;
 			
 			case STATE_LANDED:
 				FontPrintText(	&SmallFont,
 								AircraftDataDirection_X + AircraftDataState_X_Offset,
 								AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-								"Arrived"	);
+								"Landed"	);
 			break;
 			
 			case STATE_PARKED:

@@ -59,8 +59,8 @@ enum
 	TILE_RESERVED_3,
 	TILE_AIRPORT_BUILDING,
 	TILE_PLANE,
-	TILE_RESERVED_4,
-	TILE_RESERVED_5,
+	TILE_RWY_HOLDING_POINT,
+	TILE_RWY_HOLDING_POINT_2,
 	TILE_RWY_EXIT,
 	TILE_GATE,
 	TILE_RESERVED_6,
@@ -88,6 +88,7 @@ enum
 	SCORE_REWARD_TAXIING = 200,
 	SCORE_REWARD_FINAL = 400,
 	SCORE_REWARD_UNLOADING = 300,
+	SCORE_REWARD_TAKEOFF = 200,
 	SCORE_REWARD_FINISH_FLIGHT = 1000
 };
 
@@ -134,6 +135,7 @@ static bool GamePathToTile(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightDa
 static void GameDrawMouse(TYPE_PLAYER* ptrPlayer);
 static void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
 static void GameGenerateUnboardingSequence(TYPE_PLAYER* ptrPlayer);
+static void GameCreateTakeoffWaypoints(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData, uint8_t aircraftIdx);
 
 /* *************************************
  * 	Global Variables
@@ -155,6 +157,7 @@ static TYPE_FLIGHT_DATA FlightData;
 static uint16_t GameRwyArray[GAME_MAX_RWY_LENGTH];
 static uint16_t GameUsedRwy[GAME_MAX_RUNWAYS];
 static uint16_t GameSelectedTile;
+static bool firstLevelRender; // Used to avoid reentrance on GameRenderLevel()
 
 // Instances for player-specific data
 TYPE_PLAYER PlayerData[MAX_PLAYERS];
@@ -609,6 +612,8 @@ void GameGraphics(void)
 		// Fading from black effect on startup.
 		GfxIncreaseGlobalLuminance(1);
 	}
+
+	firstLevelRender = true;
 	
 	for(i = 0; i < MAX_PLAYERS ; i++)
 	{
@@ -784,7 +789,6 @@ void GameAircraftState(void)
 	}
 }
 
-
 void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 {
 	uint16_t i;
@@ -795,7 +799,8 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 	bool used_rwy;
 	uint8_t aux_id;
 	GsSprite * ptrTileset;
-	static unsigned char rwy_sine = 0;
+	const uint8_t rwy_sine_step = 24;
+	static unsigned char rwy_sine = rwy_sine_step;
 	static bool rwy_sine_decrease = false;
 	TYPE_ISOMETRIC_POS tileIsoPos;
 	TYPE_CARTESIAN_POS tileCartPos;
@@ -812,6 +817,34 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 		}
 		
 		dprintf("\n");*/
+	}
+
+	if(firstLevelRender == true)
+	{
+		firstLevelRender = false;
+
+		if(rwy_sine_decrease == false)
+		{
+			if(rwy_sine < 240)
+			{
+				rwy_sine += rwy_sine_step;
+			}
+			else
+			{
+				rwy_sine_decrease = true;
+			}
+		}
+		else
+		{
+			if(rwy_sine > rwy_sine_step)
+			{
+				rwy_sine -= rwy_sine_step;
+			}
+			else
+			{
+				rwy_sine_decrease = false;
+			}
+		}
 	}
 	
 	for(i = 0 ; i < GameLevelSize; i++)
@@ -922,32 +955,6 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 			ptrTileset->r = NORMAL_LUMINANCE;
 			ptrTileset->g = NORMAL_LUMINANCE;
 			ptrTileset->b = NORMAL_LUMINANCE;
-		}
-		
-		if(System100msTick() == true)
-		{
-			if(rwy_sine_decrease == false)
-			{
-				if(rwy_sine < 255)
-				{
-					rwy_sine++;
-				}
-				else
-				{
-					rwy_sine_decrease = true;
-				}
-			}
-			else
-			{
-				if(rwy_sine > (NORMAL_LUMINANCE >> 2))
-				{
-					rwy_sine--;
-				}
-				else
-				{
-					rwy_sine_decrease = false;
-				}
-			}
 		}
 		
 		// TODO: Isometric -> Cartesian conversion
@@ -1148,13 +1155,13 @@ void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptr
 				
 				switch(target_tile)
 				{
-					case TILE_RWY_START_1:
+					case TILE_RWY_HOLDING_POINT:
 						// Fall through
-					case TILE_RWY_START_1 | TILE_MIRROR_FLAG:
+					case TILE_RWY_HOLDING_POINT | TILE_MIRROR_FLAG:
 						// Fall through
-					case TILE_RWY_START_2:
+					case TILE_RWY_HOLDING_POINT_2:
 						// Fall through
-					case TILE_RWY_START_2 | TILE_MIRROR_FLAG:
+					case TILE_RWY_HOLDING_POINT_2 | TILE_MIRROR_FLAG:
 						AircraftFromFlightDataIndexAddTargets(ptrPlayer->FlightDataSelectedAircraft, ptrPlayer->Waypoints);
 						dprintf("Added these targets to aircraft %d:\n", ptrPlayer->FlightDataSelectedAircraft);
 						
@@ -1165,11 +1172,15 @@ void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptr
 						
 						dprintf("\n");
 						
-						ptrPlayer->SelectTaxiwayParking = false;
 						// Clear waypoints array.
 						memset(ptrPlayer->Waypoints, 0, sizeof(uint16_t) * PLAYER_MAX_WAYPOINTS);
+
+						// Reset state and auxiliar variables
 						ptrPlayer->WaypointIdx = 0;
 						ptrPlayer->LastWaypointIdx = 0;
+						ptrPlayer->LockedAircraft = 0;
+						ptrPlayer->LockTarget = false;
+						ptrPlayer->SelectTaxiwayRunway = false;
 						
 						ptrFlightData->State[ptrPlayer->FlightDataSelectedAircraft] = STATE_TAXIING;
 						GameScore += SCORE_REWARD_TAXIING;
@@ -1402,6 +1413,11 @@ void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFl
 						// Generate first unboarding key sequence
 						GameGenerateUnboardingSequence(ptrPlayer);
 					break;
+
+					case STATE_READY_FOR_TAKEOFF:
+						ptrFlightData->State[AircraftIdx] = STATE_TAKEOFF;
+						GameCreateTakeoffWaypoints(ptrPlayer, ptrFlightData, AircraftIdx);
+					break;
 					
 					default:
 						dprintf("Incompatible state %d!\n",aircraftState);
@@ -1561,6 +1577,38 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFl
 			return;
 		}
 	}
+	else if(ptrFlightData->State[aircraftIndex] == STATE_READY_FOR_TAKEOFF)
+	{
+		AIRCRAFT_DIRECTION aircraftDir = AircraftGetDirection(AircraftFromFlightDataIndex(aircraftIndex));
+		uint16_t rwyTile = 0;
+
+		switch(aircraftDir)
+		{
+			case AIRCRAFT_DIR_EAST:
+				rwyTile = AircraftGetTileFromFlightDataIndex(aircraftIndex) - GameLevelColumns;
+			break;
+
+			case AIRCRAFT_DIR_WEST:
+				rwyTile = AircraftGetTileFromFlightDataIndex(aircraftIndex) + GameLevelColumns;
+			break;
+
+			case AIRCRAFT_DIR_NORTH:
+				rwyTile = AircraftGetTileFromFlightDataIndex(aircraftIndex) + 1;
+			break;
+
+			case AIRCRAFT_DIR_SOUTH:
+				rwyTile = AircraftGetTileFromFlightDataIndex(aircraftIndex) - 1;
+			break;
+
+			case AIRCRAFT_DIR_NO_DIRECTION:
+				// Fall through
+			default:
+			break;
+
+		}
+		ptrFlightData->State[aircraftIndex] = STATE_TAKEOFF;
+		GameScore += SCORE_REWARD_TAKEOFF;
+	}
 }
 
 short GameGetXFromTile_short(uint16_t tile)
@@ -1621,7 +1669,18 @@ FL_STATE GameTargetsReached(uint16_t firstTarget, uint8_t index)
 		break;
 		
 		case STATE_TAXIING:
-			FlightData.State[index] = STATE_UNBOARDING;
+			if(FlightData.FlightDirection[index] == DEPARTURE)
+			{
+				FlightData.State[index] = STATE_HOLDING_RWY;
+			}
+			else if(FlightData.FlightDirection[index] == ARRIVAL)
+			{
+				FlightData.State[index] = STATE_UNBOARDING;
+			}
+		break;
+
+		case STATE_TAKEOFF:
+			FlightData.State[index] = STATE_CLIMBING;
 		break;
 		
 		default:
@@ -1693,11 +1752,11 @@ bool GamePathToTile(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 	// water, buildings...), then false is returned.
 	
 	uint8_t AcceptedTiles[] = {	TILE_ASPHALT, TILE_ASPHALT_WITH_BORDERS,
-								TILE_PARKING, TILE_RWY_START_1,
-								TILE_RWY_START_2, TILE_RWY_MID,
+								TILE_PARKING, TILE_RWY_MID,
 								TILE_RWY_EXIT, TILE_TAXIWAY_CORNER_GRASS,
 								TILE_TAXIWAY_CORNER_GRASS_2, TILE_TAXIWAY_GRASS,
-								TILE_TAXIWAY_INTERSECT_GRASS};
+								TILE_TAXIWAY_INTERSECT_GRASS,
+								TILE_RWY_HOLDING_POINT, TILE_RWY_HOLDING_POINT_2 };
 								
 	uint8_t i;
 	uint8_t j;
@@ -2052,4 +2111,90 @@ void GameGenerateUnboardingSequence(TYPE_PLAYER* ptrPlayer)
 	}
 
 	dprintf("\n");
+}
+
+void GameCreateTakeoffWaypoints(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData, uint8_t aircraftIdx)
+{
+	// Look for aircraft direction by searching TILE_RWY_EXIT
+	AIRCRAFT_DIRECTION aircraftDir = AIRCRAFT_DIR_NO_DIRECTION;
+	uint16_t currentTile = AircraftGetTileFromFlightDataIndex(aircraftIdx);
+	uint16_t targets[AIRCRAFT_MAX_TARGETS] = {0};
+	uint8_t targetsIdx = 0;
+	uint16_t runwayTile = 0;
+	uint16_t i;
+
+	if( (currentTile > GameLevelColumns) && ( (currentTile + GameLevelColumns) < (sizeof(GameLevelBuffer) / sizeof(GameLevelBuffer[0]) ) ) )
+	{
+		if(GameLevelBuffer[currentTile + 1] == TILE_RWY_EXIT)
+		{
+			aircraftDir = AIRCRAFT_DIR_EAST;
+			runwayTile = currentTile + 1;
+		}
+		else if(GameLevelBuffer[currentTile - 1] == TILE_RWY_EXIT)
+		{
+			aircraftDir = AIRCRAFT_DIR_WEST;
+			runwayTile = currentTile - 1;
+		}
+		else if(GameLevelBuffer[currentTile + GameLevelColumns] == TILE_RWY_EXIT)
+		{
+			aircraftDir = AIRCRAFT_DIR_SOUTH;
+			runwayTile = currentTile + GameLevelColumns;
+		}
+		else if(GameLevelBuffer[currentTile - GameLevelColumns] == TILE_RWY_EXIT)
+		{
+			aircraftDir = AIRCRAFT_DIR_NORTH;
+			runwayTile = currentTile - GameLevelColumns;
+		}
+		else
+		{
+			dprintf("GameCreateTakeoffWaypoints(): could not determine aircraft direction.\n");
+			return;
+		}
+
+		targets[targetsIdx++] = runwayTile;
+
+		dprintf("Direction = ");
+
+		switch(aircraftDir)
+		{
+			case AIRCRAFT_DIR_EAST:
+				dprintf("EAST\n");
+			break;
+
+			case AIRCRAFT_DIR_WEST:
+				dprintf("WEST\n");
+			break;
+
+			case AIRCRAFT_DIR_NORTH:
+				dprintf("NORTH\n");
+			break;
+
+			case AIRCRAFT_DIR_SOUTH:
+				dprintf("SOUTH\n");
+				for(i = (runwayTile + 1); (i < (runwayTile + GameLevelColumns)) && GameLevelBuffer[i] != TILE_RWY_EXIT; i++)
+				{
+					targets[targetsIdx++] = i;
+				}
+			break;
+
+			default:
+			break;
+		}
+
+		dprintf("Waypoints for takeoff added = ");
+
+		for(i = 0; i < AIRCRAFT_MAX_TARGETS; i++)
+		{
+			dprintf("%d ", targets[i]);
+		}
+
+		dprintf("\n");
+		
+		AircraftAddTargets(AircraftFromFlightDataIndex(aircraftIdx), targets);
+		
+	}
+	else
+	{
+		dprintf("GameCreateTakeoffWaypoints(): Invalid index for tile.\n");
+	}
 }

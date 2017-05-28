@@ -270,6 +270,17 @@ bool UpdatePads(void)
 	PadCheatHandler(PAD_ONE);
 	
 	PadCheatHandler(PAD_TWO);
+	
+	// Get now-old pad data
+	previous_pad1 = pad1;
+	previous_pad2 = pad2;
+	
+	PSX_ReadPad(&pad1,&pad2);
+	
+	if(PadOneConnected() == false)
+	{
+		return false;
+	}
 
 	if(!(previous_pad1 & pad1) )
 	{
@@ -287,17 +298,6 @@ bool UpdatePads(void)
 	else
 	{
 		pad2_last_key_single_pressed = 0;
-	}
-	
-	// Get now-old pad data
-	previous_pad1 = pad1;
-	previous_pad2 = pad2;
-	
-	PSX_ReadPad(&pad1,&pad2);
-	
-	if(PadOneConnected() == false)
-	{
-		return false;
 	}
 	
 	return true;

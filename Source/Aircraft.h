@@ -23,6 +23,7 @@ void AircraftAddTargets(TYPE_AIRCRAFT_DATA* ptrAircraft, uint16_t* targets);
 TYPE_ISOMETRIC_POS AircraftGetIsoPos(uint8_t FlightDataIdx);
 uint16_t AircraftGetTileFromFlightDataIndex(uint8_t index);
 bool AircraftRemove(uint8_t aircraftIdx);
+AIRCRAFT_DIRECTION AircraftGetDirection(TYPE_AIRCRAFT_DATA* ptrAircraft);
 bool AircraftAddNew(	TYPE_FLIGHT_DATA * ptrFlightData,
 						uint8_t FlightDataIndex,
 						uint16_t* targets		);

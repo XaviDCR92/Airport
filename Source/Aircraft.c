@@ -235,6 +235,8 @@ void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft)
 		break;
 
 		case STATE_TAXIING:
+			// Fall through
+		case STATE_READY_FOR_TAKEOFF:
 			ptrAircraft->Speed = AircraftSpeedsTable[AIRCRAFT_SPEED_TAXIING];
 		break;
 
@@ -481,3 +483,9 @@ void AircraftFromFlightDataIndexAddTargets(uint8_t index, uint16_t* targets)
 {
 	AircraftAddTargets(AircraftFromFlightDataIndex(index), targets);
 }
+
+AIRCRAFT_DIRECTION AircraftGetDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
+{
+	return ptrAircraft->Direction;
+}
+
