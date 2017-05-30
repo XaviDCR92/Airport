@@ -190,10 +190,13 @@ bool AircraftRemove(uint8_t aircraftIdx)
 	{
 		TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[i];
 
-		if(ptrAircraft->FlightDataIdx == aircraftIdx)
+		if(ptrAircraft->State != STATE_IDLE)
 		{
-			ptrAircraft->State = STATE_IDLE;
-			return true;
+			if(ptrAircraft->FlightDataIdx == aircraftIdx)
+			{
+				ptrAircraft->State = STATE_IDLE;
+				return true;
+			}
 		}
 	}
 
@@ -412,6 +415,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 
 		if(GameInsideLevelFromIsoPos(&ptrAircraft->IsoPos) == true)
 		{
+			ptrAircraft->State = STATE_IDLE;
 			dprintf("Flight %d removed\n", ptrAircraft->FlightDataIdx);
 			GameRemoveFlight(ptrAircraft->FlightDataIdx);
 		}
@@ -500,7 +504,15 @@ void AircraftAddTargets(TYPE_AIRCRAFT_DATA* ptrAircraft, uint16_t* targets)
 uint16_t AircraftGetTileFromFlightDataIndex(uint8_t index)
 {
 	TYPE_ISOMETRIC_POS isoPos = AircraftGetIsoPos(index);
-	return GameGetTileFromIsoPosition(&isoPos);
+
+	if(AircraftFromFlightDataIndex(index)->State != STATE_IDLE)
+	{
+		return GameGetTileFromIsoPosition(&isoPos);
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 TYPE_AIRCRAFT_DATA* AircraftFromFlightDataIndex(uint8_t index)
@@ -531,3 +543,9 @@ AIRCRAFT_DIRECTION AircraftGetDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 	return ptrAircraft->Direction;
 }
 
+uint16_t* AircraftGetTargets(uint8_t index)
+{
+	TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(index);
+	
+	return ptrAircraft->Target;
+}

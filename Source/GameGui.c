@@ -11,7 +11,7 @@
 #define NOTIFICATION_TIMER_LIMIT 		5*TIMEBASE_1_SECOND		// 5 seconds
 #define BUBBLE_VIBRATION_TIMER_LIMIT	TIMEBASE_1_SECOND >> 1	// Half a second
 #define NOTIFICATION_BUFFER_SIZE		200
-#define GAME_GUI_AIRCRAFT_DATA_MAX_PAGE 5
+#define GAME_GUI_AIRCRAFT_DATA_MAX_PAGE 4
 
 #define SLOW_SCORE_LOW_SPEED_MARGIN		100
 #define SLOW_SCORE_LOW_SPEED			5
@@ -922,6 +922,13 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFligh
 								AircraftDataDirection_X + AircraftDataState_X_Offset,
 								AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
 								"Unboard"	);
+			break;
+
+			case STATE_HOLDING_RWY:
+				FontPrintText(	&SmallFont,
+								AircraftDataDirection_X + AircraftDataState_X_Offset,
+								AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
+								"Holding"	);
 			break;
 			
 			default:
