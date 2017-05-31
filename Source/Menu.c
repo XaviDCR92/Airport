@@ -283,7 +283,7 @@ void MainMenu(void)
 			
 			case ONE_TWO_PLAYERS_LEVEL:
 				
-				GsSortCls(0,0,40);				
+				GsSortCls(0,0,40);
 				MainMenuDrawButton(&MainMenuBtn[ONE_PLAYER_BUTTON_INDEX]);
 				MainMenuDrawButton(&MainMenuBtn[TWO_PLAYER_BUTTON_INDEX]);
 				

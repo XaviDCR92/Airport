@@ -51,5 +51,5 @@ uint16_t	GameGetTileFromIsoPosition(TYPE_ISOMETRIC_POS * IsoPos);
 FL_STATE	GameGetFlightDataStateFromIdx(uint8_t FlightDataIdx);
 uint32_t	GameGetScore(void);
 bool		GameInsideLevelFromIsoPos(TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos);
-void		GameRemoveFlight(uint8_t idx);
+void		GameRemoveFlight(uint8_t idx, bool successful);
 #endif //__GAME_HEADER__

@@ -803,7 +803,7 @@ void GameAircraftState(void)
 						
 						target[0] = FlightData.Parking[i];
 						
-						dprintf("Target assigned = %d", target[0]);
+						dprintf("Target assigned = %d\n", target[0]);
 						
 						if(AircraftAddNew(&FlightData, i, target) == false)
 						{
@@ -824,18 +824,8 @@ void GameAircraftState(void)
 								&&
 				(FlightData.RemainingTime[i] == 0)	)
 			{
-				uint8_t j;
-				
 				// Player(s) lost a flight!
-				FlightData.State[i] = STATE_IDLE;
-				GameScore = (GameScore < LOST_FLIGHT_PENALTY)? 0 : (GameScore - LOST_FLIGHT_PENALTY);
-
-				for(j = 0; j < MAX_PLAYERS; j++)
-				{
-					TYPE_PLAYER* ptrPlayer = &PlayerData[j];
-					
-					GameActiveAircraftList(ptrPlayer, &FlightData);
-				}
+				GameRemoveFlight(i, false);
 			}
 		}
 	}
@@ -1012,9 +1002,31 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 									||
 							(GameLevelBuffer[i] == TILE_RWY_HOLDING_POINT_2)	)	)
 			{
-				ptrTileset->r = NORMAL_LUMINANCE >> 2;
-				ptrTileset->g = rwy_sine;
-				ptrTileset->b = NORMAL_LUMINANCE >> 2;
+				uint16_t aircraftTile;
+				bool bHoldingRwyBusy = false;
+				
+				for(j = 0; j < GAME_MAX_AIRCRAFT; j++)
+				{
+					aircraftTile = AircraftGetTileFromFlightDataIndex(j);
+
+					if(i == aircraftTile)
+					{
+						bHoldingRwyBusy = true;
+					}
+				}
+				
+				if(bHoldingRwyBusy == true)
+				{
+					ptrTileset->r = rwy_sine;
+					ptrTileset->g = NORMAL_LUMINANCE >> 2;
+					ptrTileset->b = NORMAL_LUMINANCE >> 2;
+				}
+				else
+				{
+					ptrTileset->r = NORMAL_LUMINANCE >> 2;
+					ptrTileset->g = rwy_sine;
+					ptrTileset->b = NORMAL_LUMINANCE >> 2;
+				}
 			}
 			else if(	(ptrPlayer->SelectTaxiwayParking == true)
 									&&
@@ -2211,7 +2223,7 @@ void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 				else
 				{
 					// Flight has finished. Remove aircraft and set finished flag
-					GameRemoveFlight(ptrPlayer->FlightDataSelectedAircraft);
+					GameRemoveFlight(ptrPlayer->FlightDataSelectedAircraft, true);
 				}
 				
 				ptrPlayer->UnboardingSequenceIdx = 0;
@@ -2414,19 +2426,20 @@ bool GameInsideLevelFromIsoPos(TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos)
 	return false;
 }
 
-void GameRemoveFlight(uint8_t idx)
+void GameRemoveFlight(uint8_t idx, bool successful)
 {
-	TYPE_PLAYER* ptrPlayer;
 	uint8_t i;
-	uint8_t j;
 
-	for(i = 0; i < MAX_PLAYERS; i++)
+	for(i = PLAYER_ONE; i < MAX_PLAYERS; i++)
 	{
-		ptrPlayer = &PlayerData[i];
+		TYPE_PLAYER* ptrPlayer = &PlayerData[i];
+		uint8_t j;
 
 		for(j = 0; j < ptrPlayer->ActiveAircraft; j++)
 		{
-			if(FlightData.State[ptrPlayer->FlightDataSelectedAircraft] != STATE_IDLE)
+			uint8_t k;
+
+			if(FlightData.State[ptrPlayer->ActiveAircraftList[j]] != STATE_IDLE)
 			{
 				if(ptrPlayer->ActiveAircraftList[j] == idx)
 				{
@@ -2447,9 +2460,20 @@ void GameRemoveFlight(uint8_t idx)
 					DEBUG_PRINT_VAR(&PlayerData[PLAYER_ONE]);
 					DEBUG_PRINT_VAR(&PlayerData[PLAYER_TWO]);*/
 
-					FlightData.Passengers[ptrPlayer->FlightDataSelectedAircraft] = 0;
-					FlightData.State[ptrPlayer->FlightDataSelectedAircraft] = STATE_IDLE;
-					FlightData.Finished[ptrPlayer->FlightDataSelectedAircraft] = true;
+					FlightData.Passengers[ptrPlayer->ActiveAircraftList[j]] = 0;
+					FlightData.State[ptrPlayer->ActiveAircraftList[j]] = STATE_IDLE;
+					FlightData.Finished[ptrPlayer->ActiveAircraftList[j]] = true;
+
+					for(k = 0; k < GAME_MAX_RUNWAYS; k++)
+					{
+						uint16_t* targets = AircraftGetTargets(ptrPlayer->ActiveAircraftList[j]);
+						uint8_t targetIdx = AircraftGetTargetIdx(ptrPlayer->ActiveAircraftList[j]);
+
+						if(SystemContains_u16(GameUsedRwy[k], targets, targetIdx) == true)
+						{
+							GameUsedRwy[k] = 0;
+						}
+					}
 					
 					if(AircraftRemove(idx) == false)
 					{
@@ -2459,7 +2483,14 @@ void GameRemoveFlight(uint8_t idx)
 					ptrPlayer->LockTarget = false;
 					ptrPlayer->LockedAircraft = 0;
 
-					GameScore += SCORE_REWARD_FINISH_FLIGHT;
+					if(successful == true)
+					{
+						GameScore += SCORE_REWARD_FINISH_FLIGHT;
+					}
+					else
+					{
+						GameScore = (GameScore < LOST_FLIGHT_PENALTY)? 0 : (GameScore - LOST_FLIGHT_PENALTY);
+					}
 
 					return;
 				}

@@ -420,7 +420,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 
 		if(GameInsideLevelFromIsoPos(&ptrAircraft->IsoPos) == true)
 		{
-			GameRemoveFlight(ptrAircraft->FlightDataIdx);
+			GameRemoveFlight(ptrAircraft->FlightDataIdx, true);
 		}
 	}
 }
@@ -551,6 +551,13 @@ uint16_t* AircraftGetTargets(uint8_t index)
 	TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(index);
 	
 	return ptrAircraft->Target;
+}
+
+uint8_t AircraftGetTargetIdx(uint8_t index)
+{
+	TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(index);
+	
+	return ptrAircraft->TargetIdx;
 }
 
 bool AircraftMoving(uint8_t index)
