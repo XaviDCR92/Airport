@@ -244,6 +244,8 @@ void MainMenuInit(void)
 				
 	PadAddCheat(&StackCheckCheat);
 
+	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
+
 	LoadMenuEnd();
 }
 

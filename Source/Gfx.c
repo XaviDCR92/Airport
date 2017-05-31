@@ -8,7 +8,7 @@
  * 	Defines
  * *************************************/
 
-#define PRIMITIVE_LIST_SIZE 0x800
+#define PRIMITIVE_LIST_SIZE 0x1000
 #define DOUBLE_BUFFERING_SWAP_Y	256
 #define UPLOAD_IMAGE_FLAG 1
 #define MAX_LUMINANCE 0xFF
@@ -76,18 +76,47 @@ static bool one_second_show;
 
 void GfxSwapBuffers(void)
 {
+	// Consistency check
+#if PSXSDK_DEBUG
+
+	if(GsListPos() >= PRIMITIVE_LIST_SIZE)
+	{
+		dprintf("Linked list iterator overflow!\n");
+		while(1);
+	}
+	
+	if( (DrawEnv.h != Y_SCREEN_RESOLUTION)
+					||
+		( (DrawEnv.w != X_SCREEN_RESOLUTION)
+						&&
+		  (DrawEnv.w != X_SCREEN_RESOLUTION >> 1) )
+					||
+		( (DispEnv.y != DOUBLE_BUFFERING_SWAP_Y)
+						&&
+		  (DispEnv.y != 0) )		)
+	{
+		dprintf("What the hell is happening?\n");
+		DEBUG_PRINT_VAR(DispEnv.x);
+		DEBUG_PRINT_VAR(DispEnv.y);
+		DEBUG_PRINT_VAR(DrawEnv.x);
+		DEBUG_PRINT_VAR(DrawEnv.y);
+
+		while(1);
+	}
+#endif // PSXSDK_DEBUG
+
 	if(DrawEnv.h == Y_SCREEN_RESOLUTION)
 	{
-			if(DispEnv.y == 0)
-			{
-				DispEnv.y = DOUBLE_BUFFERING_SWAP_Y;
-				DrawEnv.y = 0;
-			}
-			else if(DispEnv.y == DOUBLE_BUFFERING_SWAP_Y)
-			{
-				DispEnv.y = 0;
-				DrawEnv.y = DOUBLE_BUFFERING_SWAP_Y;
-			}
+		if(DispEnv.y == 0)
+		{
+			DispEnv.y = DOUBLE_BUFFERING_SWAP_Y;
+			DrawEnv.y = 0;
+		}
+		else if(DispEnv.y == DOUBLE_BUFFERING_SWAP_Y)
+		{
+			DispEnv.y = 0;
+			DrawEnv.y = DOUBLE_BUFFERING_SWAP_Y;
+		}
 			
 		GsSetDispEnv_DMA(&DispEnv);
 		GsSetDrawEnv_DMA(&DrawEnv);

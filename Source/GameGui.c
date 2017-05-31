@@ -415,31 +415,6 @@ bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer)
 	return false;
 }
 
-void GameGuiActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
-{
-	uint8_t i;
-	uint8_t j = 0;
-	
-	if(ptrPlayer->ShowAircraftData == true)
-	{
-		// Clear all pointers for aircraft data first.
-		// Then, rebuild aircraft list for player.
-		memset(ptrPlayer->ActiveAircraftList, 0, GAME_MAX_AIRCRAFT);
-		ptrPlayer->ActiveAircraft = 0;
-		
-		for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
-		{
-			if(	(ptrFlightData->State[i] != STATE_IDLE)
-								&&
-				(ptrFlightData->FlightDirection[i] & ptrPlayer->FlightDirection) )
-			{
-				ptrPlayer->ActiveAircraftList[j++] = i;
-				ptrPlayer->ActiveAircraft++;
-			}
-		}
-	}
-}
-
 void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
 {
 	while(ptrPlayer->ActiveAircraft < ptrPlayer->SelectedAircraft)

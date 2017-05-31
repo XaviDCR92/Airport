@@ -1,6 +1,7 @@
 CC = psx-gcc
 DEFINE= -DFIXMATH_FAST_SIN -D_PAL_MODE_ -DPSXSDK_DEBUG
-DEFINE +=  -DNO_CDDA -DNO_INTRO
+DEFINE +=  -DNO_CDDA
+DEFINE +=  -DNO_INTRO
 LIBS= -lfixmath
 CC_FLAGS = -Wall -Werror -c -Os
 LINKER = psx-gcc

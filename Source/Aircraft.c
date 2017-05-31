@@ -194,7 +194,10 @@ bool AircraftRemove(uint8_t aircraftIdx)
 		{
 			if(ptrAircraft->FlightDataIdx == aircraftIdx)
 			{
+				DEBUG_PRINT_VAR(ptrAircraft->FlightDataIdx);
+				DEBUG_PRINT_VAR(aircraftIdx);
 				ptrAircraft->State = STATE_IDLE;
+				dprintf("Flight %d removed\n", ptrAircraft->FlightDataIdx);
 				return true;
 			}
 		}
@@ -240,17 +243,19 @@ void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft)
 
 		case STATE_TAXIING:
 			// Fall through
-		case STATE_HOLDING_RWY:
-			// Fall through
-		case STATE_READY_FOR_TAKEOFF:
+		case STATE_ENTERING_RWY:
 			ptrAircraft->Speed = AircraftSpeedsTable[AIRCRAFT_SPEED_GROUND];
 		break;
 
+		case STATE_READY_FOR_TAKEOFF:
+			// Fall through
 		case STATE_UNBOARDING:
 			// Fall through
 		case STATE_IDLE:
 			// Fall through
 		case STATE_LANDED:
+			// Fall through
+		case STATE_HOLDING_RWY:
 			// Fall through
 		default:
 			ptrAircraft->Speed = 0;
@@ -415,8 +420,6 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 
 		if(GameInsideLevelFromIsoPos(&ptrAircraft->IsoPos) == true)
 		{
-			ptrAircraft->State = STATE_IDLE;
-			dprintf("Flight %d removed\n", ptrAircraft->FlightDataIdx);
 			GameRemoveFlight(ptrAircraft->FlightDataIdx);
 		}
 	}
@@ -548,4 +551,11 @@ uint16_t* AircraftGetTargets(uint8_t index)
 	TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(index);
 	
 	return ptrAircraft->Target;
+}
+
+bool AircraftMoving(uint8_t index)
+{
+	TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(index);
+	
+	return (bool)ptrAircraft->Speed;
 }
