@@ -105,7 +105,7 @@ enum
 	UNBOARDING_KEY_SEQUENCE_EASY = 4,
 	UNBOARDING_KEY_SEQUENCE_MEDIUM = 6,
 	UNBOARDING_KEY_SEQUENCE_HARD = GAME_MAX_SEQUENCE_KEYS,
-	UNBOARDING_PASSENGERS_PER_SEQUENCE = 25
+	UNBOARDING_PASSENGERS_PER_SEQUENCE = 50
 };
 
 /* *************************************
@@ -115,6 +115,7 @@ enum
 static void GameInit(void);
 static void GameLoadLevel(void);
 static bool GamePause(void);
+static bool GameFinished(void);
 static void GameEmergencyMode(void);
 static void GameCalculations(void);
 static void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
@@ -212,6 +213,11 @@ void Game(bool two_players)
 	
 	while(1)
 	{
+		if(GameFinished() == true)
+		{
+			break;
+		}
+
 		if(GamePause() == true)
 		{
 			// Exit game
@@ -665,8 +671,6 @@ void GameGraphics(void)
 	
 	// Draw common elements for both players (messages, clock...)
 	
-	GameGuiAircraftNotificationRequest(&FlightData);
-	
 	GameGuiBubble(&FlightData);
 	
 	GameGuiClock(GameHour,GameMinutes);
@@ -804,6 +808,8 @@ void GameAircraftState(void)
 						target[0] = FlightData.Parking[i];
 						
 						dprintf("Target assigned = %d\n", target[0]);
+
+						dprintf("2\n");
 						
 						if(AircraftAddNew(&FlightData, i, target) == false)
 						{
@@ -814,6 +820,7 @@ void GameAircraftState(void)
 				}
 				else if(FlightData.FlightDirection[i] == ARRIVAL)
 				{
+					dprintf("Flight %d set to STATE_APPROACH.\n", i);
 					FlightData.State[i] = STATE_APPROACH;
 					// Create notification request for incoming aircraft
 					FlightData.NotificationRequest[i] = true;
@@ -825,6 +832,9 @@ void GameAircraftState(void)
 				(FlightData.RemainingTime[i] == 0)	)
 			{
 				// Player(s) lost a flight!
+				DEBUG_PRINT_VAR(i);
+				DEBUG_PRINT_VAR(FlightData.State[i]);
+				DEBUG_PRINT_VAR(FlightData.RemainingTime[i]);
 				GameRemoveFlight(i, false);
 			}
 		}
@@ -1007,11 +1017,27 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 				
 				for(j = 0; j < GAME_MAX_AIRCRAFT; j++)
 				{
+					uint16_t* targets = AircraftGetTargets(j);
 					aircraftTile = AircraftGetTileFromFlightDataIndex(j);
+					uint16_t lastTarget = 0;
+					uint8_t k;
 
-					if(i == aircraftTile)
+					for(k = 0; k < AIRCRAFT_MAX_TARGETS; k++)
+					{
+						if(targets[k] == 0)
+						{
+							break;
+						}
+
+						lastTarget = targets[k];
+					}
+
+					if( (i == aircraftTile)
+								||
+						(i == lastTarget)	)
 					{
 						bHoldingRwyBusy = true;
+						break;
 					}
 				}
 				
@@ -1704,6 +1730,8 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFl
 		
 		targets[0] = assignedRwy;
 		targets[1] = rwyExit;
+
+		dprintf("1\n");
 		
 		if( AircraftAddNew(ptrFlightData,
 							aircraftIndex,
@@ -2460,24 +2488,22 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 					DEBUG_PRINT_VAR(&PlayerData[PLAYER_ONE]);
 					DEBUG_PRINT_VAR(&PlayerData[PLAYER_TWO]);*/
 
-					FlightData.Passengers[ptrPlayer->ActiveAircraftList[j]] = 0;
-					FlightData.State[ptrPlayer->ActiveAircraftList[j]] = STATE_IDLE;
-					FlightData.Finished[ptrPlayer->ActiveAircraftList[j]] = true;
-
 					for(k = 0; k < GAME_MAX_RUNWAYS; k++)
 					{
 						uint16_t* targets = AircraftGetTargets(ptrPlayer->ActiveAircraftList[j]);
-						uint8_t targetIdx = AircraftGetTargetIdx(ptrPlayer->ActiveAircraftList[j]);
 
-						if(SystemContains_u16(GameUsedRwy[k], targets, targetIdx) == true)
+						if(SystemContains_u16(GameUsedRwy[k], targets, AIRCRAFT_MAX_TARGETS) == true)
 						{
 							GameUsedRwy[k] = 0;
 						}
 					}
-					
-					if(AircraftRemove(idx) == false)
+
+					if(FlightData.State[ptrPlayer->ActiveAircraftList[j]] != STATE_APPROACH)
 					{
-						dprintf("Something went wrong when removing aircraft!\n");
+						if(AircraftRemove(idx) == false)
+						{
+							dprintf("Something went wrong when removing aircraft!\n");
+						}
 					}
 
 					ptrPlayer->LockTarget = false;
@@ -2491,6 +2517,10 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 					{
 						GameScore = (GameScore < LOST_FLIGHT_PENALTY)? 0 : (GameScore - LOST_FLIGHT_PENALTY);
 					}
+
+					FlightData.Passengers[ptrPlayer->ActiveAircraftList[j]] = 0;
+					FlightData.State[ptrPlayer->ActiveAircraftList[j]] = STATE_IDLE;
+					FlightData.Finished[ptrPlayer->ActiveAircraftList[j]] = true;
 
 					return;
 				}
@@ -2525,3 +2555,18 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlight
 	}
 }
 
+bool GameFinished(void)
+{
+	uint8_t i;
+
+	for(i = 0; i < FlightData.nAircraft; i++)
+	{
+		if(FlightData.Finished[i] == false)
+		{
+			// At least one aircraft still not finished
+			return false;
+		}
+	}
+
+	return GameGuiFinishedDialog(&PlayerData[PLAYER_ONE]);
+}

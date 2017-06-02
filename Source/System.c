@@ -213,38 +213,102 @@ void SystemIncreaseGlobalTimer(void)
 	global_timer++;
 }
 
+/* *******************************************************************
+ * 
+ * @name: uint64_t SystemGetGlobalTimer(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief: Returns internal global timer value.
+ * 
+ * *******************************************************************/
+
 uint64_t SystemGetGlobalTimer(void)
 {
 	return global_timer;
 }
+
+/* *******************************************************************
+ * 
+ * @name: void SystemDisableScreenRefresh(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief: Resets VBlank IRQ flag.
+ * 
+ * *******************************************************************/
 
 void SystemDisableScreenRefresh(void)
 {
 	refresh_needed = false;
 }
 
+/* *******************************************************************
+ * 
+ * @name: bool System1SecondTick(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @return: bool variable with a 1-cycle-length pulse that gets
+ * 			set each second.
+ * 
+ * *******************************************************************/
+
 bool System1SecondTick(void)
 {
 	return one_second_timer;
 }
+
+/* *******************************************************************
+ * 
+ * @name: bool System100msTick(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @return: bool variable with a 1-cycle-length pulse that gets
+ * 			set every 100 milliseconds.
+ * 
+ * *******************************************************************/
 
 bool System100msTick(void)
 {
 	return hundred_ms_timer;
 }
 
+/* *******************************************************************
+ * 
+ * @name	bool System500msTick(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @return: bool variable with a 1-cycle-length pulse that gets
+ * 			set every 500 milliseconds.
+ * 
+ * *******************************************************************/
+
 bool System500msTick(void)
 {
 	return five_hundred_ms_timer;
 }
 
-static uint64_t last_one_second_tick;
-	static uint64_t last_100_ms_tick;
-	static uint64_t last_500_ms_tick;
+/* *******************************************************************
+ * 
+ * @name	void SystemRunTimers(void)	
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	general timer handler
+ *
+ * @remarks:	1 second, 500 ms and 100 ms ticks get updated here.
+ * 
+ * *******************************************************************/
 
 void SystemRunTimers(void)
 {
-	
+	static uint64_t last_one_second_tick;
+	static uint64_t last_100_ms_tick;
+	static uint64_t last_500_ms_tick;
+
 	SystemCheckTimer(&one_second_timer, &last_one_second_tick, REFRESH_FREQUENCY);
 	
 #ifdef _PAL_MODE_
@@ -256,6 +320,16 @@ void SystemRunTimers(void)
 	
 }
 
+/* ********************************************************************************
+ * 
+ * @name	void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Checks if needed time step has been elapsed. If true, flag gets set.
+ * 
+ * *******************************************************************************/
+ 
 void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
 {
 	if(*timer == true)
@@ -269,6 +343,19 @@ void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
 		*last_timer = global_timer;
 	}
 }
+
+/* ****************************************************************************************
+ * 
+ * @name	bool SystemLoadFileToBuffer(char * fname, uint8_t* buffer, uint32_t szBuffer)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Given an input path, it fills a buffer pointed to by "buffer" with
+ * 			maximum size "szBuffer" with data from CD-ROM.
+ *
+ * @return:	true if file has been loaded successfully, false otherwise.
+ * 
+ * ****************************************************************************************/
 
 bool SystemLoadFileToBuffer(char * fname, uint8_t* buffer, uint32_t szBuffer)
 {
@@ -325,15 +412,47 @@ bool SystemLoadFileToBuffer(char * fname, uint8_t* buffer, uint32_t szBuffer)
 	return true;
 }
 
+/* ****************************************************************************************
+ * 
+ * @name	bool SystemLoadFile(char *fname)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Given an input file name, it loads its conents into internal buffer.
+ *
+ * @return:	true if file has been loaded successfully, false otherwise.
+ * 
+ * ****************************************************************************************/
+
 bool SystemLoadFile(char *fname)
 {
 	return SystemLoadFileToBuffer(fname,file_buffer,sizeof(file_buffer));
 }
 
+/* ******************************************************************
+ * 
+ * @name	uint8_t* SystemGetBufferAddress(void)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @return:	Reportedly, returns internal buffer initial address.
+ * 
+ * *****************************************************************/
+
 uint8_t* SystemGetBufferAddress(void)
 {
 	return file_buffer;
 }
+
+/* ******************************************************************
+ * 
+ * @name	void SystemWaitCycles(uint32_t cycles)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @return:	halts program execution for n-"cycles"
+ * 
+ * *****************************************************************/
 
 void SystemWaitCycles(uint32_t cycles)
 {
@@ -342,25 +461,82 @@ void SystemWaitCycles(uint32_t cycles)
 	while(global_timer < (currentTime + cycles) );
 }
 
+/* ******************************************************************
+ * 
+ * @name	uint32_t SystemRand(uint32_t min, uint32_t max)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @return:	random number between "min" and "max".
+ *
+ * @remarks: rand seed must be set before using this function, or
+ * 			 you will predictable values otherwise!
+ * 
+ * *****************************************************************/
+
 uint32_t SystemRand(uint32_t min, uint32_t max)
 {
 	return rand() % (max - min + 1) + min;
 }
+
+/* ***********************************************************************
+ * 
+ * @name	void SystemSetEmergencyMode(bool value)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @brief:	Sets emergency mode flag.
+ *
+ * @remarks: emergency mode is set once that a controller is unplugged.
+ * 
+ * ***********************************************************************/
 
 void SystemSetEmergencyMode(bool value)
 {
 	emergency_mode = value;
 }
 
+/* ***********************************************************************
+ * 
+ * @name	bool SystemGetEmergencyMode(void)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @return:	returns emergency mode flag.
+ * 
+ * ***********************************************************************/
+
 bool SystemGetEmergencyMode(void)
 {
 	return emergency_mode;
 }
 
+/* ***********************************************************************
+ * 
+ * @name	volatile bool SystemIsBusy(void)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @return:	returns system busy flag.
+ * 
+ * ***********************************************************************/
+
 volatile bool SystemIsBusy(void)
 {
 	return system_busy;
 }
+
+/* ****************************************************************************
+ * 
+ * @name	bool SystemContains_u8(uint8_t value, uint8_t* buffer, size_t sz)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @brief:	checks if a certain value is contained in a buffer with size "sz".
+ * 
+ * @return:	true if value is contained inside buffer, false otherwise.
+ * 
+ * ****************************************************************************/
 
 bool SystemContains_u8(uint8_t value, uint8_t* buffer, size_t sz)
 {
@@ -377,6 +553,19 @@ bool SystemContains_u8(uint8_t value, uint8_t* buffer, size_t sz)
 	return false;
 }
 
+/* ****************************************************************************
+ * 
+ * @name	bool SystemContains_u16(uint16_t value, uint16_t* buffer, size_t sz)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @brief:	checks if a certain value is contained in a buffer with size "sz".
+ * 			Variant for u16 variables.
+ * 
+ * @return:	true if value is contained inside buffer, false otherwise.
+ * 
+ * ****************************************************************************/
+
 bool SystemContains_u16(uint16_t value, uint16_t* buffer, size_t sz)
 {
 	size_t i = 0;
@@ -391,6 +580,25 @@ bool SystemContains_u16(uint16_t value, uint16_t* buffer, size_t sz)
 	
 	return false;
 }
+
+/* ********************************************************************************************
+ * 
+ * @name	TYPE_TIMER* SystemCreateTimer(uint32_t t, bool rf, void (*timer_callback)(void) )
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @brief:	fills a TYPE_TIMER structure with input parameters
+ *
+ * @param:	uint32_t t:
+ * 				Timeout value (1 unit = 10 ms)
+ * 			bool rf:
+ * 				Repeat flag
+ * 			void (*timer_callback)(void)
+ * 				Function to be called on timeout	
+ * 
+ * @return:	pointer to TYPE_TIMER structure if filled correctly, NULL pointer otherwise.
+ * 
+ * ********************************************************************************************/
 
 TYPE_TIMER* SystemCreateTimer(uint32_t t, bool rf, void (*timer_callback)(void) )
 {
@@ -426,19 +634,37 @@ TYPE_TIMER* SystemCreateTimer(uint32_t t, bool rf, void (*timer_callback)(void) 
 	return &timer_array[i];
 }
 
+/* *******************************************
+ * 
+ * @name	void SystemResetTimers(void)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @brief:	reportedly, removes all timers.
+ * 
+ * *******************************************/
+
 void SystemResetTimers(void)
 {
 	uint8_t i;
 	
 	for(i = 0; i < SYSTEM_MAX_TIMERS; i++)
 	{
-		timer_array[i].Timeout_Callback = NULL;
-		timer_array[i].busy = false;
-		timer_array[i].repeat_flag = false;
-		timer_array[i].time = 0;
-		timer_array[i].orig_time = 0;
+		SystemTimerRemove(&timer_array[i]);
 	}
 }
+
+/* *****************************************************
+ * 
+ * @name	void SystemUserTimersHandler(void)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @brief:	reportedly, handles all available timers.
+ *
+ * @remarks: calls callback on timeout.
+ * 
+ * *****************************************************/
 
 void SystemUserTimersHandler(void)
 {
@@ -472,6 +698,18 @@ void SystemUserTimersHandler(void)
 		}
 	}
 }
+
+/* *********************************************************************
+ * 
+ * @name	void SystemUserTimersHandler(void)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @brief:	sets time left for TYPE_TIMER instance to initial value.
+ *
+ * @remarks: specially used when TYPE_TIMER.rf is enabled.
+ * 
+ * *********************************************************************/
 
 void SystemTimerRestart(TYPE_TIMER* timer)
 {

@@ -211,6 +211,7 @@ bool PltParserLoadFile(char * strPath, TYPE_FLIGHT_DATA * ptrFlightData)
 
 					case REMAINING_TIME_INDEX:
 						ptrFlightData->RemainingTime[aircraftIndex] = (uint8_t)atoi(lineBufferPtr);
+						dprintf("ptrFlightData->RemainingTime[%d] = %d\n", aircraftIndex, ptrFlightData->RemainingTime[aircraftIndex]);
 					break;
 					
 					

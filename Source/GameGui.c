@@ -10,7 +10,6 @@
 
 #define NOTIFICATION_TIMER_LIMIT 		5*TIMEBASE_1_SECOND		// 5 seconds
 #define BUBBLE_VIBRATION_TIMER_LIMIT	TIMEBASE_1_SECOND >> 1	// Half a second
-#define NOTIFICATION_BUFFER_SIZE		200
 #define GAME_GUI_AIRCRAFT_DATA_MAX_PAGE 4
 
 #define SLOW_SCORE_LOW_SPEED_MARGIN		100
@@ -20,57 +19,6 @@
 /* **************************************
  * 	Structs and enums					*
  * *************************************/
- 
-enum
-{
-	PAUSE_DIALOG_X = 92,
-	PAUSE_DIALOG_Y = 28,
-	PAUSE_DIALOG_W = 200,
-	PAUSE_DIALOG_H = 184,
-	
-	PAUSE_DIALOG_R0 = 0,
-	PAUSE_DIALOG_R1 = PAUSE_DIALOG_R0,
-	PAUSE_DIALOG_R2 = 0,
-	PAUSE_DIALOG_R3 = PAUSE_DIALOG_R2,
-	
-	PAUSE_DIALOG_G0 = NORMAL_LUMINANCE,
-	PAUSE_DIALOG_G1 = PAUSE_DIALOG_G0,
-	PAUSE_DIALOG_G2 = 0,
-	PAUSE_DIALOG_G3 = PAUSE_DIALOG_G2,
-	
-	PAUSE_DIALOG_B0 = 40,
-	PAUSE_DIALOG_B1 = PAUSE_DIALOG_B0,
-	PAUSE_DIALOG_B2 = 0,
-	PAUSE_DIALOG_B3 = PAUSE_DIALOG_B2,
-};
-
-enum
-{
-	NOTIFICATION_GSGPOLY4_R0 = 0,
-	NOTIFICATION_GSGPOLY4_R1 = NOTIFICATION_GSGPOLY4_R0,
-	NOTIFICATION_GSGPOLY4_R2 = 0,
-	NOTIFICATION_GSGPOLY4_R3 = NOTIFICATION_GSGPOLY4_R2,
-	
-	NOTIFICATION_GSGPOLY4_G0 = NORMAL_LUMINANCE,
-	NOTIFICATION_GSGPOLY4_G1 = NOTIFICATION_GSGPOLY4_G0,
-	NOTIFICATION_GSGPOLY4_G2 = 0,
-	NOTIFICATION_GSGPOLY4_G3 = NOTIFICATION_GSGPOLY4_G2,
-	
-	NOTIFICATION_GSGPOLY4_B0 = 40,
-	NOTIFICATION_GSGPOLY4_B1 = NOTIFICATION_GSGPOLY4_B0,
-	NOTIFICATION_GSGPOLY4_B2 = 0,
-	NOTIFICATION_GSGPOLY4_B3 = NOTIFICATION_GSGPOLY4_B2,
-	
-	NOTIFICATION_GSGPOLY4_X0 = 16,
-	NOTIFICATION_GSGPOLY4_X1 = X_SCREEN_RESOLUTION - NOTIFICATION_GSGPOLY4_X0 - 16,
-	NOTIFICATION_GSGPOLY4_X2 = NOTIFICATION_GSGPOLY4_X0,
-	NOTIFICATION_GSGPOLY4_X3 = NOTIFICATION_GSGPOLY4_X1,
-	
-	NOTIFICATION_GSGPOLY4_Y0 = Y_SCREEN_RESOLUTION - (64 + 8),
-	NOTIFICATION_GSGPOLY4_Y1 = NOTIFICATION_GSGPOLY4_Y0,
-	NOTIFICATION_GSGPOLY4_Y2 = Y_SCREEN_RESOLUTION - 8,
-	NOTIFICATION_GSGPOLY4_Y3 = NOTIFICATION_GSGPOLY4_Y2
-};
 
 enum
 {
@@ -81,18 +29,6 @@ enum
 	
 	NOTIFICATION_BUTTON_X = BUBBLE_SPRITE_X + 24,
 	NOTIFICATION_BUTTON_Y = BUBBLE_SPRITE_Y + 16
-};
-
-enum
-{
-	CLOCK_X = 16,
-	CLOCK_Y = 16
-};
-
-enum
-{
-	SCORE_X = (X_SCREEN_RESOLUTION >> 1) - 64,
-	SCORE_Y = 16,
 };
 
 enum
@@ -236,7 +172,6 @@ enum
  * 	Local prototypes					*
  * *************************************/
 
-static void GameGuiPrepareNotificationString(TYPE_FLIGHT_DATA * ptrFlightData, uint8_t offset);
 static void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
 static void GameGuiClearPassengersLeft(void);
 
@@ -245,7 +180,6 @@ static void GameGuiClearPassengersLeft(void);
  * *************************************/
 
 static GsSprite BubbleSpr;
-static GsGPoly4 NotificationGPoly4;
 static GsGPoly4 AircraftDataGPoly4;
 static GsGPoly4 SelectedAircraftGPoly4;
 static GsSprite ArrowsSpr;
@@ -262,11 +196,33 @@ static void * GameFileDest[] = {(GsSprite*)&BubbleSpr	,
 								(TYPE_FONT*)&RadioFont	,
 								(GsSprite*)&ArrowsSpr	};
 
-static char strNotificationRequest[NOTIFICATION_BUFFER_SIZE];
 static uint32_t slowScore; // It will update slowly to actual score value
 
 void GameGuiInit(void)
 {
+	enum
+	{
+		PAUSE_DIALOG_X = 92,
+		PAUSE_DIALOG_Y = 28,
+		PAUSE_DIALOG_W = 200,
+		PAUSE_DIALOG_H = 184,
+		
+		PAUSE_DIALOG_R0 = 0,
+		PAUSE_DIALOG_R1 = PAUSE_DIALOG_R0,
+		PAUSE_DIALOG_R2 = 0,
+		PAUSE_DIALOG_R3 = PAUSE_DIALOG_R2,
+		
+		PAUSE_DIALOG_G0 = NORMAL_LUMINANCE,
+		PAUSE_DIALOG_G1 = PAUSE_DIALOG_G0,
+		PAUSE_DIALOG_G2 = 0,
+		PAUSE_DIALOG_G3 = PAUSE_DIALOG_G2,
+		
+		PAUSE_DIALOG_B0 = 40,
+		PAUSE_DIALOG_B1 = PAUSE_DIALOG_B0,
+		PAUSE_DIALOG_B2 = 0,
+		PAUSE_DIALOG_B3 = PAUSE_DIALOG_B2,
+	};
+
 	LoadMenu(	GameFileList,
 				GameFileDest,
 				sizeof(GameFileList) / sizeof(char*),
@@ -302,89 +258,6 @@ void GameGuiInit(void)
 	ShowAircraftPassengersTimer = SystemCreateTimer(20, true, GameGuiClearPassengersLeft);
 
 	slowScore = 0;
-}
-
-void GameGuiAircraftNotificationRequest(TYPE_FLIGHT_DATA * ptrFlightData)
-{
-	uint8_t i;
-	static uint16_t NotificationTimer;
-	static uint8_t FirstNotification;
-	bool first_entered = true;
-	
-	if(GameStartupFlag == true)
-	{
-		// Set initial values to static variables
-		NotificationTimer = 0;
-		FirstNotification = 0;
-	}
-	
-	for(i = FirstNotification; i < ptrFlightData->nAircraft ; i++)
-	{
-		if(ptrFlightData->NotificationRequest[i] == true)
-		{
-			// Prepare RGB data and (X,Y) coordinates for notification
-			// request rectangle.
-			NotificationGPoly4.r[0] = NOTIFICATION_GSGPOLY4_R0;
-			NotificationGPoly4.r[1] = NOTIFICATION_GSGPOLY4_R1;
-			NotificationGPoly4.r[2] = NOTIFICATION_GSGPOLY4_R2;
-			NotificationGPoly4.r[3] = NOTIFICATION_GSGPOLY4_R3;
-			
-			NotificationGPoly4.g[0] = NOTIFICATION_GSGPOLY4_G0;
-			NotificationGPoly4.g[1] = NOTIFICATION_GSGPOLY4_G1;
-			NotificationGPoly4.g[2] = NOTIFICATION_GSGPOLY4_G2;
-			NotificationGPoly4.g[3] = NOTIFICATION_GSGPOLY4_G3;
-			
-			NotificationGPoly4.b[0] = NOTIFICATION_GSGPOLY4_B0;
-			NotificationGPoly4.b[1] = NOTIFICATION_GSGPOLY4_B1;
-			NotificationGPoly4.b[2] = NOTIFICATION_GSGPOLY4_B2;
-			NotificationGPoly4.b[3] = NOTIFICATION_GSGPOLY4_B3;
-			
-			NotificationGPoly4.attribute |= ENABLE_TRANS | TRANS_MODE(0);
-			
-			NotificationGPoly4.x[0] = NOTIFICATION_GSGPOLY4_X0;
-			NotificationGPoly4.x[1] = NOTIFICATION_GSGPOLY4_X1;
-			NotificationGPoly4.x[2] = NOTIFICATION_GSGPOLY4_X2;
-			NotificationGPoly4.x[3] = NOTIFICATION_GSGPOLY4_X3;
-			
-			NotificationGPoly4.y[0] = NOTIFICATION_GSGPOLY4_Y0;
-			NotificationGPoly4.y[1] = NOTIFICATION_GSGPOLY4_Y1;
-			NotificationGPoly4.y[2] = NOTIFICATION_GSGPOLY4_Y2;
-			NotificationGPoly4.y[3] = NOTIFICATION_GSGPOLY4_Y3;
-			
-			/* dprintf("Notification timer: %d.\n",NotificationTimer); */
-			
-			if(++NotificationTimer >= NOTIFICATION_TIMER_LIMIT)
-			{
-				// Reset timer and notification request for current aircraft
-				FirstNotification = 0;
-				NotificationTimer = 0;
-				ptrFlightData->NotificationRequest[i] = 0;
-				first_entered = true;
-			}
-			else
-			{
-				if(first_entered == true)
-				{
-					// Prepare string for new notification request only once
-					first_entered = false;
-					RadioFont.max_ch_wrap = 18;
-					RadioFont.flags |= FONT_WRAP_LINE;
-					GameGuiPrepareNotificationString(ptrFlightData, i);
-				}
-				
-				// Keep information about last aircraft notified...
-				// so that it gets called on next cycle
-				FirstNotification = i;
-				GsSortGPoly4(&NotificationGPoly4);
-				FontPrintText(	&RadioFont,
-								NotificationGPoly4.x[0] + 8,
-								NotificationGPoly4.y[0] + 8,
-								strNotificationRequest);
-			}
-			
-			break;
-		}
-	}
 }
 
 bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer)
@@ -717,30 +590,14 @@ void GameGuiBubble(TYPE_FLIGHT_DATA * ptrFlightData)
 	//dprintf("Bubble timer: %d\n",BubbleVibrationTimer);
 }
 
-void GameGuiPrepareNotificationString(TYPE_FLIGHT_DATA * ptrFlightData, uint8_t offset)
-{
-	memset(strNotificationRequest,0,NOTIFICATION_BUFFER_SIZE);
-	strncat(	strNotificationRequest,
-				ptrFlightData->strFlightNumber[offset],
-				strlen(ptrFlightData->strFlightNumber[offset])	);
-	
-	strcat(strNotificationRequest, " request for ");
-	
-	switch(ptrFlightData->FlightDirection[offset])
-	{
-		case DEPARTURE:
-			strcat(strNotificationRequest, "departure");
-		break;
-		case ARRIVAL:
-			strcat(strNotificationRequest, "approach");
-		break;
-	}
-	
-	strcat(strNotificationRequest, ".");
-}
-
 void GameGuiClock(uint8_t hour, uint8_t min)
 {
+	enum
+	{
+		CLOCK_X = 16,
+		CLOCK_Y = 4
+	};
+
 	static char strClock[6]; // HH:MM + \0 (6 characters needed)
 	
 	if(GameStartupFlag || System1SecondTick() == true)
@@ -967,6 +824,12 @@ void GameGuiCalculateSlowScore(void)
 
 void GameGuiShowScore(void)
 {
+	enum
+	{
+		SCORE_X = (X_SCREEN_RESOLUTION >> 1) - 64,
+		SCORE_Y = 4,
+	};
+
 	FontPrintText(	&RadioFont,
 					SCORE_X,
 					SCORE_Y,
@@ -1002,4 +865,39 @@ void GameGuiDrawUnboardingSequence(TYPE_PLAYER* ptrPlayer)
 void GameGuiClearPassengersLeft(void)
 {
 	GameGuiClearPassengersLeft_Flag = true;
+}
+
+bool GameGuiFinishedDialog(TYPE_PLAYER* ptrPlayer)
+{
+	GfxSaveDisplayData(&SecondDisplay);
+	
+	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
+				
+	//DrawFBRect(0, 0, X_SCREEN_RESOLUTION, VRAM_H, 0, 0, 0);
+				
+	while(GfxIsGPUBusy() == true);
+	
+	do
+	{
+		if(ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS) == true)
+		{
+			return true;
+		}
+		
+		GfxSortSprite(&SecondDisplay);
+		
+		GsSortGPoly4(&PauseRect);
+
+		FontPrintText( 	&SmallFont,
+								AIRCRAFT_DATA_GSGPOLY4_X0_2PLAYER + 
+								( (AIRCRAFT_DATA_GSGPOLY4_X1_2PLAYER - AIRCRAFT_DATA_GSGPOLY4_X0_2PLAYER) >> 2),
+								AIRCRAFT_DATA_GSGPOLY4_Y0_2PLAYER +
+								( (AIRCRAFT_DATA_GSGPOLY4_Y2_2PLAYER - AIRCRAFT_DATA_GSGPOLY4_Y0_2PLAYER) >> 1),
+								"All flights finished!"	);
+		
+		GfxDrawScene_Slow();
+		
+	}while(ptrPlayer->PadKeySinglePress_Callback(PAD_START) == false);
+	
+	return false;
 }

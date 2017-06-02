@@ -12,8 +12,6 @@
  * 	Defines
  * *************************************/
 
-#define MAIN_MENU_BTN_ANI_SIZE 53
-
 /* *************************************
  * 	Global prototypes
  * *************************************/
@@ -23,5 +21,6 @@
  * *************************************/
 
 extern short MainMenuBtnAni[];
+extern size_t MainMenuBtnAni_sz;
 
 #endif // __MAINMENUBTN_HEADER__

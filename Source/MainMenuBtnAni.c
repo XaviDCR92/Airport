@@ -73,3 +73,5 @@ short MainMenuBtnAni[] =
 	1,
 	0
 		};
+
+size_t MainMenuBtnAni_sz = sizeof(MainMenuBtnAni) / sizeof(MainMenuBtnAni[0]);

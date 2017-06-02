@@ -432,7 +432,7 @@ void MainMenuDrawButton(TYPE_MMBtn * btn)
 	MenuSpr.w = BUTTON_SIZE;
 	MenuSpr.h = BUTTON_SIZE;
 	
-	if(btn->timer < MAIN_MENU_BTN_ANI_SIZE)
+	if(btn->timer < MainMenuBtnAni_sz)
 	{
 		btn->timer++;
 	}

@@ -114,6 +114,8 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA * ptrFlightData,
 
 	ptrAircraft->FlightDataIdx = FlightDataIndex;
 
+	dprintf("ptrAircraft->FlightDataIdx = %d, FlightDataIndex = %d\n", ptrAircraft->FlightDataIdx, FlightDataIndex);
+
 	if(ptrFlightData->FlightDirection[FlightDataIndex] == ARRIVAL)
 	{
 		ptrAircraft->IsoPos.x = 0;
@@ -386,6 +388,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 			{
 				dprintf("All targets reached!\n");
 				ptrAircraft->State = GameTargetsReached(ptrAircraft->Target[0], ptrAircraft->FlightDataIdx);
+				memset(ptrAircraft->Target, 0, AIRCRAFT_MAX_TARGETS);
 			}
 		}
 	}
