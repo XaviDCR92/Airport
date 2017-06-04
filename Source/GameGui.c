@@ -346,6 +346,14 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightDat
 {
 	short y_offset;
 	uint8_t page_aircraft;
+
+	enum
+	{
+		GAME_GUI_REMAINING_AIRCRAFT_X = AIRCRAFT_DATA_GSGPOLY4_X0 + 8,
+		GAME_GUI_REMAINING_AIRCRAFT_Y = AIRCRAFT_DATA_GSGPOLY4_Y2 - 16,
+		GAME_GUI_REMAINING_AIRCRAFT_X_2PLAYER = AIRCRAFT_DATA_GSGPOLY4_X0_2PLAYER + 8,
+		GAME_GUI_REMAINING_AIRCRAFT_Y_2PLAYER = AIRCRAFT_DATA_GSGPOLY4_Y2_2PLAYER - 16
+	};
 	
 	if(ptrPlayer->ShowAircraftData == true)
 	{
@@ -394,6 +402,23 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightDat
 		}
 		
 		GsSortGPoly4(&AircraftDataGPoly4);
+
+		if(GameTwoPlayersActive() == true)
+		{
+			FontPrintText(	&SmallFont,
+							GAME_GUI_REMAINING_AIRCRAFT_X_2PLAYER,
+							GAME_GUI_REMAINING_AIRCRAFT_Y_2PLAYER,
+							"Rem. aircraft: %d",
+							ptrFlightData->nRemainingAircraft		);
+		}
+		else
+		{
+			FontPrintText(	&SmallFont,
+							GAME_GUI_REMAINING_AIRCRAFT_X,
+							GAME_GUI_REMAINING_AIRCRAFT_Y,
+							"Remaining aircraft: %d",
+							ptrFlightData->nRemainingAircraft		);
+		}
 			
 		if(ptrPlayer->ActiveAircraft != 0)
 		{
@@ -504,7 +529,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightDat
 			{
 				FontPrintText(&SmallFont, AIRCRAFT_LOCK_TARGET_TEXT_X, AIRCRAFT_LOCK_TARGET_TEXT_Y, "Lock target");
 			}
-		}	
+		}
 		else
 		{
 			if(GameTwoPlayersActive() == true)
@@ -889,11 +914,11 @@ bool GameGuiFinishedDialog(TYPE_PLAYER* ptrPlayer)
 		GsSortGPoly4(&PauseRect);
 
 		FontPrintText( 	&SmallFont,
-								AIRCRAFT_DATA_GSGPOLY4_X0_2PLAYER + 
-								( (AIRCRAFT_DATA_GSGPOLY4_X1_2PLAYER - AIRCRAFT_DATA_GSGPOLY4_X0_2PLAYER) >> 2),
-								AIRCRAFT_DATA_GSGPOLY4_Y0_2PLAYER +
-								( (AIRCRAFT_DATA_GSGPOLY4_Y2_2PLAYER - AIRCRAFT_DATA_GSGPOLY4_Y0_2PLAYER) >> 1),
-								"All flights finished!"	);
+								AIRCRAFT_DATA_GSGPOLY4_X0 + 
+								( (AIRCRAFT_DATA_GSGPOLY4_X1 - AIRCRAFT_DATA_GSGPOLY4_X0) >> 2),
+								AIRCRAFT_DATA_GSGPOLY4_Y0 +
+								( (AIRCRAFT_DATA_GSGPOLY4_Y2 - AIRCRAFT_DATA_GSGPOLY4_Y0) >> 1),
+								"Level finished!"	);
 		
 		GfxDrawScene_Slow();
 		

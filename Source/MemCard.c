@@ -708,6 +708,8 @@ bool MemCardReadSector(TYPE_BLOCK_DATA * ptrBlockData, int sector)
 				" 0 and 511 are allowed!\n", sector);
 		return false;
 	}
+
+	while(GfxIsGPUBusy() == true);
 	
 	result = McReadSector(ptrBlockData->Slot, sector, DataBuffer);
 	

@@ -77,6 +77,7 @@ typedef struct t_flightData
 	uint8_t Parking[GAME_MAX_AIRCRAFT];
 	uint16_t RemainingTime[GAME_MAX_AIRCRAFT];
 	uint8_t nAircraft;
+	uint8_t nRemainingAircraft;
 	uint8_t ActiveAircraft;
 	FL_STATE State[GAME_MAX_AIRCRAFT];
 	bool NotificationRequest[GAME_MAX_AIRCRAFT];

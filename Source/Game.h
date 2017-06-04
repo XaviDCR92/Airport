@@ -52,4 +52,5 @@ FL_STATE	GameGetFlightDataStateFromIdx(uint8_t FlightDataIdx);
 uint32_t	GameGetScore(void);
 bool		GameInsideLevelFromIsoPos(TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos);
 void		GameRemoveFlight(uint8_t idx, bool successful);
+void		GameCalculateRemainingAircraft(void);
 #endif //__GAME_HEADER__

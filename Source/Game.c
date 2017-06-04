@@ -25,6 +25,8 @@
 
 #define GAME_INVALID_TILE_SELECTION ( (uint16_t)0xFFFF )
 
+#define GAME_MINIMUM_PARKING_SPAWN_TIME 20 // 2 seconds
+
 /* **************************************
  * 	Structs and enums					*
  * *************************************/
@@ -147,6 +149,8 @@ static void GameGenerateUnboardingSequence(TYPE_PLAYER* ptrPlayer);
 static void GameCreateTakeoffWaypoints(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData, uint8_t aircraftIdx);
 static void GameGetRunwayEntryTile(uint8_t aircraftIdx, TYPE_RWY_ENTRY_DATA* ptrRwyEntry);
 static void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
+static void GameRemainingAircraft(void);
+static void GameMinimumSpawnTimeout(void);
 
 /* *************************************
  * 	Global Variables
@@ -168,7 +172,10 @@ static TYPE_FLIGHT_DATA FlightData;
 static uint16_t GameRwyArray[GAME_MAX_RWY_LENGTH];
 static uint16_t GameUsedRwy[GAME_MAX_RUNWAYS];
 static uint16_t GameSelectedTile;
-static bool firstLevelRender; // Used to avoid reentrance on GameRenderLevel()
+static bool firstLevelRender; // Used to avoid reentrance issues on GameRenderLevel()
+static TYPE_TIMER* GameSpawnMinTime;
+static bool spawnMinTimeFlag;
+static bool GameAircraftCreatedFlag;
 
 // Instances for player-specific data
 TYPE_PLAYER PlayerData[MAX_PLAYERS];
@@ -352,6 +359,7 @@ void GameInit(void)
 	
 	firstActiveAircraft = 0;
 	lastActiveAircraft = 0;
+	GameAircraftCreatedFlag = false;
 	
 	if(GameTwoPlayersActive() == true)
 	{
@@ -371,6 +379,10 @@ void GameInit(void)
 	GameMouseSpr.g = NORMAL_LUMINANCE;
 	GameMouseSpr.b = NORMAL_LUMINANCE;
 
+	GameSpawnMinTime = SystemCreateTimer(GAME_MINIMUM_PARKING_SPAWN_TIME, false, &GameMinimumSpawnTimeout);
+
+	spawnMinTimeFlag = true;
+
 	GameScore = 0;
 	
 	GameGetRunwayArray();
@@ -383,7 +395,7 @@ void GameInit(void)
 	
 	GfxSetGlobalLuminance(0);
 	
-	track = SystemRand(GAMEPLAY_FIRST_TRACK,GAMEPLAY_LAST_TRACK);
+	track = SystemRand(GAMEPLAY_FIRST_TRACK, GAMEPLAY_LAST_TRACK);
 	
 	SfxPlayTrack(track);	
 }
@@ -437,6 +449,7 @@ void GameCalculations(void)
 	GameActiveAircraft();
 	GameFirstLastAircraftIndex();
 	GameGuiCalculateSlowScore();
+	GameRemainingAircraft();
 	AircraftHandler();
 	
 	for(i = 0 ; i < MAX_PLAYERS ; i++)
@@ -770,7 +783,9 @@ void GameAircraftState(void)
 						&&
 				(FlightData.State[i] == STATE_IDLE)
 						&&
-				(FlightData.RemainingTime[i] > 0)	)
+				(FlightData.RemainingTime[i] > 0)
+				/*		&&
+				(spawnMinTimeFlag == true)			*/)
 			{
 				if( (FlightData.FlightDirection[i] == DEPARTURE)
 									&&
@@ -802,6 +817,8 @@ void GameAircraftState(void)
 					{
 						FlightData.State[i] = STATE_PARKED;
 
+						GameAircraftCreatedFlag = true;
+
 						// Create notification request for incoming aircraft
 						FlightData.NotificationRequest[i] = true;
 						
@@ -822,6 +839,7 @@ void GameAircraftState(void)
 				{
 					dprintf("Flight %d set to STATE_APPROACH.\n", i);
 					FlightData.State[i] = STATE_APPROACH;
+					GameAircraftCreatedFlag = true;
 					// Create notification request for incoming aircraft
 					FlightData.NotificationRequest[i] = true;
 				}
@@ -832,9 +850,6 @@ void GameAircraftState(void)
 				(FlightData.RemainingTime[i] == 0)	)
 			{
 				// Player(s) lost a flight!
-				DEBUG_PRINT_VAR(i);
-				DEBUG_PRINT_VAR(FlightData.State[i]);
-				DEBUG_PRINT_VAR(FlightData.RemainingTime[i]);
 				GameRemoveFlight(i, false);
 			}
 		}
@@ -2518,9 +2533,17 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 						GameScore = (GameScore < LOST_FLIGHT_PENALTY)? 0 : (GameScore - LOST_FLIGHT_PENALTY);
 					}
 
+					if(ptrPlayer->SelectedAircraft >= j)
+					{
+						ptrPlayer->SelectedAircraft--; // Check pending
+					}
+
 					FlightData.Passengers[ptrPlayer->ActiveAircraftList[j]] = 0;
 					FlightData.State[ptrPlayer->ActiveAircraftList[j]] = STATE_IDLE;
 					FlightData.Finished[ptrPlayer->ActiveAircraftList[j]] = true;
+
+					spawnMinTimeFlag = false;
+					SystemTimerRestart(GameSpawnMinTime);
 
 					return;
 				}
@@ -2537,9 +2560,15 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlight
 {
 	uint8_t i;
 	uint8_t j = 0;
+
+	uint8_t currentFlightDataIdx;
+	uint8_t lastFlightDataIdx;
 	
 	// Clear all pointers for aircraft data first.
 	// Then, rebuild aircraft list for player.
+	
+	lastFlightDataIdx = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
+		
 	memset(ptrPlayer->ActiveAircraftList, 0, GAME_MAX_AIRCRAFT);
 	ptrPlayer->ActiveAircraft = 0;
 	
@@ -2551,6 +2580,41 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlight
 		{
 			ptrPlayer->ActiveAircraftList[j++] = i;
 			ptrPlayer->ActiveAircraft++;
+		}
+	}
+
+	currentFlightDataIdx = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
+
+	if(GameAircraftCreatedFlag == true)
+	{
+		GameAircraftCreatedFlag = false;
+
+		if(ptrPlayer->ActiveAircraft > 1)
+		{
+			if(currentFlightDataIdx != lastFlightDataIdx)
+			{	
+				for(ptrPlayer->SelectedAircraft = 0; ptrPlayer->SelectedAircraft < GAME_MAX_AIRCRAFT; ptrPlayer->SelectedAircraft++)
+				{
+					if(ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft] == lastFlightDataIdx)
+					{
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+
+void GameRemainingAircraft(void)
+{
+	uint8_t i;
+	FlightData.nRemainingAircraft = FlightData.nAircraft;
+	
+	for(i = 0; i < FlightData.nAircraft; i++)
+	{
+		if(FlightData.Finished[i] == true)
+		{
+			FlightData.nRemainingAircraft--;
 		}
 	}
 }
@@ -2569,4 +2633,9 @@ bool GameFinished(void)
 	}
 
 	return GameGuiFinishedDialog(&PlayerData[PLAYER_ONE]);
+}
+
+void GameMinimumSpawnTimeout(void)
+{
+	spawnMinTimeFlag = true;
 }
