@@ -297,9 +297,10 @@ uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)
 	uint8_t maxAircraftTime;
 	uint8_t nAircraft;
 	uint8_t i;
+	uint8_t j;
 	TYPE_HOUR InitialHour;
 	TYPE_MINUTE InitialMinutes;
-	char auxBuffer[32] = {0};
+	char auxBuffer[32] = {'\0'};
 
 	switch(ptrPltConfig->Level)
 	{
@@ -320,6 +321,10 @@ uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)
 			maxAircraftTime = MIN_AIRCRAFT_TIMELAPSE_MAX_SECONDS_HARD;
 			nAircraft = SystemRand(MIN_AIRCRAFT_HARD, MAX_AIRCRAFT_HARD);
 		break;
+
+		default:
+			dprintf("PltParserGenerateFile(): Undefined level!\n");
+		return NULL;
 	}
 
 	SystemClearBuffer();
@@ -331,6 +336,37 @@ uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)
 	InitialMinutes = SystemRand(MIN_MINUTE, MAX_MINUTE);
 
 	snprintf(auxBuffer, 32, "%d:%d\n", InitialHour, InitialMinutes);
+
+	for(i = 0; auxBuffer[i] != '\0'; i++)
+	{
+		// Transfer contents generated from snprintf to main buffer.
+		PltBuffer[i] = auxBuffer[i];
+	}
+
+	dprintf("%s\n", PltBuffer);
+	DEBUG_PRINT_VAR(ptrPltConfig->Level);
+	DEBUG_PRINT_VAR(nAircraft);
+	DEBUG_PRINT_VAR(minAircraftTime);
+	DEBUG_PRINT_VAR(maxAircraftTime);
+
+	for(j = 0; j < nAircraft; j++)
+	{
+		uint8_t dep_arr_rand = SystemRand(0,100);
+		
+		if(dep_arr_rand < 50)
+		{
+			// Set departure flight
+
+			memcpy(&PltBuffer[i], "DEPARTURE", sizeof("DEPARTURE") * sizeof(uint8_t) );
+			i += strlen("DEPARTURE");
+		}
+		else
+		{
+			// Set arrival flight
+			memcpy(&PltBuffer[i], "ARRIVAL", sizeof("ARRIVAL") * sizeof(uint8_t) );
+			i += strlen("ARRIVAL");
+		}
+	}
 
 	return PltBuffer;
 }
