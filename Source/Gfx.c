@@ -315,7 +315,7 @@ bool GfxIsGPUBusy(void)
 	return (GsIsDrawing() || gfx_busy || (GfxReadyForDMATransfer() == false) );
 }
 
-bool GfxSpriteFromFile(char * fname, GsSprite * spr)
+bool GfxSpriteFromFile(char* fname, GsSprite * spr)
 {
 	GsImage gsi;
 	
@@ -336,7 +336,7 @@ bool GfxSpriteFromFile(char * fname, GsSprite * spr)
 	return true;
 }
 
-bool GfxCLUTFromFile(char * fname)
+bool GfxCLUTFromFile(char* fname)
 {
 	GsImage gsi;
 
@@ -465,6 +465,8 @@ void GfxSaveDisplayData(GsSprite *spr)
 	spr->r = NORMAL_LUMINANCE;
 	spr->g = NORMAL_LUMINANCE;
 	spr->b = NORMAL_LUMINANCE;
+
+	while(GfxIsGPUBusy() == true);
 }
 
 bool Gfx1HzFlash(void)

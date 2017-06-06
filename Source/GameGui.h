@@ -30,14 +30,15 @@
 void GameGuiInit(void);
 bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer);
 bool GameGuiShowAircraftDataSpecialConditions(TYPE_PLAYER* ptrPlayer);
-void GameGuiBubble(TYPE_FLIGHT_DATA * ptrFlightData);
+void GameGuiBubble(TYPE_FLIGHT_DATA* ptrFlightData);
 void GameGuiClock(uint8_t hour, uint8_t min);
-void GameGuiActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
-void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
+void GameGuiActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
+void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
 void GameGuiCalculateSlowScore(void);
 void GameGuiShowScore(void);
 void GameGuiDrawUnboardingSequence(TYPE_PLAYER* ptrPlayer);
-void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
+void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
 bool GameGuiFinishedDialog(TYPE_PLAYER* ptrPlayer);
+void GameGuiAircraftCollision(TYPE_PLAYER* ptrPlayer);
 
 #endif //__GAME_GUI_HEADER__

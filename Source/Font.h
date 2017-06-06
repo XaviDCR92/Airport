@@ -26,9 +26,9 @@
  * 	Global prototypes
  * *************************************/
 
-bool FontLoadImage(char * strPath, TYPE_FONT * ptrFont);
+bool FontLoadImage(char* strPath, TYPE_FONT * ptrFont);
 void FontSetSize(TYPE_FONT * ptrFont, short size);
-void FontPrintText(TYPE_FONT *ptrFont, short x, short y, char * str, ...);
+void FontPrintText(TYPE_FONT *ptrFont, short x, short y, char* str, ...);
 void FontSetInitChar(TYPE_FONT * ptrFont, char c);
 void FontSetFlags(TYPE_FONT * ptrFont, FONT_FLAGS flags);
 void FontCyclic(void);

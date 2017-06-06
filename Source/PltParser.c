@@ -38,18 +38,18 @@ enum
 /* *************************************
  * 	Local Prototypes
  * *************************************/
-static void PltParserResetBuffers(TYPE_FLIGHT_DATA * ptrFlightData);
+static void PltParserResetBuffers(TYPE_FLIGHT_DATA* ptrFlightData);
 
-bool PltParserLoadFile(char * strPath, TYPE_FLIGHT_DATA * ptrFlightData)
+bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	uint8_t i;
 	uint8_t j;
 	uint8_t aircraftIndex;
 	bool first_line_read = false;
-	char * buffer;
+	char* buffer;
 	char lineBuffer[LINE_MAX_CHARACTERS];
-	char * lineBufferPtr;
-	char * pltBufferSavePtr;
+	char* lineBufferPtr;
+	char* pltBufferSavePtr;
 	char strHour[PLT_HOUR_MINUTE_CHARACTERS];
 	char strMinutes[PLT_HOUR_MINUTE_CHARACTERS];
 	uint8_t* strPltBuffer;
@@ -239,7 +239,7 @@ bool PltParserLoadFile(char * strPath, TYPE_FLIGHT_DATA * ptrFlightData)
 	return true;
 }
 
-void PltParserResetBuffers(TYPE_FLIGHT_DATA * ptrFlightData)
+void PltParserResetBuffers(TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	uint8_t i;
 	
@@ -256,4 +256,81 @@ void PltParserResetBuffers(TYPE_FLIGHT_DATA * ptrFlightData)
 	memset(ptrFlightData->NotificationRequest,0,GAME_MAX_AIRCRAFT);
 	memset(ptrFlightData->Parking,0,GAME_MAX_AIRCRAFT);
 	memset(ptrFlightData->Finished,0,GAME_MAX_AIRCRAFT);
+}
+
+uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)
+{
+	enum
+	{
+		MIN_AIRCRAFT_TIMELAPSE_MIN_SECONDS_EASY = 30,
+		MIN_AIRCRAFT_TIMELAPSE_MAX_SECONDS_EASY = 45,
+		MIN_AIRCRAFT_TIMELAPSE_MIN_SECONDS_MEDIUM = 20,
+		MIN_AIRCRAFT_TIMELAPSE_MAX_SECONDS_MEDIUM = 30,
+		MIN_AIRCRAFT_TIMELAPSE_MIN_SECONDS_HARD = 10,
+		MIN_AIRCRAFT_TIMELAPSE_MAX_SECONDS_HARD = 20,
+	};
+
+	enum
+	{
+		MIN_AIRCRAFT_EASY = 5,
+		MAX_AIRCRAFT_EASY = 10,
+		MIN_AIRCRAFT_MEDIUM = 10,
+		MAX_AIRCRAFT_MEDIUM = GAME_MAX_AIRCRAFT >> 1,
+		MIN_AIRCRAFT_HARD = 20,
+		MAX_AIRCRAFT_HARD = GAME_MAX_AIRCRAFT,
+	};
+
+	typedef enum t_Hour
+	{
+		MIN_HOUR = 0,
+		MAX_HOUR = 23
+	}TYPE_HOUR;
+
+	typedef enum t_Minute
+	{
+		MIN_MINUTE = 0,
+		MAX_MINUTE = 59
+	}TYPE_MINUTE;
+
+	uint8_t* PltBuffer = SystemGetBufferAddress();
+	uint8_t minAircraftTime;
+	uint8_t maxAircraftTime;
+	uint8_t nAircraft;
+	uint8_t i;
+	TYPE_HOUR InitialHour;
+	TYPE_MINUTE InitialMinutes;
+	char auxBuffer[32] = {0};
+
+	switch(ptrPltConfig->Level)
+	{
+		case LEVEL_DIFFICULTY_EASY:
+			minAircraftTime = MIN_AIRCRAFT_TIMELAPSE_MIN_SECONDS_EASY;
+			maxAircraftTime = MIN_AIRCRAFT_TIMELAPSE_MAX_SECONDS_EASY;
+			nAircraft = SystemRand(MIN_AIRCRAFT_EASY, MAX_AIRCRAFT_EASY);
+		break;
+
+		case LEVEL_DIFFICULTY_MEDIUM:
+			minAircraftTime = MIN_AIRCRAFT_TIMELAPSE_MIN_SECONDS_MEDIUM;
+			maxAircraftTime = MIN_AIRCRAFT_TIMELAPSE_MAX_SECONDS_MEDIUM;
+			nAircraft = SystemRand(MIN_AIRCRAFT_MEDIUM, MAX_AIRCRAFT_MEDIUM);
+		break;
+
+		case LEVEL_DIFFICULTY_HARD:
+			minAircraftTime = MIN_AIRCRAFT_TIMELAPSE_MIN_SECONDS_HARD;
+			maxAircraftTime = MIN_AIRCRAFT_TIMELAPSE_MAX_SECONDS_HARD;
+			nAircraft = SystemRand(MIN_AIRCRAFT_HARD, MAX_AIRCRAFT_HARD);
+		break;
+	}
+
+	SystemClearBuffer();
+
+	// At this point, PltBuffer is filled with zeros. Start generating PLT file.
+
+	InitialHour = SystemRand(MIN_HOUR, MAX_HOUR);
+
+	InitialMinutes = SystemRand(MIN_MINUTE, MAX_MINUTE);
+
+	snprintf(auxBuffer, 32, "%d:%d\n", InitialHour, InitialMinutes);
+
+	return PltBuffer;
 }

@@ -346,7 +346,7 @@ void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
 
 /* ****************************************************************************************
  * 
- * @name	bool SystemLoadFileToBuffer(char * fname, uint8_t* buffer, uint32_t szBuffer)
+ * @name	bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
  * 
  * @author: Xavier Del Campo
  * 
@@ -357,7 +357,7 @@ void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
  * 
  * ****************************************************************************************/
 
-bool SystemLoadFileToBuffer(char * fname, uint8_t* buffer, uint32_t szBuffer)
+bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 {
 	FILE *f;
 	int32_t size;
@@ -414,7 +414,7 @@ bool SystemLoadFileToBuffer(char * fname, uint8_t* buffer, uint32_t szBuffer)
 
 /* ****************************************************************************************
  * 
- * @name	bool SystemLoadFile(char *fname)
+ * @name	bool SystemLoadFile(char*fname)
  * 
  * @author: Xavier Del Campo
  * 
@@ -424,7 +424,7 @@ bool SystemLoadFileToBuffer(char * fname, uint8_t* buffer, uint32_t szBuffer)
  * 
  * ****************************************************************************************/
 
-bool SystemLoadFile(char *fname)
+bool SystemLoadFile(char*fname)
 {
 	return SystemLoadFileToBuffer(fname,file_buffer,sizeof(file_buffer));
 }
@@ -442,6 +442,21 @@ bool SystemLoadFile(char *fname)
 uint8_t* SystemGetBufferAddress(void)
 {
 	return file_buffer;
+}
+
+/* ******************************************************************
+ * 
+ * @name	void SystemClearBuffer(void)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @return:	Fills internal buffer with zeros
+ * 
+ * *****************************************************************/
+
+void SystemClearBuffer(void)
+{
+	memset(file_buffer, 0, sizeof(file_buffer));
 }
 
 /* ******************************************************************
@@ -788,7 +803,7 @@ void SystemSetStackPattern(void)
 	*ptrStack = END_STACK_PATTERN;
 }
 
-int32_t SystemIndexOfStringArray(char * str, char ** array)
+int32_t SystemIndexOfStringArray(char* str, char** array)
 {
 	int32_t i;
 	

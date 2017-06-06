@@ -113,7 +113,7 @@ static SsVag AcceptSnd;
 static TYPE_CHEAT TestCheat;
 static TYPE_CHEAT StackCheckCheat;
 
-static char * MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
+static char* MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
 									"cdrom:\\DATA\\SOUNDS\\BELL.VAG;1"		,
 									"cdrom:\\DATA\\SOUNDS\\ACCEPT.VAG;1"	,
 									"cdrom:\\DATA\\SPRITES\\PSXDISK.TIM;1"	,

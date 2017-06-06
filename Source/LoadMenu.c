@@ -72,7 +72,7 @@ static void LoadMenuInit(void);
 static void ISR_LoadMenuVBlank(void);
 static bool LoadMenuISRHasEnded(void);
 static bool LoadMenuISRHasStarted(void);
-static void LoadMenuLoadFileList(	char * fileList[], 	void * dest[], 
+static void LoadMenuLoadFileList(	char* fileList[], 	void * dest[], 
 									uint8_t szFileList, uint8_t szDestList);
 
 /* *************************************
@@ -85,14 +85,14 @@ static GsSprite LoadMenuTitleSpr;
 static GsLine LoadMenuBarLines[LOADING_BAR_N_LINES];
 static GsRectangle LoadMenuBarRect;
 
-static char * LoadMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\PLANE.TIM;1",
+static char* LoadMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\PLANE.TIM;1",
 									"cdrom:\\DATA\\SPRITES\\LOADING.TIM;1",
 									"cdrom:\\DATA\\FONTS\\FONT_2.FNT;1"	};
 static void * LoadMenuDest[] = {(GsSprite*)&LoadMenuPlaneSpr,
 								(GsSprite*)&LoadMenuTitleSpr,
 								(TYPE_FONT*)&SmallFont		};
 
-static char * strCurrentFile;
+static char* strCurrentFile;
 
 // Flags to communicate with ISR state
 // 	*	startup_flag: background fades in from black to blue.
@@ -414,7 +414,7 @@ bool LoadMenuISRHasStarted(void)
 	return isr_started;
 }
 
-void LoadMenu(	char *	fileList[], 
+void LoadMenu(	char*	fileList[], 
 				void * dest[],
 				uint8_t szFileList	, uint8_t szDestList)
 {
@@ -430,11 +430,11 @@ void LoadMenu(	char *	fileList[],
 	
 }
 
-void LoadMenuLoadFileList(	char * fileList[], 	void * dest[], 
+void LoadMenuLoadFileList(	char* fileList[], 	void * dest[], 
 							uint8_t szFileList, uint8_t szDestList)
 {
 	char aux_file_name[100];
-	char * extension;
+	char* extension;
 	short x_increment;
 	uint8_t fileLoadedCount;
 	

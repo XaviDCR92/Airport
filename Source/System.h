@@ -34,10 +34,10 @@ void SystemSetRandSeed(void);
 bool SystemRefreshNeeded(void);
 
 // Loads a file into system's internal buffer
-bool SystemLoadFile(char *fname);
+bool SystemLoadFile(char*fname);
 
 // Loads a file into desired buffer
-bool SystemLoadFileToBuffer(char * fname, uint8_t* buffer, uint32_t szBuffer);
+bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer);
 
 // Clears VSync flag after each frame
 void SystemDisableScreenRefresh(void);
@@ -116,7 +116,7 @@ void SystemCheckStack(void);
 
 // Looks for string "str" inside a string array pointed to by "array".
 // Returns index inside string array on success, -1 if not found.
-int32_t SystemIndexOfStringArray(char * str, char ** array);
+int32_t SystemIndexOfStringArray(char* str, char** array);
 
 // Function overload for uint16_t data type.
 int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz);
@@ -125,6 +125,8 @@ int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz);
 int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t sz);
 
 void SystemCyclicHandler(void);
+
+void SystemClearBuffer(void);
 
 /* **************************************
  * 	Global Variables					*	

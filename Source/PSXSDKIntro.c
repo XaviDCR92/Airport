@@ -124,8 +124,8 @@ static bool PSXSDKIntroStringEvent;
 static bool PSXSDKIntroClose;
 
 // Text
-static char * strPSXSDKIntro = {"MADE WITH PSXSDK"};
-static char * strPSXSDKIntroAuthor = {"BY NEXTVOLUME"};
+static char* strPSXSDKIntro = {"MADE WITH PSXSDK"};
+static char* strPSXSDKIntroAuthor = {"BY NEXTVOLUME"};
 
 /* *************************************
  * 	Global variables

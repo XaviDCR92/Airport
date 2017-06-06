@@ -36,7 +36,7 @@ extern TYPE_PLAYER PlayerData[];
  * *************************************/
 
 void 		Game(bool two_players);
-char * 		GetGameLevelTitle(void);
+char* 		GetGameLevelTitle(void);
 void 		GameSetTime(uint8_t hour, uint8_t minutes);
 bool		GameTwoPlayersActive(void);
 uint8_t 	GameGetFirstActiveAircraft(void);
@@ -53,4 +53,5 @@ uint32_t	GameGetScore(void);
 bool		GameInsideLevelFromIsoPos(TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos);
 void		GameRemoveFlight(uint8_t idx, bool successful);
 void		GameCalculateRemainingAircraft(void);
+void		GameAircraftCollision(uint8_t AircraftIdx);
 #endif //__GAME_HEADER__

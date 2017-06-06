@@ -7,6 +7,7 @@
 
 #define GAME_MAX_AIRCRAFT 32
 #define GAME_MAX_CHARACTERS 8
+#define GAME_MAX_PARKING 32
 #define CHEAT_ARRAY_SIZE 16
 #define AIRCRAFT_MAX_TARGETS 32
 #define PLAYER_MAX_WAYPOINTS AIRCRAFT_MAX_TARGETS
@@ -46,6 +47,13 @@ typedef enum t_flstate
 	STATE_FINAL,
 	STATE_LANDED
 }FL_STATE;
+
+typedef enum t_LevelDifficulty
+{
+	LEVEL_DIFFICULTY_EASY = 0,
+	LEVEL_DIFFICULTY_MEDIUM,
+	LEVEL_DIFFICULTY_HARD
+}LEVEL_DIFFICULTY;
 
 typedef struct t_isopos
 {
@@ -230,5 +238,16 @@ typedef struct t_Cheat
 	unsigned short Combination[CHEAT_ARRAY_SIZE];
 	void (*Callback)(void);
 }TYPE_CHEAT;
+
+// TYPE_PLT_CONFIG is used for PLT file generation.
+typedef struct t_PltConfig
+{
+	uint8_t MaxTime; // Minutes
+	uint8_t nRunway;
+	uint8_t ParkingArray[GAME_MAX_PARKING];
+	LEVEL_DIFFICULTY Level;
+	bool TwoPlayers;
+	uint8_t maxLostFlights;
+}TYPE_PLT_CONFIG;
 
 #endif // __GAME_STRUCTURES__HEADER__

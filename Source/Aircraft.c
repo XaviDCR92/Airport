@@ -9,6 +9,7 @@
  * *************************************/
 
 #define AIRCRAFT_SIZE				16
+#define AIRCRAFT_SIZE_FIX16			fix16_from_int(AIRCRAFT_SIZE)
 
 /* *************************************
  * 	Structs and enums
@@ -46,7 +47,7 @@ static uint8_t AircraftIndex;
 static GsSprite AircraftSpr;
 static TYPE_ISOMETRIC_POS AircraftCenterIsoPos;
 static TYPE_CARTESIAN_POS AircraftCenterPos;
-static char * AircraftLiveryNamesTable[] = {"PHX", NULL};
+static char* AircraftLiveryNamesTable[] = {"PHX", NULL};
 static AIRCRAFT_LIVERY AircraftLiveryTable[] = {AIRCRAFT_LIVERY_0, AIRCRAFT_LIVERY_UNKNOWN};
 static const fix16_t AircraftSpeedsTable[] = {	[AIRCRAFT_SPEED_IDLE] = 0,
 												[AIRCRAFT_SPEED_GROUND] = 0x6666,
@@ -59,10 +60,11 @@ static const fix16_t AircraftSpeedsTable[] = {	[AIRCRAFT_SPEED_IDLE] = 0,
  * *************************************/
 
 static void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft);
-static AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char * strFlightNumber);
+static AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char* strFlightNumber);
 static void AircraftAttitude(TYPE_AIRCRAFT_DATA* ptrAircraft);
 static void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* ptrAircraft);
 static void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft);
+static bool AircraftCheckCollision(TYPE_AIRCRAFT_DATA* ptrRefAircraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft);
 
 void AircraftInit(void)
 {
@@ -93,7 +95,7 @@ void AircraftInit(void)
 	AircraftCenterPos = GfxIsometricToCartesian(&AircraftCenterIsoPos);
 }
 
-bool AircraftAddNew(	TYPE_FLIGHT_DATA * ptrFlightData,
+bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 						uint8_t FlightDataIndex,
 						uint16_t* targets		)
 {
@@ -165,7 +167,7 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA * ptrFlightData,
 	return true;
 }
 
-AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char * strFlightNumber)
+AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char* strFlightNumber)
 {
 	int32_t liveryIndex;
 	char strLivery[4];
@@ -215,6 +217,7 @@ void AircraftHandler(void)
 	for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
 	{
 		TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[i];
+		uint8_t j;
 
 		if(ptrAircraft->State == STATE_IDLE)
 		{
@@ -224,6 +227,27 @@ void AircraftHandler(void)
 		AircraftDirection(ptrAircraft);
 		AircraftAttitude(ptrAircraft);
 		AircraftSpeed(ptrAircraft);
+
+		for(j = 0; j < GAME_MAX_AIRCRAFT; j++)
+		{
+			TYPE_AIRCRAFT_DATA* ptrOtherAircraft = &AircraftData[j];
+			
+			if(i == j)
+			{
+				continue;
+			}
+
+			if(AircraftData[j].State == STATE_IDLE)
+			{
+				continue;
+			}
+			
+			if(AircraftCheckCollision(ptrAircraft, ptrOtherAircraft) == true)
+			{
+				GameAircraftCollision(ptrAircraft->FlightDataIdx);
+				break;
+			}
+		}
 
 		ptrAircraft->State = GameGetFlightDataStateFromIdx(ptrAircraft->FlightDataIdx);
 	}
@@ -267,18 +291,43 @@ void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft)
 
 void AircraftRender(TYPE_PLAYER* ptrPlayer)
 {
-	TYPE_AIRCRAFT_DATA* ptrAircraft;
-	TYPE_CARTESIAN_POS cartPos;
-
 	uint8_t i;
 
 	for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
 	{
-		ptrAircraft = &AircraftData[i];
-
+		TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[i];
+		TYPE_CARTESIAN_POS cartPos;
+		TYPE_ISOMETRIC_FIX16_POS shadowIsoPos = {	.x = ptrAircraft->IsoPos.x,
+													.y = ptrAircraft->IsoPos.y,
+													.z = 0	};
+		TYPE_CARTESIAN_POS shadowCartPos;
+		
 		if(ptrAircraft->State == STATE_IDLE)
 		{
 			continue;
+		}
+
+		AircraftUpdateSpriteFromData(ptrAircraft);
+
+		if(ptrAircraft->IsoPos.z > 0)
+		{
+			// Draw aircraft shadow
+
+			shadowCartPos = GfxIsometricFix16ToCartesian(&shadowIsoPos);
+
+			// Aircraft position is referred to aircraft center
+			AircraftSpr.x = shadowCartPos.x - (AircraftSpr.w >> 1);
+			AircraftSpr.y = shadowCartPos.y - (AircraftSpr.h >> 1);
+
+			CameraApplyCoordinatesToSprite(ptrPlayer, &AircraftSpr);
+
+			AircraftSpr.r = 0;
+			AircraftSpr.g = 0;
+			AircraftSpr.b = 0;
+
+			AircraftSpr.attribute |= ENABLE_TRANS | TRANS_MODE(0);
+
+			GfxSortSprite(&AircraftSpr);
 		}
 
 		cartPos = GfxIsometricFix16ToCartesian(&ptrAircraft->IsoPos);
@@ -287,7 +336,7 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer)
 		AircraftSpr.x = cartPos.x - (AircraftSpr.w >> 1);
 		AircraftSpr.y = cartPos.y - (AircraftSpr.h >> 1);
 
-		AircraftUpdateSpriteFromData(ptrAircraft);
+		AircraftSpr.attribute &= ~(ENABLE_TRANS | TRANS_MODE(0));
 
 		CameraApplyCoordinatesToSprite(ptrPlayer, &AircraftSpr);
 
@@ -568,4 +617,29 @@ bool AircraftMoving(uint8_t index)
 	TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(index);
 	
 	return (bool)ptrAircraft->Speed;
+}
+
+bool AircraftCheckCollision(TYPE_AIRCRAFT_DATA* ptrRefAircraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft)
+{
+// Here I have used an old macro that I found on nextvolume's source code for "A Small Journey", IIRC.
+// Totally fool-proof, so I dint' want to complicate things!
+#define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) (!( ((x1)>=(x2)+(w2)) || ((x2)>=(x1)+(w1)) || \
+														((y1)>=(y2)+(h2)) || ((y2)>=(y1)+(h1)) ))
+
+	if(check_bb_collision(	ptrRefAircraft->IsoPos.x,
+							ptrRefAircraft->IsoPos.y,
+							AIRCRAFT_SIZE_FIX16,
+							AIRCRAFT_SIZE_FIX16,
+							ptrOtherAircraft->IsoPos.x,
+							ptrOtherAircraft->IsoPos.y,
+							AIRCRAFT_SIZE_FIX16,
+							AIRCRAFT_SIZE_FIX16			) != 0)
+	{
+		if(ptrRefAircraft->IsoPos.z == ptrOtherAircraft->IsoPos.z)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }

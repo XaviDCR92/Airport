@@ -148,12 +148,18 @@ enum
 {
 	AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_X = 96,
 	AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_Y = 112,
+
+	AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_X_2PLAYER = 48,
+	AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_Y_2PLAYER = 112,
 	
 	AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_U = 44,
 	AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_V = 48,
 	
 	AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_X = 280,
 	AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_Y = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_Y,
+
+	AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_X_2PLAYER = 128,
+	AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_Y_2PLAYER = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_Y_2PLAYER,
 	
 	AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_U = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_U + 8,
 	AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_V = 48,
@@ -172,7 +178,7 @@ enum
  * 	Local prototypes					*
  * *************************************/
 
-static void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData);
+static void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
 static void GameGuiClearPassengersLeft(void);
 
 /* **************************************
@@ -188,7 +194,7 @@ static GsSprite SecondDisplay;
 static TYPE_TIMER* ShowAircraftPassengersTimer;
 static bool GameGuiClearPassengersLeft_Flag;
 
-static char * GameFileList[] = {"cdrom:\\DATA\\SPRITES\\BUBBLE.TIM;1"	,
+static char* GameFileList[] = {"cdrom:\\DATA\\SPRITES\\BUBBLE.TIM;1"	,
 								"cdrom:\\DATA\\FONTS\\FONT_1.FNT;1"		,
 								"cdrom:\\DATA\\SPRITES\\ARROWS.TIM;1"	};
 								
@@ -256,6 +262,9 @@ void GameGuiInit(void)
 	PauseRect.attribute |= ENABLE_TRANS | TRANS_MODE(0);
 
 	ShowAircraftPassengersTimer = SystemCreateTimer(20, true, GameGuiClearPassengersLeft);
+	
+	ArrowsSpr.w = AIRCRAFT_DATA_FLIGHT_ARROWS_SIZE;
+	ArrowsSpr.h = AIRCRAFT_DATA_FLIGHT_ARROWS_SIZE;
 
 	slowScore = 0;
 }
@@ -288,11 +297,14 @@ bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer)
 	return false;
 }
 
-void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
+void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
-	while(ptrPlayer->ActiveAircraft < ptrPlayer->SelectedAircraft)
+	if(ptrPlayer->ActiveAircraft != 0)
 	{
-		ptrPlayer->SelectedAircraft--;
+		while(ptrPlayer->ActiveAircraft <= ptrPlayer->SelectedAircraft)
+		{
+			ptrPlayer->SelectedAircraft--;
+		}
 	}
 	
 	while(ptrPlayer->ActiveAircraft < (uint8_t)(GAME_GUI_AIRCRAFT_DATA_MAX_PAGE * ptrPlayer->FlightDataPage) )
@@ -342,7 +354,7 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFli
 	}
 }
 
-void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
+void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	short y_offset;
 	uint8_t page_aircraft;
@@ -487,32 +499,42 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightDat
 			
 			if(ptrPlayer->ActiveAircraft > (GAME_GUI_AIRCRAFT_DATA_MAX_PAGE * (ptrPlayer->FlightDataPage + 1) ) )
 			{
-				ArrowsSpr.x = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_X;
-				ArrowsSpr.y = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_Y;
-				
-				ArrowsSpr.attribute |= GFX_1HZ_FLASH;
-				
+				if(GameTwoPlayersActive() == true)
+				{
+					ArrowsSpr.x = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_X_2PLAYER;
+					ArrowsSpr.y = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_Y_2PLAYER;
+				}
+				else
+				{
+					ArrowsSpr.x = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_X;
+					ArrowsSpr.y = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_Y;
+				}
+
 				ArrowsSpr.u = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_U;
 				ArrowsSpr.v = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_V;
-				
-				ArrowsSpr.w = AIRCRAFT_DATA_FLIGHT_ARROWS_SIZE;
-				ArrowsSpr.h = AIRCRAFT_DATA_FLIGHT_ARROWS_SIZE;
+
+				ArrowsSpr.attribute |= GFX_1HZ_FLASH;
 				
 				GfxSortSprite(&ArrowsSpr);
 			}
 			
 			if(ptrPlayer->FlightDataPage != 0)
 			{
-				ArrowsSpr.x = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_X;
-				ArrowsSpr.y = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_Y;
-				
-				ArrowsSpr.attribute |= GFX_1HZ_FLASH;
-				
+				if(GameTwoPlayersActive() == true)
+				{
+					ArrowsSpr.x = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_X_2PLAYER;
+					ArrowsSpr.y = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_Y_2PLAYER;
+				}
+				else
+				{
+					ArrowsSpr.x = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_X;
+					ArrowsSpr.y = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_Y;
+				}
+
 				ArrowsSpr.u = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_U;
 				ArrowsSpr.v = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_V;
 				
-				ArrowsSpr.w = AIRCRAFT_DATA_FLIGHT_ARROWS_SIZE;
-				ArrowsSpr.h = AIRCRAFT_DATA_FLIGHT_ARROWS_SIZE;
+				ArrowsSpr.attribute |= GFX_1HZ_FLASH;
 				
 				GfxSortSprite(&ArrowsSpr);
 			}
@@ -555,7 +577,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightDat
 
 }
 
-void GameGuiBubble(TYPE_FLIGHT_DATA * ptrFlightData)
+void GameGuiBubble(TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	uint8_t i;
 	static uint16_t BubbleVibrationTimer;
@@ -658,7 +680,7 @@ void GameGuiShowPassengersLeft(TYPE_PLAYER* ptrPlayer)
 	}
 }
 
-void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA * ptrFlightData)
+void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	uint8_t init_flight = ptrPlayer->FlightDataPage * GAME_GUI_AIRCRAFT_DATA_MAX_PAGE;
 	uint8_t i;
@@ -897,10 +919,6 @@ bool GameGuiFinishedDialog(TYPE_PLAYER* ptrPlayer)
 	GfxSaveDisplayData(&SecondDisplay);
 	
 	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
-				
-	//DrawFBRect(0, 0, X_SCREEN_RESOLUTION, VRAM_H, 0, 0, 0);
-				
-	while(GfxIsGPUBusy() == true);
 	
 	do
 	{
@@ -925,4 +943,27 @@ bool GameGuiFinishedDialog(TYPE_PLAYER* ptrPlayer)
 	}while(ptrPlayer->PadKeySinglePress_Callback(PAD_START) == false);
 	
 	return false;
+}
+
+void GameGuiAircraftCollision(TYPE_PLAYER* ptrPlayer)
+{
+	GfxSaveDisplayData(&SecondDisplay);
+	
+	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
+	
+	do
+	{		
+		GfxSortSprite(&SecondDisplay);
+		
+		GsSortGPoly4(&PauseRect);
+
+		FontPrintText( 	&SmallFont,
+								AIRCRAFT_DATA_GSGPOLY4_X0 + 8,
+								AIRCRAFT_DATA_GSGPOLY4_Y0 +
+								( (AIRCRAFT_DATA_GSGPOLY4_Y2 - AIRCRAFT_DATA_GSGPOLY4_Y0) >> 1),
+								"Collision between aircraft!"	);
+		
+		GfxDrawScene_Slow();
+		
+	}while(ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS) == false);
 }

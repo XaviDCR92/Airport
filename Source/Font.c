@@ -21,7 +21,7 @@
 static char _internal_text[FONT_INTERNAL_TEXT_BUFFER_MAX_SIZE];
 static unsigned char _blend_effect_lum;
 
-bool FontLoadImage(char * strPath, TYPE_FONT * ptrFont)
+bool FontLoadImage(char* strPath, TYPE_FONT * ptrFont)
 {
 	if(GfxSpriteFromFile(strPath, &ptrFont->spr) == false)
 	{
@@ -88,7 +88,7 @@ void FontCyclic(void)
 	_blend_effect_lum -= 8;
 }
 
-void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char * str, ...)
+void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 {
 	uint16_t i;
 	uint16_t line_count = 0;
