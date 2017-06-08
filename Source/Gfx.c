@@ -118,8 +118,8 @@ void GfxSwapBuffers(void)
 			DrawEnv.y = DOUBLE_BUFFERING_SWAP_Y;
 		}
 			
-		GsSetDispEnv_DMA(&DispEnv);
-		GsSetDrawEnv_DMA(&DrawEnv);
+		GsSetDispEnv(&DispEnv);
+		GsSetDrawEnv(&DrawEnv);
 	}
 }
 

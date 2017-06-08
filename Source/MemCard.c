@@ -14,7 +14,7 @@
 #define MEMCARD_BLOCK_MAX_ICONS 3
 #define MEMCARD_ICON_INDEX_TIME 4
 
-#define MEMCARD_MAXIMUM_SECTOR 511
+#define MEMCARD_MAXIMUM_SECTOR (1024 - 1)
 
 #define MEMCARD_INVALID_CHECKSUM 	0x4E
 #define MEMCARD_CORRECT_RW			0x47
@@ -705,7 +705,7 @@ bool MemCardReadSector(TYPE_BLOCK_DATA * ptrBlockData, int sector)
 		MemCardErrors.ErrorByte = 'T';
 		
 		dprintf("Invalid memory card sector %d. Only values between"
-				" 0 and 511 are allowed!\n", sector);
+				" 0 and %d are allowed!\n", sector, MEMCARD_MAXIMUM_SECTOR);
 		return false;
 	}
 
@@ -858,7 +858,7 @@ void MemCardDrawIcon(TYPE_BLOCK_DATA * ptrBlockData, short x, short y)
 	
 	orig_clut_x = ptrBlockData->IconTPoly.cx;
 	
-	if(ptrBlockData->IconNumber >= IconIndex)
+	if(ptrBlockData->IconNumber > IconIndex)
 	{
 		ptrBlockData->IconTPoly.u[0] += MEMCARD_BLOCK_IMAGE_W * IconIndex;
 		ptrBlockData->IconTPoly.u[1] = ptrBlockData->IconTPoly.u[0] + MEMCARD_BLOCK_IMAGE_W;
@@ -867,6 +867,7 @@ void MemCardDrawIcon(TYPE_BLOCK_DATA * ptrBlockData, short x, short y)
 		
 		ptrBlockData->IconTPoly.cx += IconIndex * MEMCARD_BLOCK_CLUT_W;
 	}
+
 	
 	if(first_access == true)
 	{
