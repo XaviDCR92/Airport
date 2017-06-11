@@ -244,8 +244,6 @@ void MainMenuInit(void)
 				
 	PadAddCheat(&StackCheckCheat);
 
-	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
-
 	LoadMenuEnd();
 }
 
@@ -258,6 +256,8 @@ void MainMenu(void)
 	#ifndef NO_INTRO
 	PSXSDKIntro();
 	#endif //PSXSDK_DEBUG
+
+	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
 	
 	while(1)
 	{

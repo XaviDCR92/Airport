@@ -224,7 +224,6 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 			}
 			
 			ptrFlightData->State[aircraftIndex] = STATE_IDLE;
-			ptrFlightData->NotificationRequest[aircraftIndex] = false;			
 			aircraftIndex++;
 		}
 		
@@ -253,7 +252,6 @@ void PltParserResetBuffers(TYPE_FLIGHT_DATA* ptrFlightData)
 	memset(ptrFlightData->Hours,0,GAME_MAX_AIRCRAFT);
 	memset(ptrFlightData->Minutes,0,GAME_MAX_AIRCRAFT);
 	memset(ptrFlightData->State,STATE_IDLE,GAME_MAX_AIRCRAFT);
-	memset(ptrFlightData->NotificationRequest,0,GAME_MAX_AIRCRAFT);
 	memset(ptrFlightData->Parking,0,GAME_MAX_AIRCRAFT);
 	memset(ptrFlightData->Finished,0,GAME_MAX_AIRCRAFT);
 }

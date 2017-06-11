@@ -180,6 +180,8 @@ enum
 
 static void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
 static void GameGuiClearPassengersLeft(void);
+static void GameGuiBubbleStop(void);
+static void GameGuiBubbleStopVibration(void);
 
 /* **************************************
  * 	Local variables						*
@@ -193,6 +195,8 @@ static GsGPoly4 PauseRect;
 static GsSprite SecondDisplay;
 static TYPE_TIMER* ShowAircraftPassengersTimer;
 static bool GameGuiClearPassengersLeft_Flag;
+static bool GameGuiBubbleShowFlag;
+static bool GameGuiBubbleVibrationFlag;
 
 static char* GameFileList[] = {"cdrom:\\DATA\\SPRITES\\BUBBLE.TIM;1"	,
 								"cdrom:\\DATA\\FONTS\\FONT_1.FNT;1"		,
@@ -267,6 +271,8 @@ void GameGuiInit(void)
 	ArrowsSpr.h = AIRCRAFT_DATA_FLIGHT_ARROWS_SIZE;
 
 	slowScore = 0;
+
+	GameGuiBubbleShowFlag = false;
 }
 
 bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer)
@@ -577,64 +583,62 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 
 }
 
+void GameGuiBubbleShow(void)
+{
+	static TYPE_TIMER* GameGuiBubbleTimer = NULL;
+
+	if(GameGuiBubbleTimer == NULL)
+	{
+		dprintf("Started GameGuiBubbleTimer...\n");
+		GameGuiBubbleTimer = SystemCreateTimer(50, false, &GameGuiBubbleStop);
+	}
+	else
+	{
+		SystemTimerRestart(GameGuiBubbleTimer);
+	}
+
+	GameGuiBubbleShowFlag = true;
+	GameGuiBubbleVibrationFlag = true;
+}
+
 void GameGuiBubble(TYPE_FLIGHT_DATA* ptrFlightData)
 {
-	uint8_t i;
-	static uint16_t BubbleVibrationTimer;
-	static uint8_t FirstNotification;
-	bool AtLeastOneEnabled = false;
-	
-	if(GameStartupFlag == true)
+	static bool GameGuiBubbleShowFlagOld;
+
+	if(GameGuiBubbleShowFlag == true)
 	{
-		// Set initial values to static variables
-		BubbleVibrationTimer = 0;
-		FirstNotification = 0;
-	}
-	
-	for(i = FirstNotification ; i < ptrFlightData->nAircraft ; i++)
-	{
-		if(ptrFlightData->NotificationRequest[i] != 0)
+		static TYPE_TIMER* GameGuiBubbleVibrationTimer = NULL;
+
+		if(GameGuiBubbleShowFlagOld == false)
 		{
-			AtLeastOneEnabled = true;
-			
-			BubbleSpr.x = BUBBLE_SPRITE_X;
-			BubbleSpr.y = BUBBLE_SPRITE_Y;
-			
-			if(BubbleVibrationTimer >= BUBBLE_VIBRATION_TIMER_LIMIT)
+			if(GameGuiBubbleVibrationTimer == NULL)
 			{
-				// Reset timer and notification request for current aircraft
-				if(ptrFlightData->NotificationRequest[i] == 0)
-				{
-					FirstNotification = 0;
-					BubbleVibrationTimer = 0;
-				}
+				dprintf("Started GameGuiBubbleVibrationTimer...\n");
+				GameGuiBubbleVibrationTimer = SystemCreateTimer(20, false, &GameGuiBubbleStopVibration);
 			}
 			else
 			{
-				BubbleSpr.x += SystemRand(BUBBLE_SPRITE_RAND_MIN,BUBBLE_SPRITE_RAND_MAX);
-				BubbleSpr.y += SystemRand(BUBBLE_SPRITE_RAND_MIN,BUBBLE_SPRITE_RAND_MAX);
-				
-				// Keep information about last aircraft notified...
-				// so that it gets called on next cycle
-				FirstNotification = i;
-				BubbleVibrationTimer++;
+				SystemTimerRestart(GameGuiBubbleVibrationTimer);
 			}
-
-			GfxSortSprite(&BubbleSpr);
-			FontSetFlags(&SmallFont, FONT_CENTERED);
-			FontPrintText(&SmallFont,BubbleSpr.x + 8 , BubbleSpr.y + 2, "%d", ptrFlightData->ActiveAircraft);
-			
-			GfxDrawButton(NOTIFICATION_BUTTON_X, NOTIFICATION_BUTTON_Y, PAD_CIRCLE);
-			break;
 		}
+		
+		BubbleSpr.x = BUBBLE_SPRITE_X;
+		BubbleSpr.y = BUBBLE_SPRITE_Y;
+		
+		if(GameGuiBubbleVibrationFlag == true)
+		{
+			BubbleSpr.x += SystemRand(BUBBLE_SPRITE_RAND_MIN,BUBBLE_SPRITE_RAND_MAX);
+			BubbleSpr.y += SystemRand(BUBBLE_SPRITE_RAND_MIN,BUBBLE_SPRITE_RAND_MAX);
+		}
+
+		GfxSortSprite(&BubbleSpr);
+		FontSetFlags(&SmallFont, FONT_CENTERED);
+		FontPrintText(&SmallFont,BubbleSpr.x + 8 , BubbleSpr.y + 2, "%d", ptrFlightData->ActiveAircraft);
+		
+		GfxDrawButton(NOTIFICATION_BUTTON_X, NOTIFICATION_BUTTON_Y, PAD_CIRCLE);
 	}
-	
-	if(AtLeastOneEnabled == false)
-	{
-		FirstNotification = 0;
-		BubbleVibrationTimer = 0;
-	}
-	//dprintf("Bubble timer: %d\n",BubbleVibrationTimer);
+
+	GameGuiBubbleShowFlagOld = GameGuiBubbleShowFlag;
 }
 
 void GameGuiClock(uint8_t hour, uint8_t min)
@@ -825,7 +829,7 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlight
 		FontPrintText(	&SmallFont,
 						AircraftDataRemainingTime_X,
 						AircraftDataRemainingTime_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-						"Time: %d sec.",
+						"%d sec.",
 						ptrFlightData->RemainingTime[ptrPlayer->ActiveAircraftList[i]] );
 	}
 }
@@ -966,4 +970,16 @@ void GameGuiAircraftCollision(TYPE_PLAYER* ptrPlayer)
 		GfxDrawScene_Slow();
 		
 	}while(ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS) == false);
+}
+
+void GameGuiBubbleStop(void)
+{
+	dprintf("GameGuiBubbleStop\n");
+	GameGuiBubbleShowFlag = false;
+}
+
+void GameGuiBubbleStopVibration(void)
+{
+	dprintf("GameGuiBubbleStopVibration\n");
+	GameGuiBubbleVibrationFlag = false;
 }

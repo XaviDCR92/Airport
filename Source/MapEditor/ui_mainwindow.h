@@ -18,7 +18,6 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
-#include <QtWidgets/QOpenGLWidget>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
@@ -32,11 +31,11 @@ class Ui_MainWindow
 public:
     QWidget *centralWidget;
     QGridLayout *gridLayout;
-    QOpenGLWidget *openGLWidget;
     QHBoxLayout *horizontalLayout;
     QPushButton *LoadMap_Btn;
     QPushButton *SaveMap_Btn;
     QTreeWidget *treeWidget;
+    QWidget *widget;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -58,13 +57,6 @@ public:
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
-        openGLWidget = new QOpenGLWidget(centralWidget);
-        openGLWidget->setObjectName(QStringLiteral("openGLWidget"));
-        sizePolicy.setHeightForWidth(openGLWidget->sizePolicy().hasHeightForWidth());
-        openGLWidget->setSizePolicy(sizePolicy);
-
-        gridLayout->addWidget(openGLWidget, 2, 1, 1, 1);
-
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
         horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
@@ -93,6 +85,11 @@ public:
         treeWidget->setMaximumSize(QSize(320, 16777215));
 
         gridLayout->addWidget(treeWidget, 2, 0, 1, 1);
+
+        widget = new QWidget(centralWidget);
+        widget->setObjectName(QStringLiteral("widget"));
+
+        gridLayout->addWidget(widget, 2, 1, 1, 1);
 
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);

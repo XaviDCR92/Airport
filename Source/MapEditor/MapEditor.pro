@@ -18,3 +18,6 @@ SOURCES += main.cpp\
 HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
+
+DISTFILES += \
+    ../../Sprites/Tileset1.bmp

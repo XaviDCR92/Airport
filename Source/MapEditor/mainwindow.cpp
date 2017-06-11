@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include <QPainter>
+#include <QGraphicsScene>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -7,8 +9,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->LoadMap_Btn, SIGNAL(released()), this, SLOT(onLoadMap()));
-
-    ui->openGLWidget->
 
     appSettings();
 }
@@ -34,7 +34,6 @@ void MainWindow::onLoadMap(void)
 
     QDataStream txt(&f);
 
-
 }
 
 bool MainWindow::checkFile(QFile& f)
@@ -54,6 +53,21 @@ bool MainWindow::checkFile(QFile& f)
     QDir d(fi.absoluteFilePath());
 
     _last_dir = d.absolutePath();
+
+    QPixmap pix;
+
+    if(pix.load("C:\\cygwin\\home\\Xavier\\Airport\\Sprites\\Tileset1.bmp") == false)
+    {
+        qDebug() << "Error loading bitmap.";
+    }
+
+    QPainter p;
+
+    p.begin(&pix);
+
+    p.setWindow(ui->widget->geometry());
+
+    p.drawPixmap(ui->widget->x(), ui->widget->y(), pix);
 
     return true;
 }

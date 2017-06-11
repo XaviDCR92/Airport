@@ -40,5 +40,6 @@ void GameGuiDrawUnboardingSequence(TYPE_PLAYER* ptrPlayer);
 void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
 bool GameGuiFinishedDialog(TYPE_PLAYER* ptrPlayer);
 void GameGuiAircraftCollision(TYPE_PLAYER* ptrPlayer);
+void GameGuiBubbleShow(void);
 
 #endif //__GAME_GUI_HEADER__

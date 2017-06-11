@@ -325,7 +325,7 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer)
 			AircraftSpr.g = 0;
 			AircraftSpr.b = 0;
 
-			//AircraftSpr.attribute |= ENABLE_TRANS | TRANS_MODE(0);
+			AircraftSpr.attribute |= ENABLE_TRANS | TRANS_MODE(0);
 
 			GfxSortSprite(&AircraftSpr);
 		}
@@ -336,7 +336,7 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer)
 		AircraftSpr.x = cartPos.x - (AircraftSpr.w >> 1);
 		AircraftSpr.y = cartPos.y - (AircraftSpr.h >> 1);
 
-		//AircraftSpr.attribute &= ~(ENABLE_TRANS | TRANS_MODE(0));
+		AircraftSpr.attribute &= ~(ENABLE_TRANS | TRANS_MODE(0));
 
 		CameraApplyCoordinatesToSprite(ptrPlayer, &AircraftSpr);
 
@@ -642,4 +642,19 @@ bool AircraftCheckCollision(TYPE_AIRCRAFT_DATA* ptrRefAircraft, TYPE_AIRCRAFT_DA
 	}
 
 	return false;
+}
+
+void AircraftRenderFromTile(uint16_t tile)
+{
+	uint8_t i;
+
+	for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
+	{
+		TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[i];
+
+		if(ptrAircraft->State != STATE_IDLE)
+		{
+			
+		}
+	}
 }

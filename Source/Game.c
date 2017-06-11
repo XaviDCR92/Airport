@@ -107,7 +107,7 @@ enum
 	UNBOARDING_KEY_SEQUENCE_EASY = 4,
 	UNBOARDING_KEY_SEQUENCE_MEDIUM = 6,
 	UNBOARDING_KEY_SEQUENCE_HARD = GAME_MAX_SEQUENCE_KEYS,
-	UNBOARDING_PASSENGERS_PER_SEQUENCE = 50
+	UNBOARDING_PASSENGERS_PER_SEQUENCE = 100
 };
 
 /* *************************************
@@ -837,7 +837,8 @@ void GameAircraftState(void)
 						GameAircraftCreatedFlag = true;
 
 						// Create notification request for incoming aircraft
-						FlightData.NotificationRequest[i] = true;
+						dprintf("1!!!!\n");
+						GameGuiBubbleShow();
 						
 						target[0] = FlightData.Parking[i];
 						
@@ -857,8 +858,11 @@ void GameAircraftState(void)
 					dprintf("Flight %d set to STATE_APPROACH.\n", i);
 					FlightData.State[i] = STATE_APPROACH;
 					GameAircraftCreatedFlag = true;
+
+					dprintf("2!!!!\n");
+
 					// Create notification request for incoming aircraft
-					FlightData.NotificationRequest[i] = true;
+					GameGuiBubbleShow();
 				}
 			}
 
@@ -2269,6 +2273,7 @@ void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 				else
 				{
 					// Flight has finished. Remove aircraft and set finished flag
+					ptrPlayer->Unboarding = false;
 					GameRemoveFlight(ptrPlayer->FlightDataSelectedAircraft, true);
 				}
 				
@@ -2498,7 +2503,6 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 						dprintf("Player two\n");
 					}
 					
-					ptrPlayer->Unboarding = false;
 					memset(ptrPlayer->UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS);
 					ptrPlayer->UnboardingSequenceIdx = 0;
 					

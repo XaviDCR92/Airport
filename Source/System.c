@@ -701,13 +701,6 @@ void SystemUserTimersHandler(void)
 					{
 						timer_array[i].time = timer_array[i].orig_time;
 					}
-					else
-					{
-						// Clean timer data
-						timer_array[i].busy = false;
-						timer_array[i].orig_time = 0;
-						timer_array[i].Timeout_Callback = NULL;
-					}
 				}
 			}
 		}
@@ -729,6 +722,7 @@ void SystemUserTimersHandler(void)
 void SystemTimerRestart(TYPE_TIMER* timer)
 {
 	timer->time = timer->orig_time;
+	dprintf("Time set to %d seconds, timer 0x%08X\n", timer->time, timer);
 }
 
 void SystemTimerRemove(TYPE_TIMER* timer)

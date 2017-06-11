@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QSettings>
+#include <QDebug>
 
 #include "ui_mainwindow.h"
 
