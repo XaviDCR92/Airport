@@ -95,8 +95,8 @@ enum
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_B3 = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_B2,
 	
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_GAP = 8,
-	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X0 = AIRCRAFT_DATA_GSGPOLY4_X0 + AIRCRAFT_DATA_FLIGHT_GSGPOLY4_GAP,
-	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X1 = AIRCRAFT_DATA_GSGPOLY4_X1 - AIRCRAFT_DATA_FLIGHT_GSGPOLY4_GAP,
+	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X0 = AIRCRAFT_DATA_GSGPOLY4_X0 + 24,
+	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X1 = AIRCRAFT_DATA_GSGPOLY4_X1 - 24,
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X2 = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X0,
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X3 = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X1,
 	
@@ -137,34 +137,38 @@ enum
 	AIRCRAFT_DATA_PASSENGERS_X_2PLAYER = AIRCRAFT_DATA_FLIGHT_NUMBER_TEXT_X_2PLAYER + 64,
 	AIRCRAFT_DATA_PASSENGERS_Y_2PLAYER = AIRCRAFT_DATA_FLIGHT_NUMBER_TEXT_Y_2PLAYER,
 
-	AIRCRAFT_DATA_REMAINING_TIME_X = AIRCRAFT_DATA_DIRECTION_X,
+	AIRCRAFT_DATA_REMAINING_TIME_X = AIRCRAFT_DATA_DIRECTION_X + 24,
 	AIRCRAFT_DATA_REMAINING_TIME_Y = AIRCRAFT_DATA_DIRECTION_Y + AIRCRAFT_DATA_FLIGHT_GSGPOLY4_GAP,
 
-	AIRCRAFT_DATA_REMAINING_TIME_X_2PLAYER = AIRCRAFT_DATA_DIRECTION_X_2PLAYER,
-	AIRCRAFT_DATA_REMAINING_TIME_Y_2PLAYER = AIRCRAFT_DATA_DIRECTION_Y_2PLAYER + AIRCRAFT_DATA_FLIGHT_GSGPOLY4_GAP
+	AIRCRAFT_DATA_REMAINING_TIME_X_2PLAYER = AIRCRAFT_DATA_DIRECTION_X_2PLAYER + 24,
+	AIRCRAFT_DATA_REMAINING_TIME_Y_2PLAYER = AIRCRAFT_DATA_DIRECTION_Y_2PLAYER + AIRCRAFT_DATA_FLIGHT_GSGPOLY4_GAP,
 };
 
 enum
 {
-	AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_X = 96,
-	AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_Y = 112,
+	AIRCRAFT_DEPARTURE_ARRIVAL_ICON_SIZE = 16,
+	AIRCRAFT_ARRIVAL_ICON_U = 0,
+	AIRCRAFT_DEPARTURE_ICON_U = 16
+};
 
-	AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_X_2PLAYER = 48,
-	AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_Y_2PLAYER = 112,
-	
-	AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_U = 44,
-	AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_V = 48,
-	
-	AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_X = 280,
-	AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_Y = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_Y,
+enum
+{
+	AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_X = 100,
+	AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_Y = 112,
 
-	AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_X_2PLAYER = 128,
-	AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_Y_2PLAYER = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_Y_2PLAYER,
+	AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_X_2PLAYER = 48,
+	AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_Y_2PLAYER = 112,
 	
-	AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_U = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_U + 8,
-	AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_V = 48,
-	
-	AIRCRAFT_DATA_FLIGHT_ARROWS_SIZE = 8
+	AIRCRAFT_DATA_FLIGHT_PAGE_UP_X = 268,
+	AIRCRAFT_DATA_FLIGHT_PAGE_UP_Y = AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_Y,
+
+	AIRCRAFT_DATA_FLIGHT_PAGE_UP_X_2PLAYER = 128,
+	AIRCRAFT_DATA_FLIGHT_PAGE_UP_Y_2PLAYER = AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_Y_2PLAYER,
+
+	AIRCRAFT_DATA_FLIGHT_PAGE_UP_U = 16,
+	AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_U = 0,
+
+	AIRCRAFT_DATA_FLIGHT_PAGEUPDN_SIZE = 16
 };
 
 enum
@@ -190,21 +194,24 @@ static void GameGuiBubbleStopVibration(void);
 static GsSprite BubbleSpr;
 static GsGPoly4 AircraftDataGPoly4;
 static GsGPoly4 SelectedAircraftGPoly4;
-static GsSprite ArrowsSpr;
 static GsGPoly4 PauseRect;
 static GsSprite SecondDisplay;
+static GsSprite DepArrSpr;
+static GsSprite PageUpDownSpr;
 static TYPE_TIMER* ShowAircraftPassengersTimer;
 static bool GameGuiClearPassengersLeft_Flag;
 static bool GameGuiBubbleShowFlag;
 static bool GameGuiBubbleVibrationFlag;
 
-static char* GameFileList[] = {"cdrom:\\DATA\\SPRITES\\BUBBLE.TIM;1"	,
+static char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\BUBBLE.TIM;1"	,
 								"cdrom:\\DATA\\FONTS\\FONT_1.FNT;1"		,
-								"cdrom:\\DATA\\SPRITES\\ARROWS.TIM;1"	};
+								"cdrom:\\DATA\\SPRITES\\DEPARR.TIM;1"	,
+								"cdrom:\\DATA\\SPRITES\\PAGEUPDN.TIM;1"	};
 								
-static void * GameFileDest[] = {(GsSprite*)&BubbleSpr	,
-								(TYPE_FONT*)&RadioFont	,
-								(GsSprite*)&ArrowsSpr	};
+static void * GameFileDest[] = {(GsSprite*)&BubbleSpr		,
+								(TYPE_FONT*)&RadioFont		,
+								(GsSprite*)&DepArrSpr		,
+								(GsSprite*)&PageUpDownSpr	};
 
 static uint32_t slowScore; // It will update slowly to actual score value
 
@@ -265,10 +272,9 @@ void GameGuiInit(void)
 	
 	PauseRect.attribute |= ENABLE_TRANS | TRANS_MODE(0);
 
+	PageUpDownSpr.w = AIRCRAFT_DATA_FLIGHT_PAGEUPDN_SIZE;
+
 	ShowAircraftPassengersTimer = SystemCreateTimer(20, true, GameGuiClearPassengersLeft);
-	
-	ArrowsSpr.w = AIRCRAFT_DATA_FLIGHT_ARROWS_SIZE;
-	ArrowsSpr.h = AIRCRAFT_DATA_FLIGHT_ARROWS_SIZE;
 
 	slowScore = 0;
 
@@ -364,6 +370,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 {
 	short y_offset;
 	uint8_t page_aircraft;
+	short orig_pageupdn_u;
 
 	enum
 	{
@@ -502,47 +509,51 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 			SelectedAircraftGPoly4.y[3] += y_offset;
 			
 			GsSortGPoly4(&SelectedAircraftGPoly4);
+
+			PageUpDownSpr.attribute |= GFX_1HZ_FLASH;
 			
 			if(ptrPlayer->ActiveAircraft > (GAME_GUI_AIRCRAFT_DATA_MAX_PAGE * (ptrPlayer->FlightDataPage + 1) ) )
 			{
+				orig_pageupdn_u = PageUpDownSpr.u;
+				
+				PageUpDownSpr.u = orig_pageupdn_u + AIRCRAFT_DATA_FLIGHT_PAGE_UP_U;
+				
 				if(GameTwoPlayersActive() == true)
 				{
-					ArrowsSpr.x = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_X_2PLAYER;
-					ArrowsSpr.y = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_Y_2PLAYER;
+					PageUpDownSpr.x = AIRCRAFT_DATA_FLIGHT_PAGE_UP_X_2PLAYER;
+					PageUpDownSpr.y = AIRCRAFT_DATA_FLIGHT_PAGE_UP_Y_2PLAYER;
 				}
 				else
 				{
-					ArrowsSpr.x = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_X;
-					ArrowsSpr.y = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_Y;
+					PageUpDownSpr.x = AIRCRAFT_DATA_FLIGHT_PAGE_UP_X;
+					PageUpDownSpr.y = AIRCRAFT_DATA_FLIGHT_PAGE_UP_Y;
 				}
 
-				ArrowsSpr.u = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_U;
-				ArrowsSpr.v = AIRCRAFT_DATA_FLIGHT_RIGHT_ARROW_V;
+				GfxSortSprite(&PageUpDownSpr);
 
-				ArrowsSpr.attribute |= GFX_1HZ_FLASH;
-				
-				GfxSortSprite(&ArrowsSpr);
+				PageUpDownSpr.u = orig_pageupdn_u;
 			}
 			
 			if(ptrPlayer->FlightDataPage != 0)
 			{
+				orig_pageupdn_u = PageUpDownSpr.u;
+				
+				PageUpDownSpr.u = orig_pageupdn_u + AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_U;
+				
 				if(GameTwoPlayersActive() == true)
 				{
-					ArrowsSpr.x = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_X_2PLAYER;
-					ArrowsSpr.y = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_Y_2PLAYER;
+					PageUpDownSpr.x = AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_X_2PLAYER;
+					PageUpDownSpr.y = AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_Y_2PLAYER;
 				}
 				else
 				{
-					ArrowsSpr.x = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_X;
-					ArrowsSpr.y = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_Y;
+					PageUpDownSpr.x = AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_X;
+					PageUpDownSpr.y = AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_Y;
 				}
+				
+				GfxSortSprite(&PageUpDownSpr);
 
-				ArrowsSpr.u = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_U;
-				ArrowsSpr.v = AIRCRAFT_DATA_FLIGHT_LEFT_ARROW_V;
-				
-				ArrowsSpr.attribute |= GFX_1HZ_FLASH;
-				
-				GfxSortSprite(&ArrowsSpr);
+				PageUpDownSpr.u = orig_pageupdn_u;
 			}
 			
 			GameGuiShowAircraftData(ptrPlayer, ptrFlightData);
@@ -693,11 +704,12 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlight
 	short AircraftDataDirection_Y;
 	short AircraftDataFlightNumber_X;
 	short AircraftDataFlightNumber_Y;
-	short AircraftDataPassengers_X;
-	short AircraftDataPassengers_Y;
+	//short AircraftDataPassengers_X;
+	//short AircraftDataPassengers_Y;
 	short AircraftDataState_X_Offset;
 	short AircraftDataRemainingTime_X;
 	short AircraftDataRemainingTime_Y;
+	short orig_DepArr_u = DepArrSpr.u;
 	
 	if(GameTwoPlayersActive() == true)
 	{
@@ -705,9 +717,9 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlight
 		AircraftDataDirection_Y = AIRCRAFT_DATA_DIRECTION_Y_2PLAYER;
 		AircraftDataFlightNumber_X = AIRCRAFT_DATA_FLIGHT_NUMBER_TEXT_X_2PLAYER;
 		AircraftDataFlightNumber_Y = AIRCRAFT_DATA_FLIGHT_NUMBER_TEXT_Y_2PLAYER;
-		AircraftDataPassengers_X = AIRCRAFT_DATA_PASSENGERS_X_2PLAYER;
-		AircraftDataPassengers_Y = AIRCRAFT_DATA_PASSENGERS_Y_2PLAYER;
-		AircraftDataState_X_Offset = 54;
+		//AircraftDataPassengers_X = AIRCRAFT_DATA_PASSENGERS_X_2PLAYER;
+		//AircraftDataPassengers_Y = AIRCRAFT_DATA_PASSENGERS_Y_2PLAYER;
+		AircraftDataState_X_Offset = 24;
 		AircraftDataRemainingTime_X = AIRCRAFT_DATA_REMAINING_TIME_X_2PLAYER;
 		AircraftDataRemainingTime_Y = AIRCRAFT_DATA_REMAINING_TIME_Y_2PLAYER;
 	}
@@ -717,9 +729,9 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlight
 		AircraftDataDirection_Y = AIRCRAFT_DATA_DIRECTION_Y;
 		AircraftDataFlightNumber_X = AIRCRAFT_DATA_FLIGHT_NUMBER_TEXT_X;
 		AircraftDataFlightNumber_Y = AIRCRAFT_DATA_FLIGHT_NUMBER_TEXT_Y;
-		AircraftDataPassengers_X = AIRCRAFT_DATA_PASSENGERS_X;
-		AircraftDataPassengers_Y = AIRCRAFT_DATA_PASSENGERS_Y;
-		AircraftDataState_X_Offset = 88;
+		//AircraftDataPassengers_X = AIRCRAFT_DATA_PASSENGERS_X;
+		//AircraftDataPassengers_Y = AIRCRAFT_DATA_PASSENGERS_Y;
+		AircraftDataState_X_Offset = 24;
 		AircraftDataRemainingTime_X = AIRCRAFT_DATA_REMAINING_TIME_X;
 		AircraftDataRemainingTime_Y = AIRCRAFT_DATA_REMAINING_TIME_Y;
 	}
@@ -739,34 +751,27 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlight
 						AircraftDataFlightNumber_X,
 						AircraftDataFlightNumber_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
 						ptrFlightData->strFlightNumber[ptrPlayer->ActiveAircraftList[i]]	);
+
+		DepArrSpr.x = AircraftDataDirection_X;
+		DepArrSpr.y = AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j);
+		DepArrSpr.w = AIRCRAFT_DEPARTURE_ARRIVAL_ICON_SIZE;
 					
 		switch(ptrFlightData->FlightDirection[ptrPlayer->ActiveAircraftList[i]])
 		{
 			case ARRIVAL:
-				FontPrintText(	&SmallFont,
-								AircraftDataDirection_X,
-								AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-								"Arrival"	);
+				DepArrSpr.u = orig_DepArr_u + AIRCRAFT_ARRIVAL_ICON_U;
 			break;
 			case DEPARTURE:
-				if(GameTwoPlayersActive() == true)
-				{
-					FontPrintText(	&SmallFont,
-									AircraftDataDirection_X,
-									AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-									"Depart."	);
-				}
-				else
-				{
-					FontPrintText(	&SmallFont,
-									AircraftDataDirection_X,
-									AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-									"Departure"	);
-				}
+				DepArrSpr.u = orig_DepArr_u + AIRCRAFT_DEPARTURE_ICON_U;
 			break;
+
 			default:
 			break;
 		}
+
+		GfxSortSprite(&DepArrSpr);
+
+		DepArrSpr.u = orig_DepArr_u;
 		
 		FontSetFlags(&SmallFont, FONT_2HZ_FLASH);
 		
@@ -820,16 +825,16 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlight
 		
 		FontSetFlags(&SmallFont, FONT_NOFLAGS);
 		
-		FontPrintText(	&SmallFont,
+		/*FontPrintText(	&SmallFont,
 						AircraftDataPassengers_X,
 						AircraftDataPassengers_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
 						"%d pax.",
-						ptrFlightData->Passengers[ptrPlayer->ActiveAircraftList[i]]	);
+						ptrFlightData->Passengers[ptrPlayer->ActiveAircraftList[i]]	);*/
 
 		FontPrintText(	&SmallFont,
 						AircraftDataRemainingTime_X,
 						AircraftDataRemainingTime_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-						"%d sec.",
+						"%ds",
 						ptrFlightData->RemainingTime[ptrPlayer->ActiveAircraftList[i]] );
 	}
 }

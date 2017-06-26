@@ -2,9 +2,9 @@ CC = psx-gcc
 DEFINE= -DFIXMATH_FAST_SIN -D_PAL_MODE_
 DEFINE += -DPSXSDK_DEBUG
 DEFINE +=  -DNO_CDDA
-#DEFINE +=  -DNO_INTRO
+DEFINE +=  -DNO_INTRO
 LIBS= -lfixmath
-CC_FLAGS = -Wall -Werror -c -Os
+CC_FLAGS = -Wall -Werror -c -Os -Wfatal-errors
 LINKER = psx-gcc
 
 PROJECT = AIRPORT
@@ -84,17 +84,18 @@ tiles:
 	bmp2tim ../Sprites/Tileset2.bmp 	../cdimg/DATA/SPRITES/TILESET2.TIM 16 -org=640,0 -mpink
 	bmp2tim ../Sprites/MainMenu.bmp 	../cdimg/DATA/SPRITES/MAINMENU.TIM 16 -org=768,384 -mpink
 	bmp2tim ../Sprites/Loading.bmp 		../cdimg/DATA/SPRITES/LOADING.TIM 4 -mpink -org=768,256 -clut=384,496
-	bmp2tim ../Sprites/Plane.bmp 		../cdimg/DATA/SPRITES/PLANE.TIM 16 -org=768,288 -mpink	
-	bmp2tim ../Sprites/Buttons.bmp 		../cdimg/DATA/SPRITES/BUTTONS.TIM 16 -org=784,288 -mpink
-	bmp2tim ../Sprites/GamePln.bmp 		../cdimg/DATA/SPRITES/GAMEPLN.TIM 8 -mpink -org=800,304 -clut=384,497
+	bmp2tim ../Sprites/Plane.bmp 		../cdimg/DATA/SPRITES/PLANE.TIM 16 -org=536,240 -mpink	
+	bmp2tim ../Sprites/Buttons.bmp 		../cdimg/DATA/SPRITES/BUTTONS.TIM 16 -org=384,240 -mpink
+	bmp2tim ../Sprites/GamePln.bmp 		../cdimg/DATA/SPRITES/GAMEPLN.TIM 8 -mpink -org=800,256 -clut=384,497
 	bmp2tim ../Sprites/GamePln_Blue.bmp ../cdimg/DATA/SPRITES/PLNBLUE.CLT 8 -mpink -clut=384,501
-	bmp2tim ../Sprites/Bubble.bmp 		../cdimg/DATA/SPRITES/BUBBLE.TIM 8 -org=848,288 -mpink -clut=384,498
+	bmp2tim ../Sprites/Bubble.bmp 		../cdimg/DATA/SPRITES/BUBBLE.TIM 8 -org=584,240 -mpink -clut=384,498
 	bmp2tim ../Sprites/Font_1_4bit.bmp	../cdimg/DATA/FONTS/FONT_1.FNT 4 -org=960,256 -mpink -clut=384,500
-	bmp2tim ../Sprites/Font_2_4bit.bmp	../cdimg/DATA/FONTS/FONT_2.FNT 4 -org=768,304 -mpink -clut=384,499
-	bmp2tim ../Sprites/Arrows.bmp		../cdimg/DATA/SPRITES/ARROWS.TIM 16 -org=812,304 -mpink
+	bmp2tim ../Sprites/Font_2_4bit.bmp	../cdimg/DATA/FONTS/FONT_2.FNT 4 -org=768,288 -mpink -clut=384,499
 	bmp2tim ../Sprites/GPL_4bit.bmp		../cdimg/DATA/SPRITES/GPL.TIM 4 -org=384,174 -mpink -clut=384,502
 	bmp2tim ../Sprites/OpSrc_8bit.bmp	../cdimg/DATA/SPRITES/OPENSRC.TIM 8 -org=464,0 -mpink -clut=384,503
-	bmp2tim ../Sprites/Mouse.bmp		../cdimg/DATA/SPRITES/MOUSE.TIM 16 -org=828,304 -mpink
+	bmp2tim ../Sprites/Mouse.bmp		../cdimg/DATA/SPRITES/MOUSE.TIM 16 -org=596,240 -mpink
+	bmp2tim ../Sprites/DepArr.bmp		../cdimg/DATA/SPRITES/DEPARR.TIM 16 -org=552,240 -mpink
+	bmp2tim ../Sprites/PageUpDn.bmp		../cdimg/DATA/SPRITES/PAGEUPDN.TIM 16 -org=504,240 -mpink
 	
 sounds:
 	rm -f ../cdimg/DATA/SOUNDS/*.VAG

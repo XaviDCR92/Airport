@@ -76,6 +76,10 @@ void GfxSetGlobalLuminance(uint8_t value);
 
 void GfxIncreaseGlobalLuminance(int8_t step);
 
+void GfxButtonSetFlags(uint8_t flags);
+
+void GfxButtonRemoveFlags(uint8_t flags);
+
 int GfxRotateFromDegrees(int deg);
 
 void GfxDrawButton(short x, short y, unsigned short btn);

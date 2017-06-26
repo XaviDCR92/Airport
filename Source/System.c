@@ -722,8 +722,20 @@ void SystemUserTimersHandler(void)
 void SystemTimerRestart(TYPE_TIMER* timer)
 {
 	timer->time = timer->orig_time;
-	dprintf("Time set to %d seconds, timer 0x%08X\n", timer->time, timer);
 }
+
+/* *********************************************************************
+ * 
+ * @name	void SystemTimerRemove(TYPE_TIMER* timer)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @brief:	Resets timer parameters to default values so timer instance
+ * 			can be recycled.	
+ *
+ * @remarks:
+ * 
+ * *********************************************************************/
 
 void SystemTimerRemove(TYPE_TIMER* timer)
 {

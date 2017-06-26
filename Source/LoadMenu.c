@@ -88,6 +88,7 @@ static GsRectangle LoadMenuBarRect;
 static char* LoadMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\PLANE.TIM;1",
 									"cdrom:\\DATA\\SPRITES\\LOADING.TIM;1",
 									"cdrom:\\DATA\\FONTS\\FONT_2.FNT;1"	};
+
 static void * LoadMenuDest[] = {(GsSprite*)&LoadMenuPlaneSpr,
 								(GsSprite*)&LoadMenuTitleSpr,
 								(TYPE_FONT*)&SmallFont		};
@@ -387,8 +388,8 @@ void ISR_LoadMenuVBlank(void)
 	LoadMenuPlaneSpr.w = PLANE_SIZE;
 	LoadMenuPlaneSpr.h = PLANE_SIZE;
 	
-	LoadMenuPlaneSpr.u = PLANE_U;
-	LoadMenuPlaneSpr.v = PLANE_V;
+	//LoadMenuPlaneSpr.u = PLANE_U;
+	//LoadMenuPlaneSpr.v = PLANE_V;
 	
 	GsSortSprite(&LoadMenuPlaneSpr);
 	

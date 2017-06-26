@@ -22,6 +22,7 @@
 #define MAX_PLAYERS (PLAYER_TWO + 1)
 
 #define TILE_SIZE 64
+#define TILE_SIZE_H 48
 #define TILE_SIZE_BIT_SHIFT 6
 
 /* *************************************

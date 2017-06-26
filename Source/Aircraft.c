@@ -10,6 +10,7 @@
 
 #define AIRCRAFT_SIZE				16
 #define AIRCRAFT_SIZE_FIX16			fix16_from_int(AIRCRAFT_SIZE)
+#define AIRCRAFT_INVALID_IDX        0xFF
 
 /* *************************************
  * 	Structs and enums
@@ -17,9 +18,10 @@
 
 enum
 {
-	AIRCRAFT_SPRITE_SIZE = 24,
+	AIRCRAFT_SPRITE_W = 24,
+	AIRCRAFT_SPRITE_H = 16,
 	AIRCRAFT_SPRITE_VRAM_X = 800,
-	AIRCRAFT_SPRITE_VRAM_Y = 304,
+	AIRCRAFT_SPRITE_VRAM_Y = 256,
 };
 
 enum
@@ -49,6 +51,7 @@ static TYPE_ISOMETRIC_POS AircraftCenterIsoPos;
 static TYPE_CARTESIAN_POS AircraftCenterPos;
 static char* AircraftLiveryNamesTable[] = {"PHX", NULL};
 static AIRCRAFT_LIVERY AircraftLiveryTable[] = {AIRCRAFT_LIVERY_0, AIRCRAFT_LIVERY_UNKNOWN};
+static uint8_t AircraftFlightDataIdx_HashTable[GAME_MAX_AIRCRAFT];
 static const fix16_t AircraftSpeedsTable[] = {	[AIRCRAFT_SPEED_IDLE] = 0,
 												[AIRCRAFT_SPEED_GROUND] = 0x6666,
 												[AIRCRAFT_SPEED_TAKEOFF] = 0x20000,
@@ -79,8 +82,8 @@ void AircraftInit(void)
 	AircraftSpr.cx = PHX_LIVERY_CLUT_X;
 	AircraftSpr.cy = PHX_LIVERY_CLUT_Y;
 
-	AircraftSpr.w = AIRCRAFT_SPRITE_SIZE;
-	AircraftSpr.h = AIRCRAFT_SPRITE_SIZE;
+	AircraftSpr.w = AIRCRAFT_SPRITE_W;
+	AircraftSpr.h = AIRCRAFT_SPRITE_H;
 
 	/*AircraftSpr.tpage = 28;
 	AircraftSpr.u = 64;
@@ -93,6 +96,10 @@ void AircraftInit(void)
 	AircraftCenterIsoPos.z = 0;
 
 	AircraftCenterPos = GfxIsometricToCartesian(&AircraftCenterIsoPos);
+
+    memset( AircraftFlightDataIdx_HashTable,
+            AIRCRAFT_INVALID_IDX,
+            sizeof(AircraftFlightDataIdx_HashTable) / sizeof(AircraftFlightDataIdx_HashTable[0])    );
 }
 
 bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
@@ -139,6 +146,7 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 	}
 
 	ptrAircraft->State = ptrFlightData->State[FlightDataIndex];
+    AircraftFlightDataIdx_HashTable[FlightDataIndex] = AircraftIndex;
 
 	ptrAircraft->Direction = AIRCRAFT_DIR_NORTH; // Default to north direction
 
@@ -499,7 +507,7 @@ void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* ptrAircraft)
 	switch(ptrAircraft->Direction)
 	{
 		case AIRCRAFT_DIR_NORTH:
-			AircraftSpr.v += AircraftSpr.w;
+			AircraftSpr.v += AircraftSpr.h;
 			AircraftSpr.attribute |= H_FLIP;
 		break;
 
@@ -514,7 +522,7 @@ void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* ptrAircraft)
 		break;
 
 		case AIRCRAFT_DIR_WEST:
-			AircraftSpr.v += AircraftSpr.w;
+			AircraftSpr.v += AircraftSpr.h;
 			AircraftSpr.attribute &= ~(H_FLIP);
 		break;
 
@@ -572,7 +580,16 @@ uint16_t AircraftGetTileFromFlightDataIndex(uint8_t index)
 
 TYPE_AIRCRAFT_DATA* AircraftFromFlightDataIndex(uint8_t index)
 {
-	uint8_t i;
+    uint8_t idx = AircraftFlightDataIdx_HashTable[index];
+
+    if(idx == AIRCRAFT_INVALID_IDX)
+    {
+        return NULL;
+    }
+
+    return &AircraftData[idx];
+
+	/*uint8_t i;
 	TYPE_AIRCRAFT_DATA* ptrAircraft;
 
 	for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
@@ -585,7 +602,7 @@ TYPE_AIRCRAFT_DATA* AircraftFromFlightDataIndex(uint8_t index)
 		}
 	}
 
-	return NULL;
+	return NULL;*/
 }
 
 void AircraftFromFlightDataIndexAddTargets(uint8_t index, uint16_t* targets)

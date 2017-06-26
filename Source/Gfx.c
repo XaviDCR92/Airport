@@ -35,6 +35,31 @@ enum
 	
 	BUTTON_CIRCLE_U = 16,
 	BUTTON_CIRCLE_V = 0,
+
+	BUTTON_DIRECTION_U = 64,
+	BUTTON_DIRECTION_V = 0,
+	
+	BUTTON_LR_U = 80,
+	BUTTON_LR_V = 0,
+	BUTTON_LR_SIZE = 24,
+
+	LETTER_SIZE = 8,
+
+	LETTER_L1_U = 104,
+	LETTER_L1_V = 0,
+
+	LETTER_L2_U = 112,
+	LETTER_L2_V = 0,
+
+	LETTER_R1_U = 104,
+	LETTER_R1_V = 8,
+
+	LETTER_R2_U = 112,
+	LETTER_R2_V = 8,
+
+	LETTER_OFFSET_INSIDE_BUTTON_LR_X = 8,
+	LETTER_OFFSET_INSIDE_BUTTON_LR_Y = 6
+	
 };
 
 enum
@@ -212,6 +237,10 @@ void GfxSortSprite(GsSprite * spr)
 	{
 		return;
 	}
+	else if(has_1hz_flash && Gfx1HzFlash() == false)
+	{
+		return;
+	}
 	
 	if(global_lum != NORMAL_LUMINANCE)
 	{
@@ -332,6 +361,12 @@ bool GfxSpriteFromFile(char* fname, GsSprite * spr)
 	
 	GsSpriteFromImage(spr,&gsi,UPLOAD_IMAGE_FLAG);
 	gfx_busy = false;
+
+    DEBUG_PRINT_VAR(spr->tpage);
+    DEBUG_PRINT_VAR(spr->u);
+    DEBUG_PRINT_VAR(spr->v);
+    DEBUG_PRINT_VAR(spr->w);
+    DEBUG_PRINT_VAR(spr->h);
 	
 	return true;
 }
@@ -379,6 +414,16 @@ bool GfxIsSpriteInsideScreenArea(GsSprite * spr)
 	return GfxIsInsideScreenArea(spr->x, spr->y, spr->w, spr->h);
 }
 
+void GfxButtonSetFlags(uint8_t flags)
+{
+	PSXButtons.attribute |= flags;
+}
+
+void GfxButtonRemoveFlags(uint8_t flags)
+{
+	PSXButtons.attribute &= ~flags;
+}
+
 void GfxDrawButton(short x, short y, unsigned short btn)
 {
 	static bool first_entered = true;
@@ -401,6 +446,8 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 	
 	PSXButtons.x = x;
 	PSXButtons.y = y;
+	PSXButtons.mx = PSXButtons.w >> 1;
+	PSXButtons.my = PSXButtons.h >> 1;
 	
 	switch(btn)
 	{
@@ -423,13 +470,46 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 			PSXButtons.u = BUTTON_CIRCLE_U;
 			PSXButtons.v = BUTTON_CIRCLE_V;
 		break;
+
+		case PAD_RIGHT:
+			PSXButtons.u = BUTTON_DIRECTION_U;
+			PSXButtons.v = BUTTON_DIRECTION_V;
+		break;
+		
+		case PAD_UP:
+			PSXButtons.u = BUTTON_DIRECTION_U;
+			PSXButtons.v = BUTTON_DIRECTION_V;
+			PSXButtons.rotate = 90 << ROTATE_BIT_SHIFT;
+		break;
+		
+		case PAD_DOWN:
+			PSXButtons.u = BUTTON_DIRECTION_U;
+			PSXButtons.v = BUTTON_DIRECTION_V;
+			PSXButtons.rotate = 270 << ROTATE_BIT_SHIFT;
+		break;
+
+		case PAD_LEFT:
+			PSXButtons.u = BUTTON_DIRECTION_U;
+			PSXButtons.v = BUTTON_DIRECTION_V;
+			PSXButtons.attribute |= H_FLIP;
+		break;
 		
 		case PAD_L1:
+			// Fall through
 		case PAD_L2:
+			// Fall through
 		case PAD_R1:
+			// Fall through
 		case PAD_R2:
+			PSXButtons.u = BUTTON_LR_U;
+			PSXButtons.v = BUTTON_LR_V;
+			PSXButtons.w = BUTTON_LR_SIZE;
+		break;
+
 		case PAD_SELECT:
+			// Fall through
 		case PAD_START:
+			// Fall through
 		default:
 			// Set null width and height so that sprite doesn't get sorted
 			PSXButtons.w = 0;
@@ -441,6 +521,9 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 	PSXButtons.v += orig_v;
 	
 	GfxSortSprite(&PSXButtons);
+
+	PSXButtons.attribute &= ~H_FLIP;
+	PSXButtons.rotate = 0;
 }
 
 void GfxSaveDisplayData(GsSprite *spr)
@@ -538,7 +621,7 @@ TYPE_ISOMETRIC_POS GfxCartesianToIsometric(TYPE_CARTESIAN_POS * ptrCartPos)
 	IsoPos.x = ptrCartPos->x + (ptrCartPos->y << 1);
 	IsoPos.y = (ptrCartPos->y << 1) - ptrCartPos->x;
 	
-	// Explicitely suppose z = 0
+	// Explicitly suppose z = 0
 	IsoPos.z = 0;
 	
 	return IsoPos;

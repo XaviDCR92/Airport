@@ -19,13 +19,15 @@
 typedef enum
 {
 	PLAY_OPTIONS_LEVEL = 0,
-	ONE_TWO_PLAYERS_LEVEL
+	ONE_TWO_PLAYERS_LEVEL,
+	OPTIONS_LEVEL
 }MainMenuLevel;
 
 enum
 {
 	MAIN_MENU_PLAY_OPTIONS_LEVEL_BUTTONS = 2,
-	MAIN_MENU_ONE_TWO_PLAYERS_LEVEL_BUTTONS = 2
+	MAIN_MENU_ONE_TWO_PLAYERS_LEVEL_BUTTONS = 2,
+	MAIN_MENU_OPTIONS_LEVEL_BUTTONS = 1
 };
 
 typedef enum
@@ -260,10 +262,10 @@ void MainMenu(void)
 	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
 	
 	while(1)
-	{
-		while(GfxIsGPUBusy() == true);
-		
+	{	
 		MainMenuButtonHandler();
+
+		while(GfxIsGPUBusy() == true);
 		
 		switch(menuLevel)
 		{

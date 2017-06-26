@@ -39,10 +39,6 @@ void CameraApplyCoordinatesToSprite(TYPE_PLAYER* ptrPlayer, GsSprite * spr)
 
 void CameraApplyCoordinatesToRectangle(TYPE_PLAYER* ptrPlayer, GsRectangle * rect)
 {
-	dprintf("Rectangle {%d, %d}\n",
-			rect->x,
-			rect->y	);
-
 	rect->x += (short)ptrPlayer->Camera.X_Offset;
 	rect->y += (short)ptrPlayer->Camera.Y_Offset;
 }

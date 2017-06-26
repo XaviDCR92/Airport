@@ -21,11 +21,16 @@
  * 	Local Variables
  * *************************************/
 
-static uint8_t voiceIndex = 0;
+static uint8_t voiceIndex;
+static uint16_t SfxGlobalVolumeReduction;
+
+#ifndef NO_CDDA
+static uint16_t SfxCddaVolumeReduction;
+#endif // NO_CDDA
 
 void SfxPlaySound(SsVag * sound)
 {
-	SsPlayVag(sound, sound->cur_voice, MAX_VOLUME, MAX_VOLUME);
+	SsPlayVag(sound, sound->cur_voice, MAX_VOLUME - SfxGlobalVolumeReduction, MAX_VOLUME - SfxGlobalVolumeReduction);
 }
 
 bool SfxUploadSound(char* file_path, SsVag * vag)
@@ -56,7 +61,7 @@ bool SfxUploadSound(char* file_path, SsVag * vag)
 void SfxPlayTrack(MUSIC_TRACKS track)
 {
 #ifndef NO_CDDA
-	SsCdVol(0x7FFF,0x7FFF);
+	SsCdVol(0x7FFF - SfxCddaVolumeReduction,0x7FFF - SfxCddaVolumeReduction);
 	SsEnableCd();
 	CdPlayTrack(track);
 	dprintf("Track number %d playing...\n",track);
