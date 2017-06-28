@@ -96,6 +96,7 @@ tiles:
 	bmp2tim ../Sprites/Mouse.bmp		../cdimg/DATA/SPRITES/MOUSE.TIM 16 -org=596,240 -mpink
 	bmp2tim ../Sprites/DepArr.bmp		../cdimg/DATA/SPRITES/DEPARR.TIM 16 -org=552,240 -mpink
 	bmp2tim ../Sprites/PageUpDn.bmp		../cdimg/DATA/SPRITES/PAGEUPDN.TIM 16 -org=504,240 -mpink
+	bmp2tim ../Sprites/Bldngs1.bmp		../cdimg/DATA/SPRITES/BLDNGS1.TIM 16 -org=640,128 -mpink
 	
 sounds:
 	rm -f ../cdimg/DATA/SOUNDS/*.VAG

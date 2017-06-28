@@ -32,6 +32,7 @@ void FontPrintText(TYPE_FONT *ptrFont, short x, short y, char* str, ...);
 void FontSetInitChar(TYPE_FONT * ptrFont, char c);
 void FontSetFlags(TYPE_FONT * ptrFont, FONT_FLAGS flags);
 void FontCyclic(void);
+void FontSetSpacing(TYPE_FONT* ptrFont, short spacing);
 
 /* *************************************
  * 	Global variables

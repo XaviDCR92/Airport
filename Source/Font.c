@@ -83,6 +83,11 @@ void FontSetSize(TYPE_FONT * ptrFont, short size)
 	ptrFont->spr.h = ptrFont->char_h;
 }
 
+void FontSetSpacing(TYPE_FONT* ptrFont, short spacing)
+{
+    ptrFont->char_spacing = spacing;
+}
+
 void FontCyclic(void)
 {
 	_blend_effect_lum -= 8;
@@ -180,7 +185,7 @@ void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 				//dprintf("Sprite rgb={%d,%d,%d}\n",ptrFont->spr.r, ptrFont->spr.g, ptrFont->spr.b);
 				
 				GfxSortSprite(&ptrFont->spr);
-				x += ptrFont->char_w;
+				x += ptrFont->char_spacing;
 			break;
 		}
 	}

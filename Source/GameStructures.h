@@ -211,6 +211,7 @@ typedef enum t_fontflags
 typedef struct t_Font
 {
 	GsSprite spr;
+	short char_spacing;
 	short char_w;
 	short char_h;
 	char init_ch;

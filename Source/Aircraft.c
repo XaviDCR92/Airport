@@ -51,7 +51,10 @@ static TYPE_ISOMETRIC_POS AircraftCenterIsoPos;
 static TYPE_CARTESIAN_POS AircraftCenterPos;
 static char* AircraftLiveryNamesTable[] = {"PHX", NULL};
 static AIRCRAFT_LIVERY AircraftLiveryTable[] = {AIRCRAFT_LIVERY_0, AIRCRAFT_LIVERY_UNKNOWN};
+
+// Used to quickly link FlightData indexes against AircraftData indexes.
 static uint8_t AircraftFlightDataIdx_HashTable[GAME_MAX_AIRCRAFT];
+
 static const fix16_t AircraftSpeedsTable[] = {	[AIRCRAFT_SPEED_IDLE] = 0,
 												[AIRCRAFT_SPEED_GROUND] = 0x6666,
 												[AIRCRAFT_SPEED_TAKEOFF] = 0x20000,
@@ -85,10 +88,6 @@ void AircraftInit(void)
 	AircraftSpr.w = AIRCRAFT_SPRITE_W;
 	AircraftSpr.h = AIRCRAFT_SPRITE_H;
 
-	/*AircraftSpr.tpage = 28;
-	AircraftSpr.u = 64;
-	AircraftSpr.v = 48;*/
-
 	GfxTPageOffsetFromVRAMPosition(&AircraftSpr, AIRCRAFT_SPRITE_VRAM_X, AIRCRAFT_SPRITE_VRAM_Y);
 
 	AircraftCenterIsoPos.x = AIRCRAFT_SIZE >> 1;
@@ -99,7 +98,7 @@ void AircraftInit(void)
 
     memset( AircraftFlightDataIdx_HashTable,
             AIRCRAFT_INVALID_IDX,
-            sizeof(AircraftFlightDataIdx_HashTable) / sizeof(AircraftFlightDataIdx_HashTable[0])    );
+            sizeof(AircraftFlightDataIdx_HashTable)    );
 }
 
 bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
@@ -196,24 +195,19 @@ AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char* strFlightNumber)
 
 bool AircraftRemove(uint8_t aircraftIdx)
 {
-	uint8_t i;
+    TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(aircraftIdx);
 
-	for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
-	{
-		TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[i];
-
-		if(ptrAircraft->State != STATE_IDLE)
-		{
-			if(ptrAircraft->FlightDataIdx == aircraftIdx)
-			{
-				DEBUG_PRINT_VAR(ptrAircraft->FlightDataIdx);
-				DEBUG_PRINT_VAR(aircraftIdx);
-				ptrAircraft->State = STATE_IDLE;
-				dprintf("Flight %d removed\n", ptrAircraft->FlightDataIdx);
-				return true;
-			}
-		}
-	}
+    if(ptrAircraft->State != STATE_IDLE)
+    {
+        if(ptrAircraft->FlightDataIdx == aircraftIdx)
+        {
+            DEBUG_PRINT_VAR(ptrAircraft->FlightDataIdx);
+            DEBUG_PRINT_VAR(aircraftIdx);
+            ptrAircraft->State = STATE_IDLE;
+            dprintf("Flight %d removed\n", ptrAircraft->FlightDataIdx);
+            return true;
+        }
+    }
 
 	return false;
 }
@@ -236,6 +230,8 @@ void AircraftHandler(void)
 		AircraftAttitude(ptrAircraft);
 		AircraftSpeed(ptrAircraft);
 
+        // Check collision against all other aircraft.
+
 		for(j = 0; j < GAME_MAX_AIRCRAFT; j++)
 		{
 			TYPE_AIRCRAFT_DATA* ptrOtherAircraft = &AircraftData[j];
@@ -244,12 +240,17 @@ void AircraftHandler(void)
 			{
 				continue;
 			}
+            else if(j < i)
+            {
+                // Collision already calculated.
+                continue;
+            }
 
 			if(AircraftData[j].State == STATE_IDLE)
 			{
 				continue;
 			}
-			
+
 			if(AircraftCheckCollision(ptrAircraft, ptrOtherAircraft) == true)
 			{
 				GameAircraftCollision(ptrAircraft->FlightDataIdx);
@@ -297,63 +298,65 @@ void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft)
 	}
 }
 
-void AircraftRender(TYPE_PLAYER* ptrPlayer)
+void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx)
 {
-	uint8_t i;
+    TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(aircraftIdx);
+    TYPE_CARTESIAN_POS cartPos;
+    TYPE_ISOMETRIC_FIX16_POS shadowIsoPos;
+    TYPE_CARTESIAN_POS shadowCartPos;
 
-	for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
-	{
-		TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[i];
-		TYPE_CARTESIAN_POS cartPos;
-		TYPE_ISOMETRIC_FIX16_POS shadowIsoPos = {	.x = ptrAircraft->IsoPos.x,
-													.y = ptrAircraft->IsoPos.y,
-													.z = 0	};
-		TYPE_CARTESIAN_POS shadowCartPos;
-		
-		if(ptrAircraft->State == STATE_IDLE)
-		{
-			continue;
-		}
+    if(ptrAircraft == NULL)
+    {
+        return;
+    }
 
-		AircraftUpdateSpriteFromData(ptrAircraft);
+    shadowIsoPos.x = ptrAircraft->IsoPos.x;
+    shadowIsoPos.y = ptrAircraft->IsoPos.y;
+    shadowIsoPos.z = 0;
+    
+    if(ptrAircraft->State == STATE_IDLE)
+    {
+        return;
+    }
 
-		if(ptrAircraft->IsoPos.z > 0)
-		{
-			// Draw aircraft shadow
+    AircraftUpdateSpriteFromData(ptrAircraft);
 
-			shadowCartPos = GfxIsometricFix16ToCartesian(&shadowIsoPos);
+    if(ptrAircraft->IsoPos.z > 0)
+    {
+        // Draw aircraft shadow
 
-			// Aircraft position is referred to aircraft center
-			AircraftSpr.x = shadowCartPos.x - (AircraftSpr.w >> 1);
-			AircraftSpr.y = shadowCartPos.y - (AircraftSpr.h >> 1);
+        shadowCartPos = GfxIsometricFix16ToCartesian(&shadowIsoPos);
 
-			CameraApplyCoordinatesToSprite(ptrPlayer, &AircraftSpr);
+        // Aircraft position is referred to aircraft center
+        AircraftSpr.x = shadowCartPos.x - (AircraftSpr.w >> 1);
+        AircraftSpr.y = shadowCartPos.y - (AircraftSpr.h >> 1);
 
-			AircraftSpr.r = 0;
-			AircraftSpr.g = 0;
-			AircraftSpr.b = 0;
+        CameraApplyCoordinatesToSprite(ptrPlayer, &AircraftSpr);
 
-			AircraftSpr.attribute |= ENABLE_TRANS | TRANS_MODE(0);
+        AircraftSpr.r = 0;
+        AircraftSpr.g = 0;
+        AircraftSpr.b = 0;
 
-			GfxSortSprite(&AircraftSpr);
-		}
+        AircraftSpr.attribute |= ENABLE_TRANS | TRANS_MODE(0);
 
-		cartPos = GfxIsometricFix16ToCartesian(&ptrAircraft->IsoPos);
+        GfxSortSprite(&AircraftSpr);
+    }
 
-		// Aircraft position is referred to aircraft center
-		AircraftSpr.x = cartPos.x - (AircraftSpr.w >> 1);
-		AircraftSpr.y = cartPos.y - (AircraftSpr.h >> 1);
+    cartPos = GfxIsometricFix16ToCartesian(&ptrAircraft->IsoPos);
 
-		AircraftSpr.attribute &= ~(ENABLE_TRANS | TRANS_MODE(0));
+    // Aircraft position is referred to aircraft center
+    AircraftSpr.x = cartPos.x - (AircraftSpr.w >> 1);
+    AircraftSpr.y = cartPos.y - (AircraftSpr.h >> 1);
 
-		CameraApplyCoordinatesToSprite(ptrPlayer, &AircraftSpr);
+    AircraftSpr.attribute &= ~(ENABLE_TRANS | TRANS_MODE(0));
 
-		AircraftSpr.r = NORMAL_LUMINANCE;
-		AircraftSpr.g = NORMAL_LUMINANCE;
-		AircraftSpr.b = NORMAL_LUMINANCE;
+    CameraApplyCoordinatesToSprite(ptrPlayer, &AircraftSpr);
 
-		GfxSortSprite(&AircraftSpr);
-	}
+    AircraftSpr.r = NORMAL_LUMINANCE;
+    AircraftSpr.g = NORMAL_LUMINANCE;
+    AircraftSpr.b = NORMAL_LUMINANCE;
+
+    GfxSortSprite(&AircraftSpr);
 }
 
 void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)

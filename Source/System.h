@@ -14,8 +14,8 @@
  * 	Defines								*
  * **************************************/
 
-#define TIMEBASE_1_SECOND	REFRESH_FREQUENCY
-#define TIMEBASE_1_MINUTE	TIMEBASE_1_SECOND * 60
+#define TIMER_PRESCALER_1_SECOND    10
+#define TIMER_PRESCALER_1_MINUTE    (TIMER_PRESCALER_1_SECOND * 60)
 
 /* **************************************
  * 	Global Prototypes					*

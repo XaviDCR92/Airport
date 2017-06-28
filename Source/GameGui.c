@@ -7,9 +7,7 @@
 /* *************************************
  * 	Defines
  * *************************************/
-
-#define NOTIFICATION_TIMER_LIMIT 		5*TIMEBASE_1_SECOND		// 5 seconds
-#define BUBBLE_VIBRATION_TIMER_LIMIT	TIMEBASE_1_SECOND >> 1	// Half a second
+ 
 #define GAME_GUI_AIRCRAFT_DATA_MAX_PAGE 4
 
 #define SLOW_SCORE_LOW_SPEED_MARGIN		100
@@ -240,6 +238,11 @@ void GameGuiInit(void)
 		PAUSE_DIALOG_B3 = PAUSE_DIALOG_B2,
 	};
 
+    enum
+    {
+        RADIO_FONT_SPACING = 12
+    };
+
 	LoadMenu(	GameFileList,
 				GameFileDest,
 				sizeof(GameFileList) / sizeof(char*),
@@ -279,6 +282,8 @@ void GameGuiInit(void)
 	slowScore = 0;
 
 	GameGuiBubbleShowFlag = false;
+
+    FontSetSpacing(&RadioFont, RADIO_FONT_SPACING);
 }
 
 bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer)
@@ -667,9 +672,9 @@ void GameGuiClock(uint8_t hour, uint8_t min)
 		memset(strClock, 0, 6);
 		snprintf(strClock,6,"%02d:%02d",hour, min);
 	}
-	
-	RadioFont.flags = FONT_NOFLAGS;
+    
 	RadioFont.max_ch_wrap = 0;
+    FontSetFlags(&RadioFont, FONT_NOFLAGS);
 	FontPrintText(&RadioFont,CLOCK_X,CLOCK_Y,strClock);
 }
 
@@ -889,7 +894,7 @@ void GameGuiShowScore(void)
 	FontPrintText(	&RadioFont,
 					SCORE_X,
 					SCORE_Y,
-					"Score: %d", slowScore );
+					"Score:%d", slowScore );
 }
 
 void GameGuiDrawUnboardingSequence(TYPE_PLAYER* ptrPlayer)

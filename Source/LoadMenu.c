@@ -14,7 +14,8 @@
 
 enum
 {
-	SMALL_FONT_SIZE = 8
+	SMALL_FONT_SIZE = 8,
+    SMALL_FONT_SPACING = 6
 };
 
 enum
@@ -125,6 +126,7 @@ void LoadMenuInit(void)
 	}
 	
 	FontSetSize(&SmallFont, SMALL_FONT_SIZE);
+    FontSetSpacing(&SmallFont, SMALL_FONT_SPACING);
 
 	LoadMenuPlaneSpr.r = 0;
 	LoadMenuPlaneSpr.g = 0;

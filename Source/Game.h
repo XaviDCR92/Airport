@@ -40,8 +40,6 @@ void 		Game(bool two_players);
 char* 		GetGameLevelTitle(void);
 void 		GameSetTime(uint8_t hour, uint8_t minutes);
 bool		GameTwoPlayersActive(void);
-uint8_t 	GameGetFirstActiveAircraft(void);
-uint8_t 	GameGetLastActiveAircraft(void);
 uint8_t 	GameGetLevelColumns(void);
 fix16_t 	GameGetXFromTile(uint16_t tile);
 fix16_t 	GameGetYFromTile(uint16_t tile);
