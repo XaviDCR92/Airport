@@ -583,7 +583,14 @@ uint16_t AircraftGetTileFromFlightDataIndex(uint8_t index)
 
 TYPE_AIRCRAFT_DATA* AircraftFromFlightDataIndex(uint8_t index)
 {
-    uint8_t idx = AircraftFlightDataIdx_HashTable[index];
+    uint8_t idx;
+
+    if( (index == AIRCRAFT_INVALID_IDX) || (index >= GAME_MAX_AIRCRAFT) )
+    {
+        return NULL;
+    }
+
+    idx = AircraftFlightDataIdx_HashTable[index];
 
     if(idx == AIRCRAFT_INVALID_IDX)
     {
@@ -662,19 +669,4 @@ bool AircraftCheckCollision(TYPE_AIRCRAFT_DATA* ptrRefAircraft, TYPE_AIRCRAFT_DA
 	}
 
 	return false;
-}
-
-void AircraftRenderFromTile(uint16_t tile)
-{
-	uint8_t i;
-
-	for(i = 0; i < GAME_MAX_AIRCRAFT; i++)
-	{
-		TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[i];
-
-		if(ptrAircraft->State != STATE_IDLE)
-		{
-			
-		}
-	}
 }

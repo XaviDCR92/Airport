@@ -41,6 +41,17 @@ typedef struct t_rwyentrydata
 	uint16_t rwyHeader;
 }TYPE_RWY_ENTRY_DATA;
 
+typedef struct t_buildingdata
+{
+    TYPE_ISOMETRIC_POS IsoPos;  // Offset inside tile
+    short orig_x;               // Coordinate X origin inside building sprite
+    short orig_y;               // Coordinate Y origin inside building sprite
+    short w;                    // Building width
+    short h;                    // Building height
+    short u;                    // Building X offset inside texture page
+    short v;                    // Building Y offset inside texture page
+}TYPE_BUILDING_DATA;
+
 enum
 {
 	MOUSE_W = 8,
@@ -71,7 +82,8 @@ enum
 
 enum
 {
-    BUILDING_HANGAR = 0,
+    BUILDING_NONE = 0,
+    BUILDING_HANGAR,
     BUILDING_ILS,
     BUILDING_ATC_TOWER,
     BUILDING_ATC_LOC,
@@ -123,7 +135,7 @@ enum
 static void GameInit(void);
 static void GameLoadLevel(void);
 static bool GamePause(void);
-static bool GameFinished(void);
+static void GameFinished(uint8_t i);
 static void GameEmergencyMode(void);
 static void GameCalculations(void);
 static void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
@@ -190,8 +202,8 @@ static bool spawnMinTimeFlag;
 static bool GameAircraftCreatedFlag;
 static bool GameAircraftCollisionFlag;
 static uint8_t GameAircraftCollisionIdx;
-static TYPE_ISOMETRIC_POS GameBuildingIsoPosTable[MAX_BUILDING_ID];
-static uint16_t GameAircraftTilemap[GAME_MAX_MAP_SIZE][GAME_MAX_AIRCRAFT_PER_TILE];
+static TYPE_BUILDING_DATA GameBuildingData[MAX_BUILDING_ID];
+static uint8_t GameAircraftTilemap[GAME_MAX_MAP_SIZE][GAME_MAX_AIRCRAFT_PER_TILE];
 
 // Instances for player-specific data
 TYPE_PLAYER PlayerData[MAX_PLAYERS];
@@ -225,6 +237,9 @@ static uint8_t GameMinutes;
 //Local flag for two-player game mode. Obtained from Menu
 static bool TwoPlayersActive;
 
+// Determines whether game has finished or not.
+bool GameFinishedFlag;
+
 void Game(bool two_players)
 {	
 	TwoPlayersActive = two_players;
@@ -232,10 +247,13 @@ void Game(bool two_players)
 	
 	while(1)
 	{
-		if(GameFinished() == true)
+		if(GameFinishedFlag == true)
 		{
 			// Exit game on level finished.
-			break;
+            if(GameGuiFinishedDialog(&PlayerData[PLAYER_ONE]) == true)
+            {
+                break;
+            }
 		}
 
 		if(GamePause() == true)
@@ -409,6 +427,8 @@ void GameInit(void)
 	GameGetRunwayArray();
 	
 	GameSelectedTile = 0;
+
+    GameFinishedFlag = false;
 	
 	AircraftInit();
 				
@@ -428,36 +448,110 @@ void GameBuildingsInit(void)
         BUILDING_ATC_LOC_OFFSET_X = TILE_SIZE >> 1,
         BUILDING_ATC_LOC_OFFSET_Y = TILE_SIZE >> 1,
 
-        BUILDING_ILS_OFFSET_X = TILE_SIZE >> 1,
-        BUILDING_ILS_OFFSET_Y = TILE_SIZE >> 1,
-
-        BUILDING_ATC_TOWER_OFFSET_X = 0,
-        BUILDING_ATC_TOWER_OFFSET_Y = 0,
+        BUILDING_ILS_OFFSET_X = 0,
+        BUILDING_ILS_OFFSET_Y = 0,
 
         BUILDING_GATE_OFFSET_X = TILE_SIZE >> 1,
-        BUILDING_GATE_OFFSET_Y = 0
+        BUILDING_GATE_OFFSET_Y = 0,
+
+        BUILDING_HANGAR_OFFSET_X = 4,
+        BUILDING_HANGAR_OFFSET_Y = TILE_SIZE >> 1,
+
+        BUILDING_ATC_TOWER_OFFSET_X = TILE_SIZE >> 2,
+        BUILDING_ATC_TOWER_OFFSET_Y = TILE_SIZE >> 1,
     };
 
-    memset(GameBuildingIsoPosTable, 0, sizeof(TYPE_ISOMETRIC_POS) * MAX_BUILDING_ID);
+    enum
+    {
+        BUILDING_ILS_U = 34,
+        BUILDING_ILS_V = 0,
+        BUILDING_ILS_W = 24,
+        BUILDING_ILS_H = 34,
+
+        BUILDING_GATE_U = 0,
+        BUILDING_GATE_V = 70,
+        BUILDING_GATE_W = 28,
+        BUILDING_GATE_H = 25,
+
+        BUILDING_HANGAR_U = 0,
+        BUILDING_HANGAR_V = 34,
+        BUILDING_HANGAR_W = 51,
+        BUILDING_HANGAR_H = 36,
+
+        BUILDING_ATC_TOWER_U = 58,
+        BUILDING_ATC_TOWER_V = 0,
+        BUILDING_ATC_TOWER_W = 29,
+        BUILDING_ATC_TOWER_H = 34,
+    };
+
+    enum
+    {
+        BUILDING_ILS_ORIGIN_X = 10,
+        BUILDING_ILS_ORIGIN_Y = 22,
+
+        BUILDING_GATE_ORIGIN_X = 20,
+        BUILDING_GATE_ORIGIN_Y = 8,
+
+        BUILDING_HANGAR_ORIGIN_X = 20,
+        BUILDING_HANGAR_ORIGIN_Y = 11,
+        
+        BUILDING_ATC_TOWER_ORIGIN_X = 12,
+        BUILDING_ATC_TOWER_ORIGIN_Y = 20,
+    };
+
+    memset(GameBuildingData, 0, sizeof(TYPE_BUILDING_DATA) );
+
+    GameBuildingData[BUILDING_GATE].IsoPos.x = BUILDING_GATE_OFFSET_X;
+    GameBuildingData[BUILDING_GATE].IsoPos.y = BUILDING_GATE_OFFSET_Y;
+    // z coordinate set to 0 by default.
 
     // BUILDING_ATC_LOC coordinates inside tile.
-    GameBuildingIsoPosTable[BUILDING_ATC_LOC].x = BUILDING_ATC_LOC_OFFSET_X;
-    GameBuildingIsoPosTable[BUILDING_ATC_LOC].y = BUILDING_ATC_LOC_OFFSET_Y;
+    GameBuildingData[BUILDING_ATC_LOC].IsoPos.x = BUILDING_ATC_LOC_OFFSET_X;
+    GameBuildingData[BUILDING_ATC_LOC].IsoPos.y = BUILDING_ATC_LOC_OFFSET_Y;
     // z coordinate set to 0 by default.
+    GameBuildingData[BUILDING_GATE].orig_x = BUILDING_GATE_ORIGIN_X;
+    GameBuildingData[BUILDING_GATE].orig_y = BUILDING_GATE_ORIGIN_Y;
+    GameBuildingData[BUILDING_GATE].u = BUILDING_GATE_U;
+    GameBuildingData[BUILDING_GATE].v = BUILDING_GATE_V;
+    GameBuildingData[BUILDING_GATE].w = BUILDING_GATE_W;
+    GameBuildingData[BUILDING_GATE].h = BUILDING_GATE_H;
 
     // BUILDING_ILS coordinates inside tile.
-    GameBuildingIsoPosTable[BUILDING_ILS].x = BUILDING_ILS_OFFSET_X;
-    GameBuildingIsoPosTable[BUILDING_ILS].y = BUILDING_ILS_OFFSET_Y;
-    // z coordinate set to 0 by default
+    GameBuildingData[BUILDING_ILS].IsoPos.x = BUILDING_ILS_OFFSET_X;
+    GameBuildingData[BUILDING_ILS].IsoPos.y = BUILDING_ILS_OFFSET_Y;
+    // z coordinate set to 0 by default.
+    GameBuildingData[BUILDING_ILS].orig_x = BUILDING_ILS_ORIGIN_X;
+    GameBuildingData[BUILDING_ILS].orig_y = BUILDING_ILS_ORIGIN_Y;
+    GameBuildingData[BUILDING_ILS].u = BUILDING_ILS_U;
+    GameBuildingData[BUILDING_ILS].v = BUILDING_ILS_V;
+    GameBuildingData[BUILDING_ILS].w = BUILDING_ILS_W;
+    GameBuildingData[BUILDING_ILS].h = BUILDING_ILS_H;
+
+    // BUILDING_HANGAR coordinates inside tile.
+    GameBuildingData[BUILDING_HANGAR].IsoPos.x = BUILDING_HANGAR_OFFSET_X;
+    GameBuildingData[BUILDING_HANGAR].IsoPos.y = BUILDING_HANGAR_OFFSET_Y;
+    // z coordinate set to 0 by default.
+    GameBuildingData[BUILDING_HANGAR].orig_x = BUILDING_HANGAR_ORIGIN_X;
+    GameBuildingData[BUILDING_HANGAR].orig_y = BUILDING_HANGAR_ORIGIN_Y;
+    GameBuildingData[BUILDING_HANGAR].u = BUILDING_HANGAR_U;
+    GameBuildingData[BUILDING_HANGAR].v = BUILDING_HANGAR_V;
+    GameBuildingData[BUILDING_HANGAR].w = BUILDING_HANGAR_W;
+    GameBuildingData[BUILDING_HANGAR].h = BUILDING_HANGAR_H;
 
     // BUILDING_ATC_TOWER coordinates inside tile.
-    GameBuildingIsoPosTable[BUILDING_ATC_TOWER].x = BUILDING_ATC_TOWER_OFFSET_X;
-    GameBuildingIsoPosTable[BUILDING_ATC_TOWER].y = BUILDING_ATC_TOWER_OFFSET_Y;
+    GameBuildingData[BUILDING_ATC_TOWER].IsoPos.x = BUILDING_ATC_TOWER_OFFSET_X;
+    GameBuildingData[BUILDING_ATC_TOWER].IsoPos.y = BUILDING_ATC_TOWER_OFFSET_Y;
     // z coordinate set to 0 by default.
+    GameBuildingData[BUILDING_ATC_TOWER].orig_x = BUILDING_ATC_TOWER_ORIGIN_X;
+    GameBuildingData[BUILDING_ATC_TOWER].orig_y = BUILDING_ATC_TOWER_ORIGIN_Y;
+    GameBuildingData[BUILDING_ATC_TOWER].u = BUILDING_ATC_TOWER_U;
+    GameBuildingData[BUILDING_ATC_TOWER].v = BUILDING_ATC_TOWER_V;
+    GameBuildingData[BUILDING_ATC_TOWER].w = BUILDING_ATC_TOWER_W;
+    GameBuildingData[BUILDING_ATC_TOWER].h = BUILDING_ATC_TOWER_H;
 
     // BUILDING_GATE coordinates inside tile.
-    GameBuildingIsoPosTable[BUILDING_GATE].x = BUILDING_GATE_OFFSET_X;
-    GameBuildingIsoPosTable[BUILDING_GATE].y = BUILDING_GATE_OFFSET_Y;
+    GameBuildingData[BUILDING_GATE].IsoPos.x = BUILDING_GATE_OFFSET_X;
+    GameBuildingData[BUILDING_GATE].IsoPos.y = BUILDING_GATE_OFFSET_Y;
     // z coordinate set to 0 by default.
     
     /*BUILDING_ILS,
@@ -511,7 +605,7 @@ void GameEmergencyMode(void)
 void GameGetAircraftTilemap(uint8_t i)
 {
     uint16_t tileNr;
-    uint8_t j = 0;
+    uint8_t j;
 
     if(i == 0)
     {
@@ -527,6 +621,7 @@ void GameGetAircraftTilemap(uint8_t i)
 
     for(j = 0; j < GAME_MAX_AIRCRAFT_PER_TILE; j++)
     {
+        //DEBUG_PRINT_VAR(GameAircraftTilemap[tileNr][j]);
         if(GameAircraftTilemap[tileNr][j] == FLIGHT_DATA_INVALID_IDX)
         {
             break;
@@ -534,6 +629,8 @@ void GameGetAircraftTilemap(uint8_t i)
     }
     
     GameAircraftTilemap[tileNr][j] = i;
+
+    //dprintf("GameAircraftTileMap[%d][%d] = %d\n", tileNr, j, GameAircraftTilemap[tileNr][j]);
 }
 
 void GameCalculations(void)
@@ -544,6 +641,7 @@ void GameCalculations(void)
 
     for(i = 0; i < FlightData.nAircraft; i++)
     {
+        GameFinished(i);
         GameClockFlights(i);
         GameAircraftState(i);
         GameActiveAircraft(i);
@@ -775,130 +873,160 @@ void GameGraphics(void)
 void GameRenderBuildingAircraft(TYPE_PLAYER* ptrPlayer)
 {
     uint8_t tileNr;
-    bool AircraftDrawn[GAME_MAX_AIRCRAFT] = {false};
+    uint8_t rows = 0;
+    uint8_t columns = 0;
+    uint8_t k;
 
     for(tileNr = 0; tileNr < GameLevelSize; tileNr++)
     {
+        // Building data is stored in GameLevelBuffer MSB. LSB is dedicated to tile data.
         uint8_t CurrentBuilding = (uint8_t)(GameLevelBuffer[tileNr] >> 8);
+        uint8_t j;
+        uint8_t AircraftRenderOrder[GAME_MAX_AIRCRAFT_PER_TILE];
+        short Aircraft_Y_Data[GAME_MAX_AIRCRAFT_PER_TILE];
 
-        if(CurrentBuilding == 0)
+        memset(AircraftRenderOrder, FLIGHT_DATA_INVALID_IDX, sizeof(AircraftRenderOrder) );
+
+        for(j = 0; j < GAME_MAX_AIRCRAFT_PER_TILE; j++)
         {
-            // Only render aircraft.
-            uint8_t j;
+            // Fill with 0x7FFF (maximum 16-bit positive value).
+            Aircraft_Y_Data[j] = 0x7FFF;
+        }
 
-            for(j = 0; j < GAME_MAX_AIRCRAFT_PER_TILE; j++)
+        //memset(Aircraft_Y_Data, 0x7F, GAME_MAX_AIRCRAFT_PER_TILE * sizeof(short));
+
+        for(j = 0; j < GAME_MAX_AIRCRAFT_PER_TILE; j++)
+        {
+            uint8_t AircraftIdx = GameAircraftTilemap[tileNr][j];
+            
+            TYPE_ISOMETRIC_POS aircraftIsoPos = AircraftGetIsoPos(AircraftIdx);
+
+            if(AircraftIdx == FLIGHT_DATA_INVALID_IDX)
             {
-                uint8_t AircraftIdx = GameAircraftTilemap[tileNr][j];
+                // No more aircraft on this tile.
+                break;
+            }
 
-                if(AircraftIdx == FLIGHT_DATA_INVALID_IDX)
+            //DEBUG_PRINT_VAR(aircraftIsoPos.y);
+
+            for(k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
+            {
+                if(aircraftIsoPos.y < Aircraft_Y_Data[k])
                 {
-                    // No more aircraft on this tile.
+                    uint8_t idx;
+
+                    for(idx = k; idx < (GAME_MAX_AIRCRAFT_PER_TILE - 1); idx++)
+                    {
+                        // Move previous Y values to the right.
+                        Aircraft_Y_Data[idx + 1] = Aircraft_Y_Data[idx];
+                        AircraftRenderOrder[idx + 1] = AircraftRenderOrder[idx];
+                    }
+
+                    Aircraft_Y_Data[k] = aircraftIsoPos.y;
+                    AircraftRenderOrder[k] = AircraftIdx;
+
                     break;
                 }
-
-                if(AircraftDrawn[AircraftIdx] == true)
-                {
-                    AircraftRender(ptrPlayer, AircraftIdx);
-                    AircraftDrawn[AircraftIdx] = true;
-                }
             }
 
-            continue;
+            /*for(k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
+            {
+                dprintf("Aircraft_Y_Data[%d] = %d\n", k, Aircraft_Y_Data[k]);
+                dprintf("AircraftRenderOrder[%d] = %d\n", k, AircraftRenderOrder[k]);
+            }*/
         }
-    }
 
-    /*uint8_t i;
-    uint8_t j;
-    uint8_t columns = 0;
-    uint8_t rows = 0;
-    bool AircraftDrawn[GAME_MAX_AIRCRAFT] = {false};
-
-    // Step one: for each tile, compare aircraft position vs building position.
-
-    for(i = 0; i < GameLevelSize; i++)
-    {
-        // Only one building per tile is allowed.
-
-        uint8_t CurrentBuilding = (uint8_t)(GameLevelBuffer[i] >> 8);
-
-        if(CurrentBuilding != 0)
+        if(CurrentBuilding == BUILDING_NONE)
         {
-
-            short x_bldg_offset = GameBuildingIsoPosTable[CurrentBuilding].x;
-            short y_bldg_offset = GameBuildingIsoPosTable[CurrentBuilding].y;
-            short z_bldg_offset = GameBuildingIsoPosTable[CurrentBuilding].z;
-            TYPE_ISOMETRIC_POS BuildingIsoPos;
-            TYPE_CARTESIAN_POS BuildingCartPos;
-
-            // Isometric -> Cartesian conversion
-            BuildingIsoPos.x = (columns << (TILE_SIZE_BIT_SHIFT)) + x_bldg_offset;
-            BuildingIsoPos.y = (rows << (TILE_SIZE_BIT_SHIFT)) + y_bldg_offset;
-            BuildingIsoPos.z = z_bldg_offset;
-            
-            BuildingCartPos = GfxIsometricToCartesian(&BuildingIsoPos);
-            
-            GameBuildingSpr.x = BuildingCartPos.x;
-            GameBuildingSpr.y = BuildingCartPos.y;
-            
-            if(columns < (GameLevelColumns - 1) )
+            for(k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
             {
-                columns++;
+                AircraftRender(ptrPlayer, AircraftRenderOrder[k]);
             }
-            else
-            {
-                rows++;
-                columns = 0;
-            }
-
-            CameraApplyCoordinatesToSprite(ptrPlayer, &GameBuildingSpr);
         }
         else
         {
-            // No building set for this tile.
-        }
+            // Determine rendering order depending on Y value.
+            short x_bldg_offset = GameBuildingData[CurrentBuilding].IsoPos.x;
+            short y_bldg_offset = GameBuildingData[CurrentBuilding].IsoPos.y;
+            short z_bldg_offset = GameBuildingData[CurrentBuilding].IsoPos.z;
+            short orig_u = GameBuildingSpr.u;
+            short orig_v = GameBuildingSpr.v;
 
-        for(j = 0; j < FlightData.nAircraft; j++)
-        {
-            TYPE_ISOMETRIC_POS AircraftIsoPos;
+            TYPE_ISOMETRIC_POS buildingIsoPos = {   .x = (columns << (TILE_SIZE_BIT_SHIFT)) + x_bldg_offset,
+                                                    .y = (rows << (TILE_SIZE_BIT_SHIFT)) + y_bldg_offset,
+                                                    .z = z_bldg_offset  };
 
-            if(AircraftDrawn[j] == true)
+            // Isometric -> Cartesian conversion
+            //buildingIsoPos.x = (columns << (TILE_SIZE_BIT_SHIFT)) + x_bldg_offset;
+            //buildingIsoPos.y = (rows << (TILE_SIZE_BIT_SHIFT)) + y_bldg_offset;
+            //buildingIsoPos.z = z_bldg_offset;
+
+            TYPE_CARTESIAN_POS buildingCartPos = GfxIsometricToCartesian(&buildingIsoPos);
+            bool buildingDrawn = false;
+
+            // Define new coordinates for building.
+    
+            GameBuildingSpr.x = buildingCartPos.x - GameBuildingData[CurrentBuilding].orig_x;
+            GameBuildingSpr.y = buildingCartPos.y - GameBuildingData[CurrentBuilding].orig_y;
+
+            GameBuildingSpr.u = orig_u + GameBuildingData[CurrentBuilding].u;
+            GameBuildingSpr.v = orig_v + GameBuildingData[CurrentBuilding].v;
+            GameBuildingSpr.w = GameBuildingData[CurrentBuilding].w;
+            GameBuildingSpr.h = GameBuildingData[CurrentBuilding].h;
+
+            //DEBUG_PRINT_VAR(buildingIsoPos.x);
+            //DEBUG_PRINT_VAR(buildingIsoPos.y);
+
+            CameraApplyCoordinatesToSprite(ptrPlayer, &GameBuildingSpr);
+
+            for(k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
             {
-                continue;
-            }
-
-            AircraftDrawn[j] = true;
-
-            if(FlightData.State[j] != STATE_IDLE)
-            {
-                if(GameAircraftTilemap[j] != i)
+                if(AircraftRenderOrder[k] == FLIGHT_DATA_INVALID_IDX)
                 {
-                    // Selected aircraft is not inside this tile. Skip.
-                    continue;
+                    if(buildingDrawn == false)
+                    {
+                        GfxSortSprite(&GameBuildingSpr);
+
+                        GameBuildingSpr.u = orig_u;
+                        GameBuildingSpr.v = orig_v;
+                        
+                        buildingDrawn = true;
+                    }
+
+                    break;
                 }
-
-                AircraftIsoPos = AircraftGetIsoPos(j);
-
-                if
-
-                if(AircraftIsoPos.y < BuildingIsoPos.y)
+            
+                if(Aircraft_Y_Data[k] < buildingIsoPos.y)
                 {
-                    AircraftRender(ptrPlayer, j);
-                    GfxSortSprite(&GameBuildingSpr);
+                    AircraftRender(ptrPlayer, AircraftRenderOrder[k]);
                 }
                 else
                 {
-                    GfxSortSprite(&GameBuildingSpr);
-                    AircraftRender(ptrPlayer, j);
+                    if(buildingDrawn == false)
+                    {
+                        GfxSortSprite(&GameBuildingSpr);
+
+                        GameBuildingSpr.u = orig_u;
+                        GameBuildingSpr.v = orig_v;
+                        
+                        buildingDrawn = true;
+                    }
+                    
+                    AircraftRender(ptrPlayer, AircraftRenderOrder[k]);
                 }
             }
-            else if(CurrentBuilding != 0)
-            {
-                G
-            }
         }
-    }*/
 
-    // Step two: if Aircraft.IsoPos.y < Building.IsoPos.y -> draw aircraft first, draw building otherwise.
+        if(columns < (GameLevelColumns - 1) )
+        {
+            columns++;
+        }
+        else
+        {
+            rows++;
+            columns = 0;
+        }
+    }
 }
 
 void GameLoadLevel(void)
@@ -1136,6 +1264,13 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
         //                |     Tile mirror flag
                           
 		uint8_t CurrentTile = (uint8_t)(GameLevelBuffer[i] & 0x00FF);
+
+        // Isometric -> Cartesian conversion
+		tileIsoPos.x = columns << (TILE_SIZE_BIT_SHIFT);
+		tileIsoPos.y = rows << (TILE_SIZE_BIT_SHIFT);
+		tileIsoPos.z = 0;
+		
+		tileCartPos = GfxIsometricToCartesian(&tileIsoPos);
 		
 		// Flipped tiles have bit 7 set.
 		if(CurrentTile & TILE_MIRROR_FLAG)
@@ -1175,6 +1310,30 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 		
 		ptrTileset->w = TILE_SIZE;
 		ptrTileset->h = TILE_SIZE_H;
+
+        ptrTileset->x = tileCartPos.x;
+		ptrTileset->y = tileCartPos.y;
+		
+		// Set coordinate origin to left upper corner
+		ptrTileset->x -= TILE_SIZE >> 1;
+		//ptrTileset->y -= TILE_SIZE_H >> 2;
+
+        CameraApplyCoordinatesToSprite(ptrPlayer, ptrTileset);
+
+        if(columns < (GameLevelColumns - 1) )
+		{
+			columns++;
+		}
+		else
+		{
+			rows++;
+			columns = 0;
+		}
+
+        if(GfxIsSpriteInsideScreenArea(ptrTileset) == false)
+        {
+            continue;
+        }
 		
 		used_rwy = false;
 
@@ -1244,13 +1403,12 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 									||
 							(CurrentTile == TILE_RWY_HOLDING_POINT_2)	)	)
 			{
-				uint16_t aircraftTile;
 				bool bHoldingRwyBusy = false;
 				
 				for(j = 0; j < FlightData.nAircraft; j++)
 				{
 					uint16_t* targets = AircraftGetTargets(j);
-					aircraftTile = AircraftGetTileFromFlightDataIndex(j);
+					uint16_t aircraftTile = AircraftGetTileFromFlightDataIndex(j);
 					uint16_t lastTarget = 0;
 					uint8_t k;
 
@@ -1292,12 +1450,11 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 									||
 							(CurrentTile == TILE_PARKING_2)	)	)
 			{
-				uint16_t aircraftTile;
 				bool bParkingBusy = false;
 				
 				for(j = 0; j < FlightData.nAircraft; j++)
 				{
-					aircraftTile = AircraftGetTileFromFlightDataIndex(j);
+					uint16_t aircraftTile = AircraftGetTileFromFlightDataIndex(j);
 
 					if(i == aircraftTile)
 					{
@@ -1318,30 +1475,6 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 					ptrTileset->b = NORMAL_LUMINANCE >> 2;
 				}
 			}
-		}
-		
-		// Isometric -> Cartesian conversion
-		tileIsoPos.x = columns << (TILE_SIZE_BIT_SHIFT);
-		tileIsoPos.y = rows << (TILE_SIZE_BIT_SHIFT);
-		tileIsoPos.z = 0;
-		
-		tileCartPos = GfxIsometricToCartesian(&tileIsoPos);
-		
-		ptrTileset->x = tileCartPos.x;
-		ptrTileset->y = tileCartPos.y;
-		
-		// Set coordinate origin to left upper corner
-		ptrTileset->x -= TILE_SIZE >> 1;
-		//ptrTileset->y -= TILE_SIZE_H >> 2;
-		
-		if(columns < (GameLevelColumns - 1) )
-		{
-			columns++;
-		}
-		else
-		{
-			rows++;
-			columns = 0;
 		}
 		
 		if(ptrTileset != NULL)
@@ -1366,7 +1499,6 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 
 	//	dprintf("Tile %d, attribute 0x%X\n",i,ptrTileset->attribute);
 
-		CameraApplyCoordinatesToSprite(ptrPlayer, ptrTileset);
 		GfxSortSprite(ptrTileset);
 				
 		if(ptrTileset->attribute & H_FLIP)
@@ -2825,9 +2957,9 @@ void GameRemainingAircraft(uint8_t i)
     }
 }
 
-bool GameFinished(void)
+void GameFinished(uint8_t i)
 {
-	uint8_t i;
+	/*uint8_t i;
 
 	for(i = 0; i < FlightData.nAircraft; i++)
 	{
@@ -2836,9 +2968,17 @@ bool GameFinished(void)
 			// At least one aircraft still not finished
 			return false;
 		}
-	}
+	}*/
 
-	return GameGuiFinishedDialog(&PlayerData[PLAYER_ONE]);
+    if(i == 0)
+    {
+        GameFinishedFlag = true;
+    }
+
+    if(FlightData.Finished[i] == false)
+    {
+        GameFinishedFlag = false;
+    }
 }
 
 void GameMinimumSpawnTimeout(void)
