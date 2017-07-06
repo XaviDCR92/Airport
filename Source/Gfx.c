@@ -601,6 +601,11 @@ TYPE_CARTESIAN_POS GfxIsometricToCartesian(TYPE_ISOMETRIC_POS * ptrIsoPos)
 	return retCartPos;
 }
 
+void GfxDrawScene_NoSwap(void)
+{
+	GsDrawList();
+}
+
 TYPE_CARTESIAN_POS GfxIsometricFix16ToCartesian(TYPE_ISOMETRIC_FIX16_POS * ptrIso16Pos)
 {
 	TYPE_ISOMETRIC_POS IsoPos;

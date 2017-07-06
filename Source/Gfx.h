@@ -110,6 +110,8 @@ bool Gfx1HzFlash(void);
 // Switches between true and false every 500 milliseconds (used for flashing effects)
 bool Gfx2HzFlash(void);
 
+void GfxDrawScene_NoSwap(void);
+
 /* *************************************
  * 	Global variables
  * *************************************/
