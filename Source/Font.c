@@ -55,7 +55,7 @@ bool FontLoadImage(char* strPath, TYPE_FONT * ptrFont)
 	
 	ptrFont->init_ch = FONT_DEFAULT_INIT_CHAR;
 	
-	dprintf("Sprite CX = %d, sprite CY = %d\n",ptrFont->spr.cx, ptrFont->spr.cy);
+	Serial_printf("Sprite CX = %d, sprite CY = %d\n",ptrFont->spr.cx, ptrFont->spr.cy);
 	
 	return true;
 }
@@ -175,14 +175,14 @@ void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 					ptrFont->spr.g = NORMAL_LUMINANCE;
 					ptrFont->spr.b = NORMAL_LUMINANCE;
 				}
-				/*dprintf("char_w = %d, char_h = %d, char_per_row = %d, init_ch: %c\n",
+				/*Serial_printf("char_w = %d, char_h = %d, char_per_row = %d, init_ch: %c\n",
 						ptrFont->char_w,
 						ptrFont->char_h,
 						ptrFont->char_per_row,
 						ptrFont->init_ch);
-				dprintf("Char: %c, spr.u = %d, spr.v = %d\n",str[i],ptrFont->spr.u, ptrFont->spr.v);
-				dprintf("Sprite CX = %d, sprite CY = %d\n",ptrFont->spr.cx, ptrFont->spr.cy);*/
-				//dprintf("Sprite rgb={%d,%d,%d}\n",ptrFont->spr.r, ptrFont->spr.g, ptrFont->spr.b);
+				Serial_printf("Char: %c, spr.u = %d, spr.v = %d\n",str[i],ptrFont->spr.u, ptrFont->spr.v);
+				Serial_printf("Sprite CX = %d, sprite CY = %d\n",ptrFont->spr.cx, ptrFont->spr.cy);*/
+				//Serial_printf("Sprite rgb={%d,%d,%d}\n",ptrFont->spr.r, ptrFont->spr.g, ptrFont->spr.b);
 				
 				GfxSortSprite(&ptrFont->spr);
 				x += ptrFont->char_spacing;

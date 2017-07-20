@@ -7,17 +7,26 @@
 
 #include <psx.h>
 #include <stdio.h>
+#include <psxsio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <types.h>
 #include <fixmath.h>
+#include "Serial.h"
 
 /* *************************************
  * 	Defines
  * *************************************/
 
+#ifdef SERIAL_INTERFACE
+#else // SERIAL_INTERFACE
+
+#define Serial_printf dprintf
+
+#endif // SERIAL_INTERFACE
+
 #define REFRESH_FREQUENCY 50 //50 Hz PAL / 60 Hz NTSC
-#define DEBUG_PRINT_VAR(var) dprintf(#var " = %d\n", var);
+#define DEBUG_PRINT_VAR(var) Serial_printf(#var " = %d\n", var);
 
 #ifndef bool
 	typedef enum

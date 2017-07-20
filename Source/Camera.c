@@ -178,7 +178,7 @@ TYPE_ISOMETRIC_POS CameraGetIsoPos(TYPE_PLAYER* ptrPlayer)
 		CartPos.y = (Y_SCREEN_RESOLUTION >> 1) - ptrPlayer->Camera.Y_Offset;
 	}
 
-	/*dprintf("CartPos = {%d, %d}\n", CartPos.x, CartPos.y);*/
+	/*Serial_printf("CartPos = {%d, %d}\n", CartPos.x, CartPos.y);*/
 
 	IsoPos = GfxCartesianToIsometric(&CartPos);
 
@@ -189,7 +189,7 @@ void CameraMoveToIsoPos(TYPE_PLAYER* ptrPlayer, TYPE_ISOMETRIC_POS IsoPos)
 {
 	TYPE_CARTESIAN_POS CartPos = GfxIsometricToCartesian(&IsoPos);
 
-	/*dprintf("Isometric pos = {%d, %d, %d}, "
+	/*Serial_printf("Isometric pos = {%d, %d, %d}, "
 			"Cartesian pos = {%d, %d}\n",
 			IsoPos.x,
 			IsoPos.y,
@@ -208,7 +208,7 @@ void CameraMoveToIsoPos(TYPE_PLAYER* ptrPlayer, TYPE_ISOMETRIC_POS IsoPos)
 		ptrPlayer->Camera.Y_Offset = (Y_SCREEN_RESOLUTION >> 1) - CartPos.y;
 	}
 
-	/*dprintf("Moving camera to {%d, %d}\n",
+	/*Serial_printf("Moving camera to {%d, %d}\n",
 			ptrPlayer->Camera.X_Offset,
 			ptrPlayer->Camera.Y_Offset	);*/
 }

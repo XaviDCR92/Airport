@@ -243,7 +243,7 @@ void LoadMenuEnd(void)
 	load_menu_running = false;
 	
 	while(LoadMenuISRHasEnded() == false);
-	dprintf("Set default VBlank handler.\n");
+	Serial_printf("Set default VBlank handler.\n");
 	SetVBlankHandler(&ISR_SystemDefaultVBlank);
 	
 	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
@@ -252,6 +252,9 @@ void LoadMenuEnd(void)
 void ISR_LoadMenuVBlank(void)
 {
 	uint8_t i;
+
+    Serial_printf("SystemIsBusy() = %d\n", SystemIsBusy() );
+    Serial_printf("GfxIsGPUBusy() = %d\n", GfxIsGPUBusy() );
 	
 	if( (SystemIsBusy() == true) || (GfxIsGPUBusy() == true) )
 	{
@@ -390,15 +393,12 @@ void ISR_LoadMenuVBlank(void)
 	LoadMenuPlaneSpr.w = PLANE_SIZE;
 	LoadMenuPlaneSpr.h = PLANE_SIZE;
 	
-	//LoadMenuPlaneSpr.u = PLANE_U;
-	//LoadMenuPlaneSpr.v = PLANE_V;
-	
 	GsSortSprite(&LoadMenuPlaneSpr);
 	
 	FontSetFlags(&SmallFont, FONT_BLEND_EFFECT);
 	
 	FontPrintText(	&SmallFont,
-					LOADING_BAR_X - 8,
+					LOADING_BAR_X,
 					LOADING_BAR_Y + LOADING_BAR_HEIGHT + 8,
 					strCurrentFile	);
 					
@@ -443,7 +443,7 @@ void LoadMenuLoadFileList(	char* fileList[], 	void * dest[],
 	
 	if(szFileList != szDestList)
 	{
-		dprintf("File list size different from dest list size! %d vs %d\n",
+		Serial_printf("File list size different from dest list size! %d vs %d\n",
 				szFileList, szDestList);
 		return;
 	}
@@ -465,7 +465,7 @@ void LoadMenuLoadFileList(	char* fileList[], 	void * dest[],
 		
 		LoadMenuBarRect.w = fileLoadedCount* x_increment;
 						
-		//dprintf("Files %d / %d loaded. New plane X = %d.\n",fileLoadedCount,szFileList,LoadMenuPlaneSpr.x);
+		//Serial_printf("Files %d / %d loaded. New plane X = %d.\n",fileLoadedCount,szFileList,LoadMenuPlaneSpr.x);
 		
 		// Backup original file path
 		strncpy(aux_file_name,fileList[fileLoadedCount],100);
@@ -474,7 +474,7 @@ void LoadMenuLoadFileList(	char* fileList[], 	void * dest[],
 		strtok(fileList[fileLoadedCount],".;");
 		extension = strtok(NULL,".;");
 		
-		dprintf("File extension: .%s\n",extension);
+		Serial_printf("File extension: .%s\n",extension);
 		//Restore original file path in order to load file
 		strncpy(fileList[fileLoadedCount],aux_file_name,100);
 		
@@ -482,45 +482,45 @@ void LoadMenuLoadFileList(	char* fileList[], 	void * dest[],
 		{
 			if(GfxSpriteFromFile(fileList[fileLoadedCount], dest[fileLoadedCount]) == false)
 			{
-				dprintf("Could not load image file \"%s\"!\n",fileList[fileLoadedCount]);
+				Serial_printf("Could not load image file \"%s\"!\n",fileList[fileLoadedCount]);
 			}
 		}
 		else if(strncmp(extension,"CLT",3) == 0)
 		{
 			if(dest[fileLoadedCount] != NULL)
 			{
-				dprintf("WARNING: File %s linked to non-NULL destination pointer!\n", dest[fileLoadedCount]);
+				Serial_printf("WARNING: File %s linked to non-NULL destination pointer!\n", dest[fileLoadedCount]);
 			}
 			
 			if(GfxCLUTFromFile(fileList[fileLoadedCount]) == false)
 			{
-				dprintf("Could not load CLUT file \"%s\"!\n",fileList[fileLoadedCount]);
+				Serial_printf("Could not load CLUT file \"%s\"!\n",fileList[fileLoadedCount]);
 			}
 		}
 		else if(strncmp(extension,"VAG",3) == 0)
 		{
 			if(SfxUploadSound(fileList[fileLoadedCount], dest[fileLoadedCount]) == false)
 			{
-				dprintf("Could not load sound file \"%s\"!\n",fileList[fileLoadedCount]);
+				Serial_printf("Could not load sound file \"%s\"!\n",fileList[fileLoadedCount]);
 			}
 		}
 		else if(strncmp(extension,"FNT",3) == 0)
 		{
 			if(FontLoadImage(fileList[fileLoadedCount], dest[fileLoadedCount]) == false)
 			{
-				dprintf("Could not load font file \"%s\"!\n",fileList[fileLoadedCount]);
+				Serial_printf("Could not load font file \"%s\"!\n",fileList[fileLoadedCount]);
 			}
 		}
 		else if(strncmp(extension,"PLT",3) == 0)
 		{
 			if(PltParserLoadFile(fileList[fileLoadedCount], dest[fileLoadedCount]) == false)
 			{
-				dprintf("Could not load pilots file \"%s\"!\n",fileList[fileLoadedCount]);
+				Serial_printf("Could not load pilots file \"%s\"!\n",fileList[fileLoadedCount]);
 			}
 		}
 		else
 		{
-			dprintf("LoadMenu does not recognize following extension: %s\n",extension);
+			Serial_printf("LoadMenu does not recognize following extension: %s\n",extension);
 		}
 	}
 }

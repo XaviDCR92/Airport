@@ -111,7 +111,7 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 
 	if(AircraftIndex >= GAME_MAX_AIRCRAFT)
 	{
-		dprintf("Exceeded maximum aircraft capacity!\n");
+		Serial_printf("Exceeded maximum aircraft capacity!\n");
 		return false;
 	}
 
@@ -122,7 +122,7 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 
 	ptrAircraft->FlightDataIdx = FlightDataIndex;
 
-	dprintf("ptrAircraft->FlightDataIdx = %d, FlightDataIndex = %d\n", ptrAircraft->FlightDataIdx, FlightDataIndex);
+	Serial_printf("ptrAircraft->FlightDataIdx = %d, FlightDataIndex = %d\n", ptrAircraft->FlightDataIdx, FlightDataIndex);
 
 	if(ptrFlightData->FlightDirection[FlightDataIndex] == ARRIVAL)
 	{
@@ -149,8 +149,8 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 
 	ptrAircraft->Direction = AIRCRAFT_DIR_NORTH; // Default to north direction
 
-	dprintf("\nAircraft Data:\n");
-	dprintf("\tTargets:");
+	Serial_printf("\nAircraft Data:\n");
+	Serial_printf("\tTargets:");
 
 	for(i = 0; i < AIRCRAFT_MAX_TARGETS; i++)
 	{
@@ -159,12 +159,12 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 			break;
 		}
 
-		dprintf(" %d", ptrAircraft->Target[i]);
+		Serial_printf(" %d", ptrAircraft->Target[i]);
 	}
 
-	dprintf("\nLivery: %d\n",	ptrAircraft->Livery	);
+	Serial_printf("\nLivery: %d\n",	ptrAircraft->Livery	);
 
-	dprintf("Aircraft position: {%d, %d, %d}\n",
+	Serial_printf("Aircraft position: {%d, %d, %d}\n",
 			fix16_to_int(ptrAircraft->IsoPos.x),
 			fix16_to_int(ptrAircraft->IsoPos.y),
 			fix16_to_int(ptrAircraft->IsoPos.z)	);
@@ -204,7 +204,7 @@ bool AircraftRemove(uint8_t aircraftIdx)
             DEBUG_PRINT_VAR(ptrAircraft->FlightDataIdx);
             DEBUG_PRINT_VAR(aircraftIdx);
             ptrAircraft->State = STATE_IDLE;
-            dprintf("Flight %d removed\n", ptrAircraft->FlightDataIdx);
+            Serial_printf("Flight %d removed\n", ptrAircraft->FlightDataIdx);
             return true;
         }
     }
@@ -446,7 +446,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 			
 			if(ptrAircraft->Target[++ptrAircraft->TargetIdx] == 0)
 			{
-				dprintf("All targets reached!\n");
+				Serial_printf("All targets reached!\n");
 				ptrAircraft->State = GameTargetsReached(ptrAircraft->Target[0], ptrAircraft->FlightDataIdx);
 				memset(ptrAircraft->Target, 0, AIRCRAFT_MAX_TARGETS);
 			}
@@ -500,7 +500,7 @@ void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* ptrAircraft)
 		case AIRCRAFT_LIVERY_UNKNOWN:
 			// Fall through
 		default:
-			dprintf("Unknown livery %d!\n", ptrAircraft->Livery);
+			Serial_printf("Unknown livery %d!\n", ptrAircraft->Livery);
 		break;
 	}
 

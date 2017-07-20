@@ -355,7 +355,7 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlig
 			{
 				ptrPlayer->FlightDataPage++;
 				ptrPlayer->SelectedAircraft = ptrPlayer->FlightDataPage * GAME_GUI_AIRCRAFT_DATA_MAX_PAGE;
-				dprintf("Selected Aircraft = %d\n",ptrPlayer->SelectedAircraft);
+				Serial_printf("Selected Aircraft = %d\n",ptrPlayer->SelectedAircraft);
 			}
 		}
 		
@@ -365,7 +365,7 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlig
 			{
 				ptrPlayer->FlightDataPage--;
 				ptrPlayer->SelectedAircraft = ptrPlayer->FlightDataPage * GAME_GUI_AIRCRAFT_DATA_MAX_PAGE;
-				dprintf("Selected Aircraft = %d\n",ptrPlayer->SelectedAircraft);
+				Serial_printf("Selected Aircraft = %d\n",ptrPlayer->SelectedAircraft);
 			}
 		}
 	}
@@ -488,10 +488,10 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 			
 			y_offset = 	(short)(page_aircraft * AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H);
 									
-			/*dprintf("ptrPlayer->ActiveAircraft = %d\n",ptrPlayer->ActiveAircraft);
-			dprintf("ptrPlayer->SelectedAircraft = %d\n",ptrPlayer->SelectedAircraft);
-			dprintf("ptrPlayer->FlightDataPage = %d\n",ptrPlayer->FlightDataPage);
-			dprintf("y_offset = %d\n",y_offset);*/
+			/*Serial_printf("ptrPlayer->ActiveAircraft = %d\n",ptrPlayer->ActiveAircraft);
+			Serial_printf("ptrPlayer->SelectedAircraft = %d\n",ptrPlayer->SelectedAircraft);
+			Serial_printf("ptrPlayer->FlightDataPage = %d\n",ptrPlayer->FlightDataPage);
+			Serial_printf("y_offset = %d\n",y_offset);*/
 			
 			if(GameTwoPlayersActive() == true)
 			{
@@ -605,7 +605,7 @@ void GameGuiBubbleShow(void)
 
 	if(GameGuiBubbleTimer == NULL)
 	{
-		dprintf("Started GameGuiBubbleTimer...\n");
+		Serial_printf("Started GameGuiBubbleTimer...\n");
 		GameGuiBubbleTimer = SystemCreateTimer(50, false, &GameGuiBubbleStop);
 	}
 	else
@@ -629,7 +629,7 @@ void GameGuiBubble(TYPE_FLIGHT_DATA* ptrFlightData)
 		{
 			if(GameGuiBubbleVibrationTimer == NULL)
 			{
-				dprintf("Started GameGuiBubbleVibrationTimer...\n");
+				Serial_printf("Started GameGuiBubbleVibrationTimer...\n");
 				GameGuiBubbleVibrationTimer = SystemCreateTimer(20, false, &GameGuiBubbleStopVibration);
 			}
 			else
@@ -984,12 +984,12 @@ void GameGuiAircraftCollision(TYPE_PLAYER* ptrPlayer)
 
 void GameGuiBubbleStop(void)
 {
-	dprintf("GameGuiBubbleStop\n");
+	Serial_printf("GameGuiBubbleStop\n");
 	GameGuiBubbleShowFlag = false;
 }
 
 void GameGuiBubbleStopVibration(void)
 {
-	dprintf("GameGuiBubbleStopVibration\n");
+	Serial_printf("GameGuiBubbleStopVibration\n");
 	GameGuiBubbleVibrationFlag = false;
 }

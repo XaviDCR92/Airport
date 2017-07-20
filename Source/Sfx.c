@@ -51,7 +51,7 @@ bool SfxUploadSound(char* file_path, SsVag * vag)
 	}
 	else
 	{
-		dprintf("Maximum number of SPU voices exceeded!\n");
+		Serial_printf("Maximum number of SPU voices exceeded!\n");
 		return false; //Maximum voices exceeded
 	}
 	
@@ -64,7 +64,7 @@ void SfxPlayTrack(MUSIC_TRACKS track)
 	SsCdVol(0x7FFF - SfxCddaVolumeReduction,0x7FFF - SfxCddaVolumeReduction);
 	SsEnableCd();
 	CdPlayTrack(track);
-	dprintf("Track number %d playing...\n",track);
+	Serial_printf("Track number %d playing...\n",track);
 #endif // NO_CDDA
 }
 

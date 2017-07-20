@@ -16,12 +16,10 @@
 
 int main(void)
 {
-	
 	//System initialization
 	SystemInit();
 	
 	MainMenu();
 		
 	return 0;
-
 }

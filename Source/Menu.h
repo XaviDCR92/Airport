@@ -15,6 +15,7 @@
 #include "EndAnimation.h"
 #include "PSXSDKIntro.h"
 #include "MemCard.h"
+#include "Serial.h"
 
 /* *************************************
  * 	Defines

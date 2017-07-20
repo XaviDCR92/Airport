@@ -3,6 +3,7 @@ DEFINE= -DFIXMATH_FAST_SIN -D_PAL_MODE_
 DEFINE += -DPSXSDK_DEBUG
 DEFINE +=  -DNO_CDDA
 DEFINE +=  -DNO_INTRO
+DEFINE +=  -DSERIAL_INTERFACE
 LIBS= -lfixmath
 CC_FLAGS = -Wall -Werror -c -Os -Wfatal-errors
 LINKER = psx-gcc
@@ -39,7 +40,7 @@ build: clean objects levels $(PROJECT).elf $(PROJECT).exe
 objects: 	$(addprefix $(OBJ_DIR)/,main.o System.o Menu.o Gfx.o Pad.o MainMenuBtnAni.o 	\
 			LoadMenu.o GameGui.o Sfx.o Camera.o EndAnimation.o			\
 			PSXSDKIntro.o PltParser.o Game.o Font.o MemCard.o			\
-			Aircraft.o)
+			Aircraft.o Serial.o)
 			
 music_objects:	$(addprefix ../Music/, TRACK01.bin TRACK02.bin TRACK03.bin)
 			

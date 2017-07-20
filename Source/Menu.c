@@ -114,6 +114,8 @@ static SsVag BellSnd;
 static SsVag AcceptSnd;
 static TYPE_CHEAT TestCheat;
 static TYPE_CHEAT StackCheckCheat;
+static TYPE_CHEAT DevMenuCheat;
+static TYPE_CHEAT SerialCheat;
 
 static char* MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
 									"cdrom:\\DATA\\SOUNDS\\BELL.VAG;1"		,
@@ -171,7 +173,7 @@ void PlayMenu(void)
 
 void OptionsMenu(void)
 {
-	dprintf("OptionsMenu(void)!\n");
+	Serial_printf("OptionsMenu(void)!\n");
 }
 
 void OnePlayerMenu(void)
@@ -230,7 +232,8 @@ void MainMenuInit(void)
 			{	PAD_CIRCLE, PAD_CIRCLE, PAD_CROSS, PAD_TRIANGLE,
 				PAD_TRIANGLE, PAD_TRIANGLE, 0 , 0 ,
 				0, 0, 0, 0,
-				0, 0, 0, 0	} , sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
+				0, 0, 0, 0	} ,
+            sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
 				
 	PadAddCheat(&TestCheat);
 	
@@ -242,9 +245,36 @@ void MainMenuInit(void)
 			{	PAD_TRIANGLE, PAD_TRIANGLE, PAD_CROSS, PAD_TRIANGLE,
 				PAD_L1, PAD_R1, 0 , 0 ,
 				0, 0, 0, 0,
-				0, 0, 0, 0	} , sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
+				0, 0, 0, 0	} ,
+            sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
 				
 	PadAddCheat(&StackCheckCheat);
+
+    DevMenuCheat.Callback = &GfxDevMenuEnable;
+    memset(DevMenuCheat.Combination, 0 , CHEAT_ARRAY_SIZE);
+
+    memcpy( DevMenuCheat.Combination,
+            (unsigned short[CHEAT_ARRAY_SIZE])
+			{	PAD_SQUARE, PAD_SQUARE, PAD_CROSS, PAD_CROSS,
+				PAD_CIRCLE, PAD_CIRCLE, PAD_TRIANGLE , PAD_TRIANGLE ,
+				PAD_L1, PAD_L1, PAD_R1, PAD_R1,
+				PAD_L2, PAD_L2, PAD_R2, PAD_R2	} ,
+            sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
+
+    PadAddCheat(&DevMenuCheat);
+
+    SerialCheat.Callback = (void*)0x801A0000;
+    memset(SerialCheat.Combination, 0 , CHEAT_ARRAY_SIZE);
+
+    memcpy( SerialCheat.Combination,
+            (unsigned short[CHEAT_ARRAY_SIZE])
+			{	PAD_SQUARE, PAD_SQUARE, PAD_SQUARE, PAD_SQUARE,
+				PAD_CIRCLE, PAD_CIRCLE, PAD_CIRCLE , PAD_CIRCLE ,
+				0, 0, 0, 0,
+				0, 0, 0, 0	} ,
+            sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
+
+    PadAddCheat(&SerialCheat);
 
 	LoadMenuEnd();
 }
@@ -508,7 +538,7 @@ void MenuTestCheat(void)
 {
 	if(MemCardShowMap() == false)
 	{
-		dprintf("MemCardShowMap() failed!\n");
+		Serial_printf("MemCardShowMap() failed!\n");
 		return;
 	}
 }

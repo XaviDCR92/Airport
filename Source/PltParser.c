@@ -56,7 +56,7 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 
 	if(SystemLoadFile(strPath) == false)
 	{
-		dprintf("Error loading file %s!\n",strPath);
+		Serial_printf("Error loading file %s!\n",strPath);
 		return false;
 	}
 
@@ -119,7 +119,7 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 			}
 
 			GameSetTime((uint8_t)atoi(strHour),(uint8_t)atoi(strMinutes) );
-			dprintf("Game time set to %.2d:%.2d.\n",(uint8_t)atoi(strHour),(uint8_t)atoi(strMinutes) );
+			Serial_printf("Game time set to %.2d:%.2d.\n",(uint8_t)atoi(strHour),(uint8_t)atoi(strMinutes) );
 		}
 		else
 		{
@@ -130,7 +130,7 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 			
 			i = 0;
 			
-			dprintf("New line read: %s\n",buffer);
+			Serial_printf("New line read: %s\n",buffer);
 			
 			while(lineBufferPtr != NULL)
 			{
@@ -151,28 +151,28 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 						if(strncmp(lineBufferPtr,"DEPARTURE",strlen("DEPARTURE") ) == 0)
 						{
 							ptrFlightData->FlightDirection[aircraftIndex] = DEPARTURE;
-							dprintf("Aircraft %d set to DEPARTURE.\n",aircraftIndex);
+							Serial_printf("Aircraft %d set to DEPARTURE.\n",aircraftIndex);
 						}
 						else if(strncmp(lineBufferPtr,"ARRIVAL",strlen("ARRIVAL") ) == 0)
 						{
 							ptrFlightData->FlightDirection[aircraftIndex] = ARRIVAL;
-							dprintf("Aircraft %d set to ARRIVAL.\n",aircraftIndex);
+							Serial_printf("Aircraft %d set to ARRIVAL.\n",aircraftIndex);
 						}
 						else
 						{
-							dprintf("Flight direction is not correct!\n");
+							Serial_printf("Flight direction is not correct!\n");
 						}
 					break;
 					
 					case FLIGHT_NUMBER_INDEX:
 						strncpy(ptrFlightData->strFlightNumber[aircraftIndex],lineBufferPtr,GAME_MAX_CHARACTERS);
 						ptrFlightData->strFlightNumber[aircraftIndex][GAME_MAX_CHARACTERS - 1] = '\0';
-						dprintf("Aircraft %d flight number set to %s.\n",aircraftIndex,ptrFlightData->strFlightNumber[aircraftIndex]);
+						Serial_printf("Aircraft %d flight number set to %s.\n",aircraftIndex,ptrFlightData->strFlightNumber[aircraftIndex]);
 					break;
 					
 					case PASSENGERS_INDEX:
 						ptrFlightData->Passengers[aircraftIndex] = atoi(lineBufferPtr);
-						dprintf("Aircraft %d passengers set to %d.\n",aircraftIndex,ptrFlightData->Passengers[aircraftIndex]);
+						Serial_printf("Aircraft %d passengers set to %d.\n",aircraftIndex,ptrFlightData->Passengers[aircraftIndex]);
 					break;
 					
 					case PARKING_INDEX:
@@ -184,13 +184,13 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 						{
 							ptrFlightData->Parking[aircraftIndex] = 0;
 						}
-						dprintf("Aircraft %d parking set to %d.\n",aircraftIndex,ptrFlightData->Parking[aircraftIndex]);
+						Serial_printf("Aircraft %d parking set to %d.\n",aircraftIndex,ptrFlightData->Parking[aircraftIndex]);
 					break;
 					
 					case HOURS_MINUTES_INDEX:
 						if(	strlen(lineBufferPtr) != strlen("HH:MM") )
 						{
-							dprintf("Hour minute format is not correct!\n");
+							Serial_printf("Hour minute format is not correct!\n");
 							break;
 						}
 						
@@ -204,14 +204,14 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 						ptrFlightData->Hours[aircraftIndex] = (uint8_t)atoi(strHour);
 						ptrFlightData->Minutes[aircraftIndex] = (uint8_t)atoi(strMinutes);
 						
-						dprintf("Aircraft %d time set to %.2d:%.2d.\n",	aircraftIndex,
+						Serial_printf("Aircraft %d time set to %.2d:%.2d.\n",	aircraftIndex,
 																		ptrFlightData->Hours[aircraftIndex],
 																		ptrFlightData->Minutes[aircraftIndex]	);
 					break;
 
 					case REMAINING_TIME_INDEX:
 						ptrFlightData->RemainingTime[aircraftIndex] = (uint8_t)atoi(lineBufferPtr);
-						dprintf("ptrFlightData->RemainingTime[%d] = %d\n", aircraftIndex, ptrFlightData->RemainingTime[aircraftIndex]);
+						Serial_printf("ptrFlightData->RemainingTime[%d] = %d\n", aircraftIndex, ptrFlightData->RemainingTime[aircraftIndex]);
 					break;
 					
 					
@@ -233,7 +233,7 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 	ptrFlightData->nAircraft = aircraftIndex;	//Set total number of aircraft used
 	ptrFlightData->ActiveAircraft = 0;
 	
-	dprintf("Number of aircraft parsed: %d\n",ptrFlightData->nAircraft);
+	Serial_printf("Number of aircraft parsed: %d\n",ptrFlightData->nAircraft);
 	
 	return true;
 }
@@ -321,7 +321,7 @@ uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)
 		break;
 
 		default:
-			dprintf("PltParserGenerateFile(): Undefined level!\n");
+			Serial_printf("PltParserGenerateFile(): Undefined level!\n");
 		return NULL;
 	}
 
@@ -341,7 +341,7 @@ uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)
 		PltBuffer[i] = auxBuffer[i];
 	}
 
-	dprintf("%s\n", PltBuffer);
+	Serial_printf("%s\n", PltBuffer);
 	DEBUG_PRINT_VAR(ptrPltConfig->Level);
 	DEBUG_PRINT_VAR(nAircraft);
 	DEBUG_PRINT_VAR(minAircraftTime);

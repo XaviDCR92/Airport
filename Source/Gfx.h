@@ -112,6 +112,8 @@ bool Gfx2HzFlash(void);
 
 void GfxDrawScene_NoSwap(void);
 
+void GfxDevMenuEnable(void);
+
 /* *************************************
  * 	Global variables
  * *************************************/

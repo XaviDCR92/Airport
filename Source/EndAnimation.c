@@ -173,8 +173,8 @@ void EndAnimationSquares(void)
 		{
 			randInd = SystemRand(0,maxIndex);
 			
-			/*dprintf("randInd = %d\t",randInd);
-			dprintf("sqPos[randInd] = %d\n", sqPos[randInd]);*/
+			/*Serial_printf("randInd = %d\t",randInd);
+			Serial_printf("sqPos[randInd] = %d\n", sqPos[randInd]);*/
 		
 			if(sqPos[randInd] == false)
 			{

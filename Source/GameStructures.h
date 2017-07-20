@@ -8,6 +8,7 @@
 #define GAME_MAX_AIRCRAFT 32
 #define GAME_MAX_CHARACTERS 8
 #define GAME_MAX_PARKING 32
+#define GAME_MAX_RWY_LENGTH 16
 #define CHEAT_ARRAY_SIZE 16
 #define AIRCRAFT_MAX_TARGETS 32
 #define PLAYER_MAX_WAYPOINTS AIRCRAFT_MAX_TARGETS
@@ -196,6 +197,7 @@ typedef struct
 	bool	(*PadDirectionKeyPressed_Callback)(void);
 	unsigned short	(*PadLastKeySinglePressed_Callback)(void);
 	TYPE_CAMERA Camera;
+    uint16_t RwyArray[GAME_MAX_RWY_LENGTH];
 }TYPE_PLAYER;
 
 typedef enum t_fontflags

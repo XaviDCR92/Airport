@@ -22,8 +22,6 @@
  
 static void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step);
 static void SystemSetStackPattern(void);
-static void SystemEnableVBlankInterrupt(void);
-static void SystemDisableVBlankInterrupt(void);
 
 /* *************************************
  * 	Local Variables
@@ -129,7 +127,7 @@ void SystemSetRandSeed(void)
 		//Set random seed using global timer as reference
 		srand((unsigned int)global_timer);
 		
-		dprintf("Seed used: %d\n",(unsigned int)global_timer);
+		Serial_printf("Seed used: %d\n",(unsigned int)global_timer);
 	}
 }
 
@@ -359,29 +357,67 @@ void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
 
 bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 {
-	FILE *f;
-	int32_t size;
+#ifdef SERIAL_INTERFACE
+	uint8_t fileSizeBuffer[sizeof(uint32_t)] = {0};
+    uint32_t i;
+#else
+    FILE *f;
+#endif // SERIAL_INTERFACE
+	int32_t size = 0;
 	
 	// Wait for possible previous operation from the GPU before entering this section.
 	while( (SystemIsBusy() == true) || (GfxIsGPUBusy() == true) );
 	
 	if(fname == NULL)
 	{
-		dprintf("SystemLoadFile: NULL fname!\n");
+		Serial_printf("SystemLoadFile: NULL fname!\n");
 		return false;
 	}
 	
 	memset(buffer,0,szBuffer);
 	
 	system_busy = true;
-	
-	SystemDisableVBlankInterrupt();
-	
-	f = fopen(fname, "r");
+
+#ifdef SERIAL_INTERFACE
+    Serial_printf("%s", fname);
+
+    SerialRead(fileSizeBuffer, sizeof(uint32_t) );
+
+    for(i = 0; i < sizeof(uint32_t); i++)
+    {
+        size |= fileSizeBuffer[i] << (i << 3); // (i << 3) == (i * 8)
+    }
+
+    SerialWrite(ACK_BYTE_STRING, 1);
+
+    for(i = 0; i < size; i += SERIAL_DATA_PACKET_SIZE)
+    {
+        uint32_t bytes_to_read;
+
+        // Read actual EXE data into proper RAM address.
+
+        if( (i + SERIAL_DATA_PACKET_SIZE) >= size)
+        {
+            bytes_to_read = size - i;
+        }
+        else
+        {
+            bytes_to_read = SERIAL_DATA_PACKET_SIZE;
+        }
+
+        SerialRead(file_buffer + i, bytes_to_read);
+
+        SerialWrite(ACK_BYTE_STRING, sizeof(uint8_t)); // Write ACK
+    }
+#else
+
+    SystemDisableVBlankInterrupt();
+
+    f = fopen(fname, "r");
 	
 	if(f == NULL)
 	{
-		dprintf("SystemLoadFile: file could not be found!\n");
+		Serial_printf("SystemLoadFile: file could not be found!\n");
 		//File couldn't be found
 		return false;
 	}
@@ -392,7 +428,7 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 	
 	if(size > szBuffer)
 	{
-		dprintf("SystemLoadFile: Exceeds file buffer size (%d bytes)\n",size);
+		Serial_printf("SystemLoadFile: Exceeds file buffer size (%d bytes)\n",size);
 		//Bigger than 128 kB (buffer's max size)
 		return false;
 	}
@@ -402,12 +438,14 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 	fread(buffer, sizeof(char), size, f);
 	
 	fclose(f);
-	
-	SystemEnableVBlankInterrupt();
+
+    SystemEnableVBlankInterrupt();
+
+#endif // SERIAL_INTERFACE
 	
 	system_busy = false;
 	
-	dprintf("File \"%s\" loaded successfully!\n",fname);
+	Serial_printf("File \"%s\" loaded successfully!\n",fname);
 	
 	return true;
 }
@@ -622,7 +660,7 @@ TYPE_TIMER* SystemCreateTimer(uint32_t t, bool rf, void (*timer_callback)(void) 
 	
 	if(t == 0)
 	{
-		dprintf("Cannot create timer with time == 0!\n");
+		Serial_printf("Cannot create timer with time == 0!\n");
 		return NULL;
 	}
 	
@@ -642,7 +680,7 @@ TYPE_TIMER* SystemCreateTimer(uint32_t t, bool rf, void (*timer_callback)(void) 
 	
 	if(success == false)
 	{
-		dprintf("Could not find any free timer!\n");
+		Serial_printf("Could not find any free timer!\n");
 		return NULL;
 	}
 	
@@ -770,9 +808,9 @@ void SystemPrintStackPointerAddress(void)
 	
 	stackPercent = fix16_smul(stackPercent, fix16_from_int((int)100));
 	
-	dprintf("stackPercent: %d\n", stackPercent);
+	Serial_printf("stackPercent: %d\n", stackPercent);
 	
-	dprintf("Stack begin pointer: 0x%08X\n"
+	Serial_printf("Stack begin pointer: 0x%08X\n"
 			"Stack pointer address: 0x%08X\n"
 			"Used %d%% of stack size.\n"
 			"\tUsed bytes: %d\n",
@@ -794,7 +832,7 @@ void SystemCheckStack(void)
 	
 	if(data != END_STACK_PATTERN)
 	{
-		dprintf("Stack overflow?\n");
+		Serial_printf("Stack overflow?\n");
 		
 		while(1);
 	}
@@ -815,11 +853,11 @@ int32_t SystemIndexOfStringArray(char* str, char** array)
 	
 	for(i = 0; array[i] != NULL; i++)
 	{
-		dprintf("String to find: %s\nEntry: %s\n", str, array[i]);
+		Serial_printf("String to find: %s\nEntry: %s\n", str, array[i]);
 		
 		if(strcmp(str, array[i]) == 0)
 		{
-			dprintf("Match! Returning index %d...\n", i);
+			Serial_printf("Match! Returning index %d...\n", i);
 			return i;
 		}
 	}

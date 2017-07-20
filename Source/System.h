@@ -107,7 +107,7 @@ void SystemTimerRemove(TYPE_TIMER* timer);
 // Compares two arrays of unsigned short type.
 bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz);
 
-// Prints stack pointer address using dprintf()
+// Prints stack pointer address using Serial_printf()
 void SystemPrintStackPointerAddress(void);
 
 // Checks if a 32-bit pattern set at the end of the stack has been
@@ -127,6 +127,10 @@ int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t 
 void SystemCyclicHandler(void);
 
 void SystemClearBuffer(void);
+
+void SystemEnableVBlankInterrupt();
+
+void SystemDisableVBlankInterrupt();
 
 /* **************************************
  * 	Global Variables					*	

@@ -303,7 +303,7 @@ bool MemCardGetBlockInfo(	TYPE_BLOCK_DATA * ptrBlockData,
 	ptrBlockData->Slot = slot;
 	ptrBlockData->Block = blockNumber;
 	
-	dprintf("MemCardGetBlockStateFileName...\n");
+	Serial_printf("MemCardGetBlockStateFileName...\n");
 	
 	if(MemCardGetBlockStateFileName(ptrBlockData) == false)
 	{
@@ -316,14 +316,14 @@ bool MemCardGetBlockInfo(	TYPE_BLOCK_DATA * ptrBlockData,
 		return true;
 	}
 	
-	dprintf("MemCardGetInitialFrameInfo...\n");
+	Serial_printf("MemCardGetInitialFrameInfo...\n");
 	
 	if(MemCardGetInitialFrameInfo(ptrBlockData) == false)
 	{
 		return false;
 	}
 	
-	dprintf("MemCardGetIconFrameInfo...\n");
+	Serial_printf("MemCardGetIconFrameInfo...\n");
 	
 	if(MemCardGetIconFrameInfo(ptrBlockData) == false)
 	{
@@ -333,7 +333,7 @@ bool MemCardGetBlockInfo(	TYPE_BLOCK_DATA * ptrBlockData,
 	// We will not get any block data information, we are only interested
 	// in basic info.
 	
-	dprintf("MemCardUploadToGPU...\n");
+	Serial_printf("MemCardUploadToGPU...\n");
 	
 	if(MemCardUploadToGPU(ptrBlockData) == false)
 	{
@@ -359,7 +359,7 @@ bool MemCardGetBlockStateFileName(TYPE_BLOCK_DATA * ptrBlockData)
 	}
 	
 	// 00h-03h Block Allocation State
-	dprintf("Block %d, slot %d, allocation state: 0x%02X.\n",
+	Serial_printf("Block %d, slot %d, allocation state: 0x%02X.\n",
 			ptrBlockData->Block,
 			ptrBlockData->Slot,
 			DataBuffer[0]	);
@@ -408,7 +408,7 @@ bool MemCardGetBlockStateFileName(TYPE_BLOCK_DATA * ptrBlockData)
 		
 		memcpy(ptrBlockData->FileName, &DataBuffer[0x0A], MEMCARD_FILENAME_SIZE);
 		
-		dprintf("File name: %s\n", ptrBlockData->FileName);
+		Serial_printf("File name: %s\n", ptrBlockData->FileName);
 	}
 	
 	return true;
@@ -445,12 +445,12 @@ bool MemCardGetInitialFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 		return false;
 	}
 	
-	dprintf("Magic number: '%c' '%c'\n",DataBuffer[0], DataBuffer[1]);
+	Serial_printf("Magic number: '%c' '%c'\n",DataBuffer[0], DataBuffer[1]);
 	
 	if(DataBuffer[0] != 'S' || DataBuffer[1] != 'C')
 	{
 		// Invalid magic number.
-		dprintf("Invalid magic number extracted from slot %d, block %d.\n",
+		Serial_printf("Invalid magic number extracted from slot %d, block %d.\n",
 				ptrBlockData->Slot,
 				ptrBlockData->Block);
 
@@ -483,7 +483,7 @@ bool MemCardGetInitialFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 			return false;
 	}
 	
-	dprintf("Number of icons: %d\n", ptrBlockData->IconNumber);
+	Serial_printf("Number of icons: %d\n", ptrBlockData->IconNumber);
 	
 	// 60h-7Fh  Icon 16 Color Palette Data (each entry is 16bit CLUT)
 	
@@ -515,7 +515,7 @@ bool MemCardGetIconFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 		
 			if(ptrReferenceBlock == NULL)
 			{
-				dprintf("No reference memory card block found yet!\n");
+				Serial_printf("No reference memory card block found yet!\n");
 				return false;
 			}
 			
@@ -539,14 +539,14 @@ bool MemCardGetIconFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 			// Icon Frame(s) (Block 1..15, Frame 1..3) (in first block of file only)
 			for(i = ICON_FRAME_1; i <= ptrBlockData->IconNumber; i++)
 			{
-				dprintf("\tIcon %d out of %d\n",i, ptrBlockData->IconNumber);
+				Serial_printf("\tIcon %d out of %d\n",i, ptrBlockData->IconNumber);
 				buffer_contents = 0;
 				sector = initial_sector + i;
 				memset(DataBuffer, 0, MEMCARD_SECTOR_SIZE * sizeof(uint8_t) );
 				
 				if(MemCardReadSector(ptrBlockData, sector) == false)
 				{
-					dprintf("Could not read memory sector!\n");
+					Serial_printf("Could not read memory sector!\n");
 					return false;
 				}
 				
@@ -560,7 +560,7 @@ bool MemCardGetIconFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 				if(buffer_contents == 0)
 				{
 					// Icon buffer is empty!
-					dprintf("Invalid icon buffer for slot %d, block %d.\n",
+					Serial_printf("Invalid icon buffer for slot %d, block %d.\n",
 							ptrBlockData->Slot,
 							ptrBlockData->Block);
 
@@ -574,7 +574,7 @@ bool MemCardGetIconFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 		return true;
 	}
 	
-	dprintf("Unknown error from MemCardGetIconFrameInfo()!\n");
+	Serial_printf("Unknown error from MemCardGetIconFrameInfo()!\n");
 	
 	return false;
 }
@@ -591,7 +591,7 @@ bool MemCardUploadToGPU(TYPE_BLOCK_DATA * ptrBlockData)
 					||
 		(ptrBlockData->IconNumber > MEMCARD_NUMBER_OF_ICONS) )
 	{
-		dprintf("Invalid number of icons.\n");
+		Serial_printf("Invalid number of icons.\n");
 		return false;
 	}
 	
@@ -608,7 +608,7 @@ bool MemCardUploadToGPU(TYPE_BLOCK_DATA * ptrBlockData)
 		gs.clut_w = MEMCARD_BLOCK_CLUT_W;
 		gs.clut_h = MEMCARD_BLOCK_CLUT_H;
 		
-		dprintf("Gs Clut = {%d,%d,%d,%d}\n",
+		Serial_printf("Gs Clut = {%d,%d,%d,%d}\n",
 				gs.clut_x,
 				gs.clut_y,
 				gs.clut_w,
@@ -637,7 +637,7 @@ bool MemCardUploadToGPU(TYPE_BLOCK_DATA * ptrBlockData)
 			ptrBlockData->IconTPoly.attribute = COLORMODE(COLORMODE_4BPP);
 			ptrBlockData->IconTPoly.tpage = (gs.x / 64) + ((gs.y/256)*16);
 			
-			dprintf("\tTPAGE = %d\n", ptrBlockData->IconTPoly.tpage);
+			Serial_printf("\tTPAGE = %d\n", ptrBlockData->IconTPoly.tpage);
 			
 			x_block_offset = MEMCARD_BLOCK_IMAGE_W * (ptrBlockData->Block - 1);
 			x_block_offset *= MEMCARD_BLOCK_MAX_ICONS;
@@ -647,7 +647,7 @@ bool MemCardUploadToGPU(TYPE_BLOCK_DATA * ptrBlockData)
 			ptrBlockData->IconTPoly.u[2] = ptrBlockData->IconTPoly.u[0];
 			ptrBlockData->IconTPoly.u[3] = ptrBlockData->IconTPoly.u[1];
 			
-			dprintf("\tu = {%d, %d, %d, %d}\n",
+			Serial_printf("\tu = {%d, %d, %d, %d}\n",
 					ptrBlockData->IconTPoly.u[0],
 					ptrBlockData->IconTPoly.u[1],
 					ptrBlockData->IconTPoly.u[2],
@@ -658,7 +658,7 @@ bool MemCardUploadToGPU(TYPE_BLOCK_DATA * ptrBlockData)
 			ptrBlockData->IconTPoly.v[2] = (gs.y % 256) + (gs.h);
 			ptrBlockData->IconTPoly.v[3] = ptrBlockData->IconTPoly.v[2];
 			
-			dprintf("\tu = {%d, %d, %d, %d}\n",
+			Serial_printf("\tu = {%d, %d, %d, %d}\n",
 					ptrBlockData->IconTPoly.v[0],
 					ptrBlockData->IconTPoly.v[1],
 					ptrBlockData->IconTPoly.v[2],
@@ -671,7 +671,7 @@ bool MemCardUploadToGPU(TYPE_BLOCK_DATA * ptrBlockData)
 			ptrBlockData->IconTPoly.cx = gs.clut_x;
 			ptrBlockData->IconTPoly.cy = gs.clut_y;
 			
-			dprintf("\tclut = {%d, %d}\n",
+			Serial_printf("\tclut = {%d, %d}\n",
 					ptrBlockData->IconTPoly.cx,
 					ptrBlockData->IconTPoly.cy);
 		}
@@ -693,7 +693,7 @@ bool MemCardReadSector(TYPE_BLOCK_DATA * ptrBlockData, int sector)
 	{
 		MemCardErrors.ErrorByte = 'S';
 		
-		dprintf("Incorrect slot %d! Block %d?\n",
+		Serial_printf("Incorrect slot %d! Block %d?\n",
 				ptrBlockData->Slot,
 				ptrBlockData->Block);
 				
@@ -704,7 +704,7 @@ bool MemCardReadSector(TYPE_BLOCK_DATA * ptrBlockData, int sector)
 	{
 		MemCardErrors.ErrorByte = 'T';
 		
-		dprintf("Invalid memory card sector %d. Only values between"
+		Serial_printf("Invalid memory card sector %d. Only values between"
 				" 0 and %d are allowed!\n", sector, MEMCARD_MAXIMUM_SECTOR);
 		return false;
 	}
@@ -725,7 +725,7 @@ bool MemCardReadSector(TYPE_BLOCK_DATA * ptrBlockData, int sector)
 			return false;
 
 		case MEMCARD_INVALID_CHECKSUM:
-			dprintf("Invalid checksum for memory card sector %d"
+			Serial_printf("Invalid checksum for memory card sector %d"
 					" from block %d, slot %d",
 					sector,
 					ptrBlockData->Block,
@@ -733,7 +733,7 @@ bool MemCardReadSector(TYPE_BLOCK_DATA * ptrBlockData, int sector)
 			return false;
 			
 		case MEMCARD_BAD_SECTOR:
-			dprintf("Invalid memory card sector %d. Only values between"
+			Serial_printf("Invalid memory card sector %d. Only values between"
 				" 0 and 511 are allowed!\n", sector);
 			return false;
 			
@@ -875,39 +875,39 @@ void MemCardDrawIcon(TYPE_BLOCK_DATA * ptrBlockData, short x, short y)
 		{
 			first_access = false;
 			
-			dprintf("Icon index: %d\n",IconIndex);
+			Serial_printf("Icon index: %d\n",IconIndex);
 		
-			dprintf("\tU = {%d,%d,%d,%d}\n",
+			Serial_printf("\tU = {%d,%d,%d,%d}\n",
 					ptrBlockData->IconTPoly.u[0],
 					ptrBlockData->IconTPoly.u[1],
 					ptrBlockData->IconTPoly.u[2],
 					ptrBlockData->IconTPoly.u[3]);
 					
 					
-			dprintf("\tV = {%d,%d,%d,%d}\n",
+			Serial_printf("\tV = {%d,%d,%d,%d}\n",
 					ptrBlockData->IconTPoly.v[0],
 					ptrBlockData->IconTPoly.v[1],
 					ptrBlockData->IconTPoly.v[2],
 					ptrBlockData->IconTPoly.v[3]);
 					
-			dprintf("\tBlock number: %d\n",ptrBlockData->Block);
+			Serial_printf("\tBlock number: %d\n",ptrBlockData->Block);
 			
-			dprintf("\tBlock count: %d\n",ptrBlockData->BlockCount);
+			Serial_printf("\tBlock count: %d\n",ptrBlockData->BlockCount);
 			
-			dprintf("\tX = {%d,%d,%d,%d}\n",
+			Serial_printf("\tX = {%d,%d,%d,%d}\n",
 					ptrBlockData->IconTPoly.x[0],
 					ptrBlockData->IconTPoly.x[1],
 					ptrBlockData->IconTPoly.x[2],
 					ptrBlockData->IconTPoly.x[3]);
 					
-			dprintf("\tY = {%d,%d,%d,%d}\n",
+			Serial_printf("\tY = {%d,%d,%d,%d}\n",
 					ptrBlockData->IconTPoly.y[0],
 					ptrBlockData->IconTPoly.y[1],
 					ptrBlockData->IconTPoly.y[2],
 					ptrBlockData->IconTPoly.y[3]);
 					
-			dprintf("\tTPAGE = %d\n", ptrBlockData->IconTPoly.tpage);
-			dprintf("\tCLUT = {%d, %d}\n",
+			Serial_printf("\tTPAGE = %d\n", ptrBlockData->IconTPoly.tpage);
+			Serial_printf("\tCLUT = {%d, %d}\n",
 					ptrBlockData->IconTPoly.cx,
 					ptrBlockData->IconTPoly.cy);
 		}
@@ -1142,23 +1142,23 @@ bool MemCardSaveData(TYPE_BLOCK_DATA * ptrBlockData)
 		if(strncmp((char*)ptrBlockData->FileName, MEMCARD_GAME_FILENAME, MEMCARD_FILENAME_SIZE) != 0)
 		{
 			// Only our own blocks can be overwritten. NEVER overwrite other game blocks!
-			dprintf("I cannot erase blocks from other games!\n");
+			Serial_printf("I cannot erase blocks from other games!\n");
 			return false;
 		}
 	}
 	else if(ptrBlockData->BlockCount != FIRST_OR_ONLY_BLOCK)
 	{
-		dprintf("Please select first block of block array.\n");
+		Serial_printf("Please select first block of block array.\n");
 		return false;
 	}
 	else if(ptrBlockData->Data == NULL)
 	{
-		dprintf("No data on current block!\n");
+		Serial_printf("No data on current block!\n");
 		return false;
 	}
 	else if(ptrBlockData->Block == DIRECTORY_BLOCK)
 	{
-		dprintf("Invalid block selected!\n");
+		Serial_printf("Invalid block selected!\n");
 		return false;
 	}
 	

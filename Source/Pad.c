@@ -426,7 +426,7 @@ void PadCheatHandler(uint8_t n_pad)
 		break;
 		
 		default:
-			dprintf("Invalid pad called for PadCheatHandler()!\n");
+			Serial_printf("Invalid pad called for PadCheatHandler()!\n");
 		return;
 	}
 	
@@ -495,7 +495,7 @@ bool PadAddCheat(TYPE_CHEAT * cheat)
 	
 	if(idx >= PAD_MAX_CHEATS)
 	{
-		dprintf("Maximum number of cheats exceeded!\n");
+		Serial_printf("Maximum number of cheats exceeded!\n");
 		return false;
 	}
 	

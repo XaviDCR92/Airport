@@ -85,16 +85,19 @@ GsSprite PSXButtons;
  * 	Local Variables
  * *************************************/
 
-//Drawing environment
+// Drawing environment
 static GsDrawEnv DrawEnv;
-//Display environment
+// Display environment
 static GsDispEnv DispEnv;
-//Primitive list (it contains all the graphical data for the GPU)
+// Primitive list (it contains all the graphical data for the GPU)
 static unsigned int prim_list[PRIMITIVE_LIST_SIZE];
-//Tells other modules whether data is being loaded to GPU
+// Tells other modules whether data is being loaded to GPU
 static volatile bool gfx_busy;
-//Dictates (R,G,B) brigthness to all sprites silently
+// Dictates (R,G,B) brigthness to all sprites silently
 static uint8_t global_lum;
+// When true, it draws a rectangle on top of all primitives with
+// information for development purposes.
+static bool GfxDevMenuEnableFlag;
 
 static bool five_hundred_ms_show;
 static bool one_second_show;
@@ -106,7 +109,7 @@ void GfxSwapBuffers(void)
 
 	if(GsListPos() >= PRIMITIVE_LIST_SIZE)
 	{
-		dprintf("Linked list iterator overflow!\n");
+		Serial_printf("Linked list iterator overflow!\n");
 		while(1);
 	}
 	
@@ -120,7 +123,7 @@ void GfxSwapBuffers(void)
 						&&
 		  (DispEnv.y != 0) )		)
 	{
-		dprintf("What the hell is happening?\n");
+		Serial_printf("What the hell is happening?\n");
 		DEBUG_PRINT_VAR(DispEnv.x);
 		DEBUG_PRINT_VAR(DispEnv.y);
 		DEBUG_PRINT_VAR(DrawEnv.x);
@@ -146,6 +149,11 @@ void GfxSwapBuffers(void)
 		GsSetDispEnv(&DispEnv);
 		GsSetDrawEnv(&DrawEnv);
 	}
+}
+
+void GfxDevMenuEnable(void)
+{
+    GfxDevMenuEnableFlag = true;
 }
 
 
@@ -582,7 +590,7 @@ bool GfxTPageOffsetFromVRAMPosition(GsSprite * spr, short x, short y)
 	
 	spr->v = (y % GFX_TPAGE_HEIGHT);
 	
-	//dprintf("Sprite:\n\tTPAGE: %d\n\tU=%d\n\tV=%d\n",spr->tpage,spr->u, spr->v);
+	//Serial_printf("Sprite:\n\tTPAGE: %d\n\tU=%d\n\tV=%d\n",spr->tpage,spr->u, spr->v);
 	
 	return false;
 }
