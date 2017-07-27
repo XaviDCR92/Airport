@@ -206,7 +206,7 @@ static char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\BUBBLE.TIM;1"	,
 								"cdrom:\\DATA\\SPRITES\\DEPARR.TIM;1"	,
 								"cdrom:\\DATA\\SPRITES\\PAGEUPDN.TIM;1"	};
 								
-static void * GameFileDest[] = {(GsSprite*)&BubbleSpr		,
+static void* GameFileDest[] = {(GsSprite*)&BubbleSpr		,
 								(TYPE_FONT*)&RadioFont		,
 								(GsSprite*)&DepArrSpr		,
 								(GsSprite*)&PageUpDownSpr	};
@@ -243,10 +243,17 @@ void GameGuiInit(void)
         RADIO_FONT_SPACING = 12
     };
 
-	LoadMenu(	GameFileList,
-				GameFileDest,
-				sizeof(GameFileList) / sizeof(char*),
-				sizeof(GameFileDest) /sizeof(void*)	);
+    static bool firstLoad = true;
+
+    if(firstLoad == true)
+    {
+        firstLoad = false;
+
+        LoadMenu(	GameFileList,
+                    GameFileDest,
+                    sizeof(GameFileList) / sizeof(char*),
+                    sizeof(GameFileDest) /sizeof(void*)	);
+    }
 				
 	PauseRect.x[0] = PAUSE_DIALOG_X;
 	PauseRect.x[1] = PAUSE_DIALOG_X + PAUSE_DIALOG_W;

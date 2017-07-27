@@ -73,7 +73,7 @@ static void LoadMenuInit(void);
 static void ISR_LoadMenuVBlank(void);
 static bool LoadMenuISRHasEnded(void);
 static bool LoadMenuISRHasStarted(void);
-static void LoadMenuLoadFileList(	char* fileList[], 	void * dest[], 
+static void LoadMenuLoadFileList(	char* fileList[], 	void* dest[], 
 									uint8_t szFileList, uint8_t szDestList);
 
 /* *************************************
@@ -90,7 +90,7 @@ static char* LoadMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\PLANE.TIM;1",
 									"cdrom:\\DATA\\SPRITES\\LOADING.TIM;1",
 									"cdrom:\\DATA\\FONTS\\FONT_2.FNT;1"	};
 
-static void * LoadMenuDest[] = {(GsSprite*)&LoadMenuPlaneSpr,
+static void* LoadMenuDest[] = {(GsSprite*)&LoadMenuPlaneSpr,
 								(GsSprite*)&LoadMenuTitleSpr,
 								(TYPE_FONT*)&SmallFont		};
 
@@ -233,6 +233,8 @@ void LoadMenuInit(void)
 	SmallFont.spr.b = 0;
 	
 	GfxSetGlobalLuminance(0);
+
+    Serial_printf("I_MASK = 0x%08X\n", (*(unsigned int*)0x1F801074));
 	
 	SetVBlankHandler(&ISR_LoadMenuVBlank);
 }
@@ -253,10 +255,9 @@ void ISR_LoadMenuVBlank(void)
 {
 	uint8_t i;
 
-    Serial_printf("SystemIsBusy() = %d\n", SystemIsBusy() );
-    Serial_printf("GfxIsGPUBusy() = %d\n", GfxIsGPUBusy() );
+    SystemIncreaseGlobalTimer();
 	
-	if( (SystemIsBusy() == true) || (GfxIsGPUBusy() == true) )
+	if( (SystemIsBusy() == true) || (GfxIsGPUBusy() == true) || (SerialIsBusy() == true) )
 	{
 		return;
 	}
@@ -418,7 +419,7 @@ bool LoadMenuISRHasStarted(void)
 }
 
 void LoadMenu(	char*	fileList[], 
-				void * dest[],
+				void* dest[],
 				uint8_t szFileList	, uint8_t szDestList)
 {
 	
@@ -433,7 +434,7 @@ void LoadMenu(	char*	fileList[],
 	
 }
 
-void LoadMenuLoadFileList(	char* fileList[], 	void * dest[], 
+void LoadMenuLoadFileList(	char* fileList[], 	void* dest[], 
 							uint8_t szFileList, uint8_t szDestList)
 {
 	char aux_file_name[100];

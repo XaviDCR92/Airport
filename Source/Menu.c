@@ -131,7 +131,7 @@ static char* MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
 #endif // NO_INTRO
 									};
 									
-static void * MainMenuDest[] = {	(GsSprite*)&MenuSpr			,
+static void* MainMenuDest[] = {	(GsSprite*)&MenuSpr			,
 									(SsVag*)&BellSnd			,
 									(SsVag*)&AcceptSnd			,
 									(GsSprite*)&PsxDisk			,
@@ -250,7 +250,7 @@ void MainMenuInit(void)
 				
 	PadAddCheat(&StackCheckCheat);
 
-    DevMenuCheat.Callback = &GfxDevMenuEnable;
+    DevMenuCheat.Callback = &SystemDevMenuToggle;
     memset(DevMenuCheat.Combination, 0 , CHEAT_ARRAY_SIZE);
 
     memcpy( DevMenuCheat.Combination,
@@ -263,7 +263,7 @@ void MainMenuInit(void)
 
     PadAddCheat(&DevMenuCheat);
 
-    SerialCheat.Callback = (void*)0x801A0000;
+    SerialCheat.Callback = &SystemReturnToLoader;
     memset(SerialCheat.Combination, 0 , CHEAT_ARRAY_SIZE);
 
     memcpy( SerialCheat.Combination,

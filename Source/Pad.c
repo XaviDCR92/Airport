@@ -100,9 +100,28 @@ psx_pad_state PadOneGetState(void)
 {
 	psx_pad_state PadOne;
 	
-	PSX_PollPad_Fast(PAD_ONE,&PadOne);
+	PSX_PollPad_Fast(PAD_ONE, &PadOne);
 	
 	return PadOne;
+}
+
+unsigned char PadOneGetType(void)
+{
+    return PadOneGetState().type;
+}
+
+psx_pad_state PadTwoGetState(void)
+{
+	psx_pad_state PadTwo;
+	
+	PSX_PollPad_Fast(PAD_TWO, &PadTwo);
+	
+	return PadTwo;
+}
+
+unsigned char PadTwoGetType(void)
+{
+    return PadTwoGetState().type;
 }
 
 bool PadOneConnected(void)
@@ -115,6 +134,28 @@ bool PadOneConnected(void)
 	}
 	
 	return true;
+}
+
+bool PadTwoConnected(void)
+{
+	psx_pad_state PadTwo = PadTwoGetState();
+	
+	if(PadTwo.status != PAD_STATUS_OK)
+	{
+		return false;
+	}
+	
+	return true;
+}
+
+unsigned char PadOneGetID(void)
+{
+    return PadOneGetState().id;
+}
+
+unsigned char PadTwoGetID(void)
+{
+    return PadTwoGetState().id;
 }
 
 bool PadOneAnyKeyPressed(void)

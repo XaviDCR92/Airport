@@ -132,6 +132,12 @@ void SystemEnableVBlankInterrupt();
 
 void SystemDisableVBlankInterrupt();
 
+void SystemReturnToLoader(void);
+
+void SystemDevMenuToggle(void);
+
+void SystemDevMenu(void);
+
 /* **************************************
  * 	Global Variables					*	
  * **************************************/

@@ -207,18 +207,19 @@ static uint8_t GameAircraftTilemap[GAME_MAX_MAP_SIZE][GAME_MAX_AIRCRAFT_PER_TILE
 TYPE_PLAYER PlayerData[MAX_PLAYERS];
 
 static char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\TILESET1.TIM;1"	,
-                                "cdrom:\\DATA\\LEVELS\\LEVEL1.PLT;1"	,
                                 "cdrom:\\DATA\\SPRITES\\GAMEPLN.TIM;1"	,
                                 "cdrom:\\DATA\\SPRITES\\PLNBLUE.CLT;1"	,
                                 "cdrom:\\DATA\\SPRITES\\MOUSE.TIM;1"	,
                                 "cdrom:\\DATA\\SPRITES\\BLDNGS1.TIM;1"	};
 									
-static void * GameFileDest[] = {(GsSprite*)&GameTilesetSpr		,
-                                (TYPE_FLIGHT_DATA*)&FlightData	,
+static void* GameFileDest[] = { (GsSprite*)&GameTilesetSpr		,
                                 (GsSprite*)&GamePlaneSpr		,
-                                NULL							,
+                                NULL,
                                 (GsSprite*)&GameMouseSpr		,
                                 (GsSprite*)&GameBuildingSpr		};
+
+static char* GamePlt[] = { "cdrom:\\DATA\\LEVELS\\LEVEL1.PLT;1"	};
+static void* GamePltDest[] = {(TYPE_FLIGHT_DATA*)&FlightData	,};
 									
 static char* GameLevelList[] = {	"cdrom:\\DATA\\LEVELS\\LEVEL1.LVL;1"};
 static uint16_t GameLevelBuffer[GAME_MAX_MAP_SIZE];
@@ -327,13 +328,24 @@ void GameInit(void)
 {
 	uint8_t i;
 	uint32_t track;
+    static bool firstLoad = true;
 	
 	GameStartupFlag = true;
-	
-	LoadMenu(	GameFileList,
-				GameFileDest,
-				sizeof(GameFileList) / sizeof(char*),
-				sizeof(GameFileDest) /sizeof(void*)	);	
+
+    if(firstLoad == true)
+    {
+        firstLoad = false;
+
+        LoadMenu(	GameFileList,
+                    GameFileDest,
+                    sizeof(GameFileList) / sizeof(char*),
+                    sizeof(GameFileDest) /sizeof(void*)	);
+    }
+
+    LoadMenu(   GamePlt,
+                GamePltDest,
+                sizeof(GamePlt) / sizeof(GamePlt[0]),
+                sizeof(GamePltDest) / sizeof(GamePltDest[0]) );
 	
 	GameLoadLevel();
 	
@@ -808,11 +820,10 @@ void GameGraphics(void)
 
     if(split_screen == true)
     {
-        GfxSwapBuffers();
         GfxDrawScene_NoSwap();
     }
-	
-	GfxDrawScene();
+
+    GfxDrawScene();
 }
 
 void GameRenderBuildingAircraft(TYPE_PLAYER* ptrPlayer)

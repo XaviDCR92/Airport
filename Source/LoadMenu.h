@@ -20,7 +20,7 @@
  * *************************************/
 
 void LoadMenu(	char*	fileList[], 
-				void * dest[],
+				void* dest[],
 				uint8_t szFileList	, uint8_t szDestList);
 				
 void LoadMenuEnd(void);

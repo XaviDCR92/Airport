@@ -24,6 +24,7 @@
 void SerialInit(void);
 bool SerialRead(uint8_t* ptrArray, size_t nBytes);
 bool SerialWrite(void* ptrArray, size_t nBytes);
+volatile bool SerialIsBusy(void);
 
 #ifdef SERIAL_INTERFACE
 void Serial_printf(const char* str, ...);

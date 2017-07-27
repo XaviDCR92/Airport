@@ -30,6 +30,7 @@ typedef enum
  * *************************************/
 
 static volatile SERIAL_STATE SerialState;
+static volatile bool serial_busy;
 
 /* *************************************
  * 	Local Prototypes
@@ -62,6 +63,7 @@ bool SerialRead(uint8_t* ptrArray, size_t nBytes)
 
 bool SerialWrite(void* ptrArray, size_t nBytes)
 {
+    serial_busy = true;
 
     if(nBytes == 0)
     {
@@ -79,7 +81,14 @@ bool SerialWrite(void* ptrArray, size_t nBytes)
 
     }while(--nBytes);
 
+    serial_busy = false;
+
     return true;
+}
+
+volatile bool SerialIsBusy(void)
+{
+    return serial_busy;
 }
 
 #ifdef SERIAL_INTERFACE

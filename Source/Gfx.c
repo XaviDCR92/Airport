@@ -95,9 +95,6 @@ static unsigned int prim_list[PRIMITIVE_LIST_SIZE];
 static volatile bool gfx_busy;
 // Dictates (R,G,B) brigthness to all sprites silently
 static uint8_t global_lum;
-// When true, it draws a rectangle on top of all primitives with
-// information for development purposes.
-static bool GfxDevMenuEnableFlag;
 
 static bool five_hundred_ms_show;
 static bool one_second_show;
@@ -151,11 +148,6 @@ void GfxSwapBuffers(void)
 	}
 }
 
-void GfxDevMenuEnable(void)
-{
-    GfxDevMenuEnableFlag = true;
-}
-
 
 void GfxInitDrawEnv(void)
 {
@@ -183,6 +175,8 @@ void GfxSetPrimitiveList(void)
 
 void GfxDrawScene_Fast(void)
 {
+    SystemDevMenu();
+
 	if(System1SecondTick() == true)
 	{
 		one_second_show = one_second_show? false:true;

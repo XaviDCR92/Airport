@@ -45,6 +45,9 @@ static bool emergency_mode;
 static volatile bool system_busy;
 //Timer array.
 static TYPE_TIMER timer_array[SYSTEM_MAX_TIMERS];
+// When true, it draws a rectangle on top of all primitives with
+// information for development purposes.
+static bool devmenu_flag;
 
 /* *******************************************************************
  * 
@@ -65,7 +68,8 @@ void SystemInit(void)
 	//Reset 1 second timer
 	one_second_timer = 0;
 	//PSXSDK init
-	PSX_InitEx(PSX_INIT_SAVESTATE | PSX_INIT_CD);
+	//PSX_InitEx(PSX_INIT_SAVESTATE | PSX_INIT_CD);
+	PSX_InitEx(0);
 	//Graphics init
 	GsInit();
 	//Clear VRAM
@@ -94,6 +98,8 @@ void SystemInit(void)
 	MemCardInit();
 	//Initial value for system_busy
 	system_busy = false;
+    //Development menu flag
+    devmenu_flag = false;
 	
 	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
 	
@@ -189,7 +195,6 @@ bool SystemRefreshNeeded(void)
 void ISR_SystemDefaultVBlank(void)
 {
 	refresh_needed = true;
-	SystemIncreaseGlobalTimer();
 }
 
 /* *******************************************************************
@@ -360,7 +365,7 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 #ifdef SERIAL_INTERFACE
 	uint8_t fileSizeBuffer[sizeof(uint32_t)] = {0};
     uint32_t i;
-#else
+#else // SERIAL_INTERFACE
     FILE *f;
 #endif // SERIAL_INTERFACE
 	int32_t size = 0;
@@ -375,11 +380,9 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 	}
 	
 	memset(buffer,0,szBuffer);
-	
-	system_busy = true;
 
 #ifdef SERIAL_INTERFACE
-    Serial_printf("%s", fname);
+    Serial_printf("#%s@", fname);
 
     SerialRead(fileSizeBuffer, sizeof(uint32_t) );
 
@@ -409,7 +412,9 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 
         SerialWrite(ACK_BYTE_STRING, sizeof(uint8_t)); // Write ACK
     }
-#else
+#else // SERIAL_INTERFACE
+
+    system_busy = true;
 
     SystemDisableVBlankInterrupt();
 
@@ -441,9 +446,9 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 
     SystemEnableVBlankInterrupt();
 
+    system_busy = false;
+
 #endif // SERIAL_INTERFACE
-	
-	system_busy = false;
 	
 	Serial_printf("File \"%s\" loaded successfully!\n",fname);
 	
@@ -784,6 +789,18 @@ void SystemTimerRemove(TYPE_TIMER* timer)
 	timer->repeat_flag = false;
 }
 
+/* ****************************************************************************************
+ * 
+ * @name	bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Reportedly, it compares two arrays "arr1" and "arr2", with size "sz".
+ *
+ * @return: true if they are equal, false otherwise.
+ * 
+ * ****************************************************************************************/
+
 bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz)
 {
 	size_t i;
@@ -799,10 +816,20 @@ bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz)
 	return true;
 }
 
+/* ****************************************************************************************
+ * 
+ * @name	void SystemPrintStackPointerAddress(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Prints stack usage in percentage via dprintf calls.
+ * 
+ * ****************************************************************************************/
+
 void SystemPrintStackPointerAddress(void)
 {
 #ifdef PSXSDK_DEBUG // Used to avoid unused variable warning
-	void * ptr = NULL;
+	void* ptr = NULL;
 	fix16_t used_bytes = fix16_from_int((int)((void*)BEGIN_STACK_ADDRESS - (void*)&ptr));
 	fix16_t stackPercent = fix16_sdiv(used_bytes,fix16_from_int((int)STACK_SIZE));
 	
@@ -822,6 +849,17 @@ void SystemPrintStackPointerAddress(void)
 
 }
 
+/* ****************************************************************************************
+ * 
+ * @name	void SystemCheckStack(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Compares stack top with expected byte pattern. If does not match, a stack
+ *          overflow has been caused, and application returns to a safe state.
+ * 
+ * ****************************************************************************************/
+
 void SystemCheckStack(void)
 {
 	uint32_t * ptrStack = BEGIN_STACK_ADDRESS;
@@ -838,6 +876,18 @@ void SystemCheckStack(void)
 	}
 }
 
+
+/* ****************************************************************************************
+ * 
+ * @name	void SystemSetStackPattern(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Sets a determined byte pattern on stack top to detect possible stack
+ *          overflow during execution.
+ * 
+ * ****************************************************************************************/
+
 void SystemSetStackPattern(void)
 {
 	uint32_t * ptrStack = BEGIN_STACK_ADDRESS;
@@ -846,6 +896,18 @@ void SystemSetStackPattern(void)
 	
 	*ptrStack = END_STACK_PATTERN;
 }
+
+/* ****************************************************************************************
+ * 
+ * @name	int32_t SystemIndexOfStringArray(char* str, char** array)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Finds string "str" inside an array of strings "array".
+ *
+ * @return  Index for a string "str" inside "array". -1 if it could not be found.
+ * 
+ * ****************************************************************************************/
 
 int32_t SystemIndexOfStringArray(char* str, char** array)
 {
@@ -865,6 +927,18 @@ int32_t SystemIndexOfStringArray(char* str, char** array)
 	return -1;
 }
 
+/* ****************************************************************************************
+ * 
+ * @name	int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	For a uint16_t array, it returns index of a variable "value" inside an array.
+ *
+ * @return  Index for a variable "value" inside "array". -1 if it could not be found.
+ * 
+ * ****************************************************************************************/
+
 int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz)
 {
 	int32_t i;
@@ -879,6 +953,20 @@ int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz)
 	
 	return -1;
 }
+
+/* ****************************************************************************************
+ * 
+ * @name	int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t sz)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	For a uint8_t array, it returns index of a variable "value" inside an array.
+ *          "from" and "size_t" can be used to determine initial/ending positions.
+ *
+ * @return  Index for a variable "value" inside "array". -1 if it could not be found.
+ * 
+ * ****************************************************************************************/
+
 
 int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t sz)
 {
@@ -895,6 +983,17 @@ int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t 
 	return -1;
 }
 
+/* ****************************************************************************************
+ * 
+ * @name	void SystemCyclicHandler(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	It calls system handlers once an execution cycle has finished.
+ *          
+ * 
+ * ****************************************************************************************/
+
 void SystemCyclicHandler(void)
 {
 	if(UpdatePads() == false)
@@ -905,6 +1004,8 @@ void SystemCyclicHandler(void)
 	{
 		SystemSetEmergencyMode(false);
 	}
+
+    SystemIncreaseGlobalTimer();
 	
 	SystemRunTimers();
 	
@@ -917,12 +1018,183 @@ void SystemCyclicHandler(void)
 	SystemCheckStack();
 }
 
+/* ****************************************************************************************
+ * 
+ * @name	void SystemDisableVBlankInterrupt(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Reportedly, this routine enables VBLANK interrupt flag.
+ *
+ * @remark: Used when critical timing is needed or GPU activity is not desired
+ *          e.g.: when reading files from CD-ROM.         
+ * 
+ * ****************************************************************************************/
+
 void SystemDisableVBlankInterrupt(void)
 {
 	I_MASK &= ~(0x0001);
 }
 
+/* ****************************************************************************************
+ * 
+ * @name	void SystemEnableVBlankInterrupt(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Reportedly, this routine enables VBLANK interrupt flag.
+ *          
+ * 
+ * ****************************************************************************************/
+
 void SystemEnableVBlankInterrupt(void)
 {
 	I_MASK |= (0x0001);
+}
+
+/* ****************************************************************************************
+ * 
+ * @name	void SystemReturnToLoader(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Deinitializes PSXSDK library and returns to OpenSend loader,
+ *          located at memory address 0x801A0000
+ * 
+ * ****************************************************************************************/
+
+void SystemReturnToLoader(void)
+{
+    Serial_printf("Returning to loader...\n");
+
+    EndAnimation();
+    
+    PSX_DeInit();
+
+    __asm__("j 0x801A0000");
+}
+
+/* ****************************************************************************************
+ * 
+ * @name	void SystemDevMenuToggle(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	It toggles a flag called "devmenu_flag" which, if true, shows information on
+ *          top of all drawn primitives for debugging/development purposes.
+ * 
+ * ****************************************************************************************/
+ 
+void SystemDevMenuToggle(void)
+{
+    devmenu_flag = devmenu_flag? false: true;
+
+    DEBUG_PRINT_VAR(devmenu_flag);
+}
+
+/* ****************************************************************************************
+ * 
+ * @name	void SystemDevMenu(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Shows information on top of all drawn primitives for debugging/development purposes.
+ * 
+ * ****************************************************************************************/
+
+void SystemDevMenu(void)
+{
+    enum
+    {
+        DEVMENU_BG_W = 256,
+        DEVMENU_BG_X = (X_SCREEN_RESOLUTION >> 1) - (DEVMENU_BG_W >> 1),
+        DEVMENU_BG_Y = 32,
+        DEVMENU_BG_H = 128,
+        
+        DEVMENU_BG_R = 0,
+        DEVMENU_BG_G = 128,
+        DEVMENU_BG_B = 32,
+    };
+
+    enum
+    {
+        DEVMENU_TEXT_GAP = 8,
+
+        DEVMENU_PAD1_STATUS_TEXT_X = DEVMENU_BG_X + DEVMENU_TEXT_GAP,
+        DEVMENU_PAD1_STATUS_TEXT_Y = DEVMENU_BG_Y + DEVMENU_TEXT_GAP,
+
+        DEVMENU_PAD1_TYPE_TEXT_X = DEVMENU_PAD1_STATUS_TEXT_X,
+        DEVMENU_PAD1_TYPE_TEXT_Y = DEVMENU_PAD1_STATUS_TEXT_Y + DEVMENU_TEXT_GAP,
+
+        DEVMENU_PAD1_ID_TEXT_X = DEVMENU_PAD1_STATUS_TEXT_X,
+        DEVMENU_PAD1_ID_TEXT_Y = DEVMENU_PAD1_TYPE_TEXT_Y + DEVMENU_TEXT_GAP,
+
+        DEVMENU_PAD2_STATUS_TEXT_X = DEVMENU_PAD1_ID_TEXT_X,
+        DEVMENU_PAD2_STATUS_TEXT_Y = DEVMENU_PAD1_ID_TEXT_Y + (DEVMENU_TEXT_GAP << 1), // Leave a bigger gap here
+
+        DEVMENU_PAD2_TYPE_TEXT_X = DEVMENU_PAD2_STATUS_TEXT_X,
+        DEVMENU_PAD2_TYPE_TEXT_Y = DEVMENU_PAD2_STATUS_TEXT_Y + DEVMENU_TEXT_GAP,
+
+        DEVMENU_PAD2_ID_TEXT_X = DEVMENU_PAD2_TYPE_TEXT_X,
+        DEVMENU_PAD2_ID_TEXT_Y = DEVMENU_PAD2_TYPE_TEXT_Y + DEVMENU_TEXT_GAP,
+
+        DEVMENU_ROOTCNT0_TEXT_X = DEVMENU_PAD2_ID_TEXT_X,
+        DEVMENU_ROOTCNT0_TEXT_Y = DEVMENU_PAD2_ID_TEXT_Y + DEVMENU_TEXT_GAP,
+    };
+
+    if(devmenu_flag == true)
+    {
+        GsRectangle devMenuBg = {   .x = DEVMENU_BG_X,
+                                    .y = DEVMENU_BG_Y,
+                                    .w = DEVMENU_BG_W,
+                                    .h = DEVMENU_BG_H,
+                                    .r = DEVMENU_BG_R,
+                                    .g = DEVMENU_BG_G,
+                                    .b = DEVMENU_BG_B,
+                                    .attribute = ENABLE_TRANS | TRANS_MODE(0) };
+
+        GsSortRectangle(&devMenuBg);
+
+        FontPrintText(  &SmallFont,
+                        DEVMENU_PAD1_STATUS_TEXT_X,
+                        DEVMENU_PAD1_STATUS_TEXT_Y,
+                        "Pad1 connected = %d",
+                        PadOneConnected()   );
+
+        FontPrintText(  &SmallFont,
+                        DEVMENU_PAD1_TYPE_TEXT_X,
+                        DEVMENU_PAD1_TYPE_TEXT_Y,
+                        "Pad1 type = 0x%02X",
+                        PadOneGetType()   );
+
+        FontPrintText(  &SmallFont,
+                        DEVMENU_PAD1_ID_TEXT_X,
+                        DEVMENU_PAD1_ID_TEXT_Y,
+                        "Pad1 ID = 0x%02X",
+                        PadOneGetID()   );
+
+         FontPrintText( &SmallFont,
+                        DEVMENU_PAD2_STATUS_TEXT_X,
+                        DEVMENU_PAD2_STATUS_TEXT_Y,
+                        "Pad2 connected = %d",
+                        PadTwoConnected()   );
+
+        FontPrintText(  &SmallFont,
+                        DEVMENU_PAD2_TYPE_TEXT_X,
+                        DEVMENU_PAD2_TYPE_TEXT_Y,
+                        "Pad2 type = 0x%02X",
+                        PadTwoGetType()   );
+
+        FontPrintText(  &SmallFont,
+                        DEVMENU_PAD2_ID_TEXT_X,
+                        DEVMENU_PAD2_ID_TEXT_Y,
+                        "Pad2 ID = 0x%02X",
+                        PadTwoGetID()   );
+
+        FontPrintText(  &SmallFont,
+                        DEVMENU_ROOTCNT0_TEXT_X,
+                        DEVMENU_ROOTCNT0_TEXT_Y,
+                        "Timer0 = 0x%04X",
+                        (uint16_t)((*(uint32_t*)0x1F801100) & 0x00FF) );
+    }
 }

@@ -23,6 +23,13 @@ void PadInit(void);
 void PadClearData(void);
 
 bool PadOneConnected(void);
+bool PadTwoConnected(void);
+
+unsigned char PadOneGetType(void);
+unsigned char PadTwoGetType(void);
+
+unsigned char PadOneGetID(void);
+unsigned char PadTwoGetID(void);
 
 bool PadOneAnyKeyPressed(void);
 bool PadTwoAnyKeyPressed(void);
