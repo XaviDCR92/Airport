@@ -6,9 +6,7 @@
  * **************************************/
 
 #include "Global_Inc.h"
-#include "Menu.h"
-#include "Gfx.h"
-#include "MemCard.h"
+#include "GameStructures.h"
 
 /* **************************************
  * 	Defines								*
@@ -128,9 +126,13 @@ void SystemCyclicHandler(void);
 
 void SystemClearBuffer(void);
 
-void SystemEnableVBlankInterrupt();
+void SystemEnableVBlankInterrupt(void);
 
-void SystemDisableVBlankInterrupt();
+void SystemDisableVBlankInterrupt(void);
+
+void SystemEnableRCnt2Interrupt(void);
+
+void SystemDisableRCnt2Interrupt(void);
 
 void SystemReturnToLoader(void);
 

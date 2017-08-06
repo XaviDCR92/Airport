@@ -7,11 +7,6 @@
 
 #include "Global_Inc.h"
 #include "GameStructures.h"
-#include "LoadMenu.h"
-#include "System.h"
-#include "Camera.h"
-#include "Aircraft.h"
-#include "GameGui.h"
 
 /* *************************************
  * 	Defines

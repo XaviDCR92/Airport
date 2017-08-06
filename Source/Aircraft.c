@@ -3,6 +3,9 @@
  * *************************************/
 
 #include "Aircraft.h"
+#include "System.h"
+#include "Game.h"
+#include "Camera.h"
 
 /* *************************************
  * 	Defines

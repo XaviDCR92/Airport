@@ -6,10 +6,6 @@
  * *************************************/
 
 #include "Global_Inc.h"
-#include "Gfx.h"
-#include "System.h"
-#include "PltParser.h"
-#include "Font.h"
 
 /* *************************************
  * 	Defines

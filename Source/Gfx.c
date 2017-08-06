@@ -3,6 +3,10 @@
  * *************************************/
 
 #include "Gfx.h"
+#include "System.h"
+#include "Camera.h"
+#include "Pad.h"
+#include "Game.h"
 
 /* *************************************
  * 	Defines

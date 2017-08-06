@@ -6,9 +6,7 @@
  * *************************************/
 
 #include "Global_Inc.h"
-#include "System.h"
-#include "Camera.h"
-#include "Pad.h"
+#include "GameStructures.h"
 
 /* *************************************
  * 	Defines

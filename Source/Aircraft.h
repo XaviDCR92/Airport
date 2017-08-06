@@ -6,9 +6,7 @@
  * *************************************/
 
 #include "Global_Inc.h"
-#include "System.h"
 #include "GameStructures.h"
-
 
 /* *************************************
  * 	Global prototypes

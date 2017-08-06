@@ -3,6 +3,18 @@
  * *************************************/
 
 #include "Menu.h"
+#include "Global_Inc.h"
+#include "System.h"
+#include "Gfx.h"
+#include "Sfx.h"
+#include "MainMenuBtnAni.h"
+#include "LoadMenu.h"
+#include "Game.h"
+#include "EndAnimation.h"
+#include "PSXSDKIntro.h"
+#include "MemCard.h"
+#include "Serial.h"
+#include "Pad.h"
 
 /* **************************************
  * 	Defines								*	

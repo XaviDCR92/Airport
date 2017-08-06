@@ -3,6 +3,8 @@
  * *************************************/
 
 #include "PltParser.h"
+#include "System.h"
+#include "Game.h"
 
 /* *************************************
  * 	Defines

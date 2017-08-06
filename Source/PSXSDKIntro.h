@@ -6,8 +6,6 @@
  * *************************************/
 
 #include "Global_Inc.h"
-#include "System.h"
-#include "Gfx.h"
 
 /* *************************************
  * 	Defines

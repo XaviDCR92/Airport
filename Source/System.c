@@ -3,6 +3,11 @@
  * *************************************/
 
 #include "System.h"
+#include "Pad.h"
+#include "Menu.h"
+#include "Gfx.h"
+#include "MemCard.h"
+#include "EndAnimation.h"
 
 /* *************************************
  * 	Defines
@@ -67,9 +72,16 @@ void SystemInit(void)
 	global_timer = 0;
 	//Reset 1 second timer
 	one_second_timer = 0;
+    
 	//PSXSDK init
-	//PSX_InitEx(PSX_INIT_SAVESTATE | PSX_INIT_CD);
-	PSX_InitEx(0);
+#ifdef SERIAL_INTERFACE
+    // PSX_INIT_SAVESTATE | PSX_INIT_CD flags are not needed
+    // when coming from OpenSend.
+    PSX_InitEx(0);
+#else // SERIAL_INTERFACE
+    PSX_InitEx(PSX_INIT_SAVESTATE | PSX_INIT_CD);
+#endif // SERIAL_INTERFACE
+
 	//Graphics init
 	GsInit();
 	//Clear VRAM
@@ -996,14 +1008,7 @@ int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t 
 
 void SystemCyclicHandler(void)
 {
-	if(UpdatePads() == false)
-	{
-		SystemSetEmergencyMode(true);
-	}
-	else
-	{
-		SystemSetEmergencyMode(false);
-	}
+    UpdatePads();
 
     SystemIncreaseGlobalTimer();
 	
@@ -1088,8 +1093,37 @@ void SystemReturnToLoader(void)
 void SystemDevMenuToggle(void)
 {
     devmenu_flag = devmenu_flag? false: true;
+}
 
-    DEBUG_PRINT_VAR(devmenu_flag);
+/* ****************************************************************************************
+ * 
+ * @name	void SystemEnableRCnt2Interrupt(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Enables bit 6 from I_MASK (0x1F801074)/IRQ6 RCNT2 (System clock / 8)
+ * 
+ * ****************************************************************************************/
+
+void SystemEnableRCnt2Interrupt(void)
+{
+    I_MASK |= 1<<6;
+}
+
+
+/* ****************************************************************************************
+ * 
+ * @name	void SystemDisableRCnt2Interrupt(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:	Disables bit 6 from I_MASK (0x1F801074)/IRQ6 RCNT2 (System clock / 8)
+ * 
+ * ****************************************************************************************/
+
+void SystemDisableRCnt2Interrupt(void)
+{
+    I_MASK &= ~(1<<6);
 }
 
 /* ****************************************************************************************
@@ -1129,8 +1163,11 @@ void SystemDevMenu(void)
         DEVMENU_PAD1_ID_TEXT_X = DEVMENU_PAD1_STATUS_TEXT_X,
         DEVMENU_PAD1_ID_TEXT_Y = DEVMENU_PAD1_TYPE_TEXT_Y + DEVMENU_TEXT_GAP,
 
-        DEVMENU_PAD2_STATUS_TEXT_X = DEVMENU_PAD1_ID_TEXT_X,
-        DEVMENU_PAD2_STATUS_TEXT_Y = DEVMENU_PAD1_ID_TEXT_Y + (DEVMENU_TEXT_GAP << 1), // Leave a bigger gap here
+        DEVMENU_PAD1_RAW_DATA_TEXT_X = DEVMENU_PAD1_ID_TEXT_X,
+        DEVMENU_PAD1_RAW_DATA_TEXT_Y = DEVMENU_PAD1_ID_TEXT_Y + DEVMENU_TEXT_GAP,
+
+        DEVMENU_PAD2_STATUS_TEXT_X = DEVMENU_PAD1_RAW_DATA_TEXT_X,
+        DEVMENU_PAD2_STATUS_TEXT_Y = DEVMENU_PAD1_RAW_DATA_TEXT_Y + (DEVMENU_TEXT_GAP << 1), // Leave a bigger gap here
 
         DEVMENU_PAD2_TYPE_TEXT_X = DEVMENU_PAD2_STATUS_TEXT_X,
         DEVMENU_PAD2_TYPE_TEXT_Y = DEVMENU_PAD2_STATUS_TEXT_Y + DEVMENU_TEXT_GAP,
@@ -1138,8 +1175,11 @@ void SystemDevMenu(void)
         DEVMENU_PAD2_ID_TEXT_X = DEVMENU_PAD2_TYPE_TEXT_X,
         DEVMENU_PAD2_ID_TEXT_Y = DEVMENU_PAD2_TYPE_TEXT_Y + DEVMENU_TEXT_GAP,
 
-        DEVMENU_ROOTCNT0_TEXT_X = DEVMENU_PAD2_ID_TEXT_X,
-        DEVMENU_ROOTCNT0_TEXT_Y = DEVMENU_PAD2_ID_TEXT_Y + DEVMENU_TEXT_GAP,
+        DEVMENU_PAD2_RAW_DATA_TEXT_X = DEVMENU_PAD2_ID_TEXT_X,
+        DEVMENU_PAD2_RAW_DATA_TEXT_Y = DEVMENU_PAD2_ID_TEXT_Y + DEVMENU_TEXT_GAP,
+
+        DEVMENU_ROOTCNT0_TEXT_X = DEVMENU_PAD2_RAW_DATA_TEXT_X,
+        DEVMENU_ROOTCNT0_TEXT_Y = DEVMENU_PAD2_RAW_DATA_TEXT_Y + DEVMENU_TEXT_GAP,
     };
 
     if(devmenu_flag == true)
@@ -1173,6 +1213,12 @@ void SystemDevMenu(void)
                         "Pad1 ID = 0x%02X",
                         PadOneGetID()   );
 
+        FontPrintText(  &SmallFont,
+                        DEVMENU_PAD1_RAW_DATA_TEXT_X,
+                        DEVMENU_PAD1_RAW_DATA_TEXT_Y,
+                        "Pad1 raw data = 0x%04X",
+                        PadOneGetRawData()   );
+
          FontPrintText( &SmallFont,
                         DEVMENU_PAD2_STATUS_TEXT_X,
                         DEVMENU_PAD2_STATUS_TEXT_Y,
@@ -1190,6 +1236,12 @@ void SystemDevMenu(void)
                         DEVMENU_PAD2_ID_TEXT_Y,
                         "Pad2 ID = 0x%02X",
                         PadTwoGetID()   );
+
+        FontPrintText(  &SmallFont,
+                        DEVMENU_PAD2_RAW_DATA_TEXT_X,
+                        DEVMENU_PAD2_RAW_DATA_TEXT_Y,
+                        "Pad2 raw data = 0x%04X",
+                        PadTwoGetRawData()   );
 
         FontPrintText(  &SmallFont,
                         DEVMENU_ROOTCNT0_TEXT_X,

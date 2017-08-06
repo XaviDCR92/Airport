@@ -3,6 +3,11 @@
  * *************************************/
 
 #include "LoadMenu.h"
+#include "Gfx.h"
+#include "System.h"
+#include "PltParser.h"
+#include "Font.h"
+#include "Sfx.h"
 
 /* **************************************
  * 	Defines								*	

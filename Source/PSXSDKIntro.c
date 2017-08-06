@@ -3,6 +3,9 @@
  * *************************************/
 
 #include "PSXSDKIntro.h"
+#include "System.h"
+#include "Gfx.h"
+#include "Sfx.h"
 
 /* *************************************
  * 	Defines

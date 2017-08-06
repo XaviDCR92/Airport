@@ -3,6 +3,9 @@
  * *************************************/
 
 #include "EndAnimation.h"
+#include "Global_Inc.h"
+#include "Gfx.h"
+#include "Sfx.h"
 
 /* *************************************
  * 	Defines

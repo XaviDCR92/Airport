@@ -3,6 +3,9 @@
  * *************************************/
 
 #include "Font.h"
+#include "System.h"
+#include "Gfx.h"
+#include <stdarg.h>
 
 /* *************************************
  * 	Defines

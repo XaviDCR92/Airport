@@ -3,6 +3,9 @@
  * *************************************/
 
 #include "MemCard.h"
+#include "System.h"
+#include "Pad.h"
+#include "Font.h"
 
 /* *************************************
  * 	Defines

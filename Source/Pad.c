@@ -3,6 +3,7 @@
  * *************************************/
 
 #include "Pad.h"
+#include "System.h"
 
 /* *************************************
  * 	Defines
@@ -12,6 +13,7 @@
 #define PAD_TWO 1
 #define PAD_CHEAT_TIMEOUT 20 // 2 units * 100 ms/unit = 2000 ms
 #define PAD_MAX_CHEATS 16
+#define PAD_FLOATING_ID (unsigned char)0xFF
 
 /* **************************************
  * 	Structs and enums					*
@@ -127,8 +129,10 @@ unsigned char PadTwoGetType(void)
 bool PadOneConnected(void)
 {
 	psx_pad_state PadOne = PadOneGetState();
-	
-	if(PadOne.status != PAD_STATUS_OK)
+
+	if( (PadOne.status != PAD_STATUS_OK)
+                    &&
+        (PadOneGetID() == PAD_FLOATING_ID)  )
 	{
 		return false;
 	}
@@ -140,7 +144,9 @@ bool PadTwoConnected(void)
 {
 	psx_pad_state PadTwo = PadTwoGetState();
 	
-	if(PadTwo.status != PAD_STATUS_OK)
+	if( (PadTwo.status != PAD_STATUS_OK)
+                    &&
+        (PadTwoGetID() == PAD_FLOATING_ID)  )
 	{
 		return false;
 	}
@@ -304,7 +310,10 @@ bool PadTwoIsVibrationEnabled(void)
 
 bool UpdatePads(void)
 {
-	PadOneVibrationHandler();
+    unsigned short adc_mouse;
+    static unsigned short old_adc_mouse;
+    
+    PadOneVibrationHandler();
 	
 	PadTwoVibrationHandler();
 	
@@ -315,13 +324,32 @@ bool UpdatePads(void)
 	// Get now-old pad data
 	previous_pad1 = pad1;
 	previous_pad2 = pad2;
-	
-	PSX_ReadPad(&pad1,&pad2);
-	
+
+    if(PadOneGetType() == PADTYPE_MOUSE)
+    {
+        PSX_ReadMouse(&pad1, &adc_mouse);
+
+        if(old_adc_mouse != adc_mouse)
+        {
+            Serial_printf("0%04X\n", adc_mouse);
+        }
+
+        old_adc_mouse = adc_mouse;
+    }
+    else
+    {
+        PSX_ReadPad(&pad1,&pad2);
+    }
+    
 	if(PadOneConnected() == false)
 	{
 		return false;
 	}
+
+    if(PadTwoConnected() == false)
+    {
+        return false;
+    }
 
 	if(!(previous_pad1 & pad1) )
 	{
@@ -568,4 +596,14 @@ unsigned short PadOneGetLastKeySinglePressed(void)
 unsigned short PadTwoGetLastKeySinglePressed(void)
 {
 	return pad2_last_key_single_pressed;
+}
+
+unsigned short PadOneGetRawData(void)
+{
+    return pad1;
+}
+
+unsigned short PadTwoGetRawData(void)
+{
+    return pad2;
 }

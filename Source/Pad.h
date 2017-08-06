@@ -6,7 +6,6 @@
  * *************************************/
 
 #include "Global_Inc.h"
-#include "System.h"
 #include "GameStructures.h"
 
 /* *************************************
@@ -58,6 +57,9 @@ bool PadTwoDirectionKeyReleased(void);
 bool UpdatePads(void);
 bool PadOneIsVibrationEnabled(void);
 bool PadTwoIsVibrationEnabled(void);
+
+unsigned short PadOneGetRawData(void);
+unsigned short PadTwoGetRawData(void);
 
 bool PadAddCheat(TYPE_CHEAT * cheat);
 

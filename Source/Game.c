@@ -3,6 +3,14 @@
  * *************************************/
 
 #include "Game.h"
+#include "LoadMenu.h"
+#include "System.h"
+#include "Camera.h"
+#include "Aircraft.h"
+#include "GameGui.h"
+#include "EndAnimation.h"
+#include "Sfx.h"
+#include "Pad.h"
 
 /* *************************************
  * 	Defines
@@ -574,6 +582,10 @@ void GameBuildingsInit(void)
 
 void GameEmergencyMode(void)
 {
+    uint8_t i;
+    bool (*PadXConnected[MAX_PLAYERS])(void) = {    [PLAYER_ONE] = &PadOneConnected,
+                                                    [PLAYER_TWO] = &PadTwoConnected };
+
 	enum
 	{
 		ERROR_RECT_X = 32,
@@ -587,28 +599,38 @@ void GameEmergencyMode(void)
 		ERROR_RECT_B = NORMAL_LUMINANCE
 	};
 	
-	GsRectangle errorRct;
-	
-	bzero((GsRectangle*)&errorRct, sizeof(GsRectangle));
-	
 	while(SystemGetEmergencyMode() == true)
 	{
+        GsRectangle errorRct = {.x = ERROR_RECT_X,
+                                .w = ERROR_RECT_W,
+                                .y = ERROR_RECT_Y,
+                                .h = ERROR_RECT_H,
+                                .r = ERROR_RECT_R,
+                                .g = ERROR_RECT_G,
+                                .b = ERROR_RECT_B   };
+
 		// Pad one has been disconnected during gameplay
 		// Show an error screen until it is disconnected again.
 		
 		GsSortCls(0,0,0);
 		
-		errorRct.x = ERROR_RECT_X;
-		errorRct.w = ERROR_RECT_W;
-		errorRct.y = ERROR_RECT_Y;
-		errorRct.h = ERROR_RECT_H;
-		
-		errorRct.r = ERROR_RECT_R;
-		errorRct.g = ERROR_RECT_G;
-		errorRct.b = ERROR_RECT_B;
-		
 		GsSortRectangle(&errorRct);
-		GfxDrawScene();
+
+        for(i = 0; i < MAX_PLAYERS; i++)
+        {
+            TYPE_PLAYER* ptrPlayer = &PlayerData[i];
+
+            if(ptrPlayer->Active == true)
+            {
+                if(PadXConnected[i]() == false)
+                {
+                    FontPrintText(&SmallFont, 48, 48 + (i << 5), "Pad %d disconnected", i);
+                    SystemSetEmergencyMode(true);
+                }
+            }
+        }
+
+		GfxDrawScene_Slow();
 	}
 }
 
@@ -1980,17 +2002,12 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t s
 		}
 	}
 
-    DEBUG_PRINT_VAR(i);
+    //DEBUG_PRINT_VAR(i);
 	
 	rwyArray[i++] = last_tile;
 
-    DEBUG_PRINT_VAR(rwyArray[i -1]);
+    //DEBUG_PRINT_VAR(rwyArray[i -1]);
 
-    if(i >= GAME_MAX_RWY_LENGTH)
-    {
-        while(1);
-    }
-	
 	switch(dir)
 	{
 		case RWY_DIR_EAST:

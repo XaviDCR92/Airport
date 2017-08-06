@@ -3,6 +3,10 @@
  * *************************************/
 
 #include "GameGui.h"
+#include "System.h"
+#include "Gfx.h"
+#include "Game.h"
+#include "LoadMenu.h"
 
 /* *************************************
  * 	Defines

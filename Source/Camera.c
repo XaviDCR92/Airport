@@ -3,6 +3,9 @@
  * *************************************/
 
 #include "Camera.h"
+#include "Game.h"
+#include "System.h"
+#include "Pad.h"
 
 /* *************************************
  * 	Defines

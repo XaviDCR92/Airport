@@ -6,10 +6,7 @@
  * *************************************/
 
 #include "Global_Inc.h"
-#include "System.h"
 #include "GameStructures.h"
-#include "Gfx.h"
-#include "Game.h"
 
 /* *************************************
  * 	Defines

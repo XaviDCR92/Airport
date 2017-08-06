@@ -3,10 +3,12 @@ DEFINE= -DFIXMATH_FAST_SIN -D_PAL_MODE_
 DEFINE += -DPSXSDK_DEBUG
 DEFINE +=  -DNO_CDDA
 DEFINE +=  -DNO_INTRO
-DEFINE +=  -DSERIAL_INTERFACE
+#DEFINE +=  -DSERIAL_INTERFACE
+PSXSDK_PATH = /usr/local/psxsdk
 LIBS= -lfixmath
 CC_FLAGS = -Wall -Werror -c -Os -Wfatal-errors
 LINKER = psx-gcc
+PATH := $(PATH):$(PSXSDK_PATH)/bin/
 
 PROJECT = AIRPORT
 PROJECT_DIR = ~/Airport
@@ -30,34 +32,39 @@ FFMPEG_FLAGS = -f s16le -acodec pcm_s16le
 
 GNU_SIZE = mipsel-unknown-elf-size
 
-all: build image clean
-#emulator clean
-
-rebuild: remove build
-
-build: clean objects levels $(PROJECT).elf $(PROJECT).exe
-	
-objects: 	$(addprefix $(OBJ_DIR)/,main.o System.o Menu.o Gfx.o Pad.o MainMenuBtnAni.o 	\
+OBJECTS = $(addprefix $(OBJ_DIR)/,main.o System.o Menu.o Gfx.o Pad.o MainMenuBtnAni.o 	\
 			LoadMenu.o GameGui.o Sfx.o Camera.o EndAnimation.o			\
 			PSXSDKIntro.o PltParser.o Game.o Font.o MemCard.o			\
 			Aircraft.o Serial.o)
+
+DEPS = $(OBJECTS:.o=.d)
+
+all: levels image
+
+rebuild: clean all
+
+build: $(PROJECT).exe
+
+objects: $(OBJECTS)
+
+-include $(DEPS)
 			
 music_objects:	$(addprefix ../Music/, TRACK01.bin TRACK02.bin TRACK03.bin)
 			
-remove:
+clean:
 	rm -f Obj/*.o
 	
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $< -o $@ $(DEFINE) $(CC_FLAGS)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(OBJ_DIR)/%.d
+	$(CC) $< -o $@ $(DEFINE) $(CC_FLAGS) -MMD
 	
-$(PROJECT).elf: 
+$(PROJECT).elf: objects
 	$(LINKER) Obj/*.o -o Exe/$(PROJECT).elf $(LIBS) -Wl,--gc-sections
 	
-$(PROJECT).exe:
+$(PROJECT).exe: $(PROJECT).elf
 	$(ELF2EXE) Exe/$(PROJECT).elf Exe/$(PROJECT).exe $(ELF2EXE_FLAGS)
 	cp Exe/$(PROJECT).exe ../cdimg
 	
-image:
+image: build
 	rm -f $(PROJECT).iso $(PROJECT).bin
 	rm -f $(PROJECT).cue
 	mkisofs -o $(PROJECT).iso -V $(PROJECT) -sysid PLAYSTATION ../cdimg
@@ -72,7 +79,7 @@ emulator:
 	export PATH=$$PATH:$(EMULATOR_DIR)
 	$(EMULATOR) -cdfile $(PROJECT_DIR)/Bin/$(PROJECT).bin $(EMULATOR_FLAGS)
 	
-clean:
+remove_elf_iso:
 	rm -f $(PROJECT).elf cdimg/$(PROJECT).exe $(PROJECT).bin $(PROJECT).cue cdimg/README.txt
 	rm -f $(PROJECT).iso $(PROJECT).exe $(PROJECT).elf
 
