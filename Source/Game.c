@@ -1077,6 +1077,26 @@ char* GetGameLevelTitle(void)
 	return GameLevelTitle;
 }
 
+/* ******************************************************************************************
+ * 
+ * @name: void GameAircraftState(uint8_t i)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ *  TYPE_PLAYER* ptrPlayer:
+ *      Pointer to a player structure
+ *
+ * 
+ * @brief:
+ * 	Draws all tiles depending on GameLevelBuffer configuration.
+ *  
+ * @remarks:
+ * 	Tiles are usually rendered with normal RGB values unless parking/runway is busy
+ *  or ptrPlayer->InvalidPath == true.
+ * 
+ * ******************************************************************************************/
+ 
 void GameAircraftState(uint8_t i)
 {
 	uint16_t target[2] = {0};
@@ -1166,6 +1186,26 @@ void GameAircraftState(uint8_t i)
     }
 }
 
+/* ******************************************************************************************
+ * 
+ * @name: void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ *  TYPE_PLAYER* ptrPlayer:
+ *      Pointer to a player structure
+ *
+ * 
+ * @brief:
+ * 	Draws all tiles depending on GameLevelBuffer configuration.
+ *  
+ * @remarks:
+ * 	Tiles are usually rendered with normal RGB values unless parking/runway is busy
+ *  or ptrPlayer->InvalidPath == true.
+ * 
+ * ******************************************************************************************/
+
 void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 {
 	uint16_t i;
@@ -1173,7 +1213,7 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 	uint8_t columns = 0;
 	uint8_t rows = 0;
 	bool flip_id;
-	bool used_rwy;
+	bool used_rwy = SystemContains_u16(ptrPlayer->RwyArray[0], GameUsedRwy, GAME_MAX_RUNWAYS);
 	uint8_t aux_id;
 	GsSprite * ptrTileset;
 	const uint8_t rwy_sine_step = 24;
@@ -1181,11 +1221,14 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 	static bool rwy_sine_decrease = false;
 	TYPE_ISOMETRIC_POS tileIsoPos;
 	TYPE_CARTESIAN_POS tileCartPos;
+
+    uint16_t init_timer_value = 0;
+    uint16_t end_timer_value = 0;
 	
 	// Prepare runway to be painted in blue if player is on runway selection mode
 	if(ptrPlayer->SelectRunway == true)
 	{
-		GameGetSelectedRunwayArray(GameRwy[ptrPlayer->SelectedRunway], ptrPlayer->RwyArray, sizeof(ptrPlayer->RwyArray));
+		
 		/*Serial_printf("Runway array:\n");
 		
 		for(j = 0; j < GAME_MAX_RWY_LENGTH; j++)
@@ -1312,8 +1355,6 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
         {
             continue;
         }
-		
-		used_rwy = false;
 
 		ptrTileset->r = NORMAL_LUMINANCE;
 		ptrTileset->g = NORMAL_LUMINANCE;
@@ -1325,17 +1366,6 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 						&&
 			(SystemContains_u16(i, ptrPlayer->RwyArray, GAME_MAX_RWY_LENGTH) == true)	)
 		{
-			for(j = 0; j < GAME_MAX_RUNWAYS; j++)
-			{
-				if(GameUsedRwy[j] != 0)
-				{
-					if(SystemContains_u16(GameUsedRwy[j], ptrPlayer->RwyArray, GAME_MAX_RWY_LENGTH) == true)
-					{
-						used_rwy = true;
-						break;
-					}
-				}
-			}
 			
 			if(used_rwy == true)
 			{
@@ -1382,32 +1412,11 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 							(CurrentTile == TILE_RWY_HOLDING_POINT_2)	)	)
 			{
 				bool bHoldingRwyBusy = false;
-				
-				for(j = 0; j < FlightData.nAircraft; j++)
-				{
-					uint16_t* targets = AircraftGetTargets(j);
-					uint16_t aircraftTile = AircraftGetTileFromFlightDataIndex(j);
-					uint16_t lastTarget = 0;
-					uint8_t k;
 
-					for(k = 0; k < AIRCRAFT_MAX_TARGETS; k++)
-					{
-						if(targets[k] == 0)
-						{
-							break;
-						}
+                init_timer_value = GetRCnt(2);
 
-						lastTarget = targets[k];
-					}
 
-					if( (i == aircraftTile)
-								||
-						(i == lastTarget)	)
-					{
-						bHoldingRwyBusy = true;
-						break;
-					}
-				}
+                end_timer_value = GetRCnt(2);
 				
 				if(bHoldingRwyBusy == true)
 				{
@@ -1484,13 +1493,54 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 			ptrTileset->attribute &= ~(H_FLIP);
 		}
 	}
+
+    dprintf("GameRenderLevel execution time = %d\t"
+            "end_timer_value = 0x%04X\tinit_timer_value = 0x%04X\n",
+            end_timer_value - init_timer_value,
+            end_timer_value,
+            init_timer_value                                );
 }
+
+/* *******************************************************************
+ * 
+ * @name: void GameSetTime(uint8_t hour, uint8_t minutes)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:
+ * 	Reportedly, it sets game time to specified hour and minutes.
+ *	
+ * 
+ * @remarks:
+ * 	To be used on GameInit() after PLT file parsing.
+ * 
+ * *******************************************************************/
 
 void GameSetTime(uint8_t hour, uint8_t minutes)
 {
 	GameHour = hour;
 	GameMinutes = minutes;
 }
+
+/* *******************************************************************
+ * 
+ * @name: void GameActiveAircraft(uint8_t i)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ *  uint8_t i:
+ *      Index from FlightData array.
+ * 
+ * @brief:
+ * 	On each game cycle, FlightData.ActiveAircraft is set to 0 and
+ *  number of active aircraft is recalculated.
+ * 
+ * @remarks:
+ * 	Called ciclically from GameCalculations(). This function is
+ *  executed GAME_MAX_AIRCRAFT times on each cycle.
+ * 
+ * *******************************************************************/
 
 void GameActiveAircraft(uint8_t i)
 {
@@ -1506,6 +1556,29 @@ void GameActiveAircraft(uint8_t i)
         FlightData.ActiveAircraft++;
     }
 }
+
+/* ******************************************************************************************
+ * 
+ * @name: void GameStateShowAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ *  TYPE_PLAYER* ptrPlayer:
+ *      Pointer to a player structure
+ *
+ *  TYPE_FLIGH_DATA* ptrFlightData:
+ *      In the end, pointer to FlightData data table, which contains
+ *      information about all available flights.
+ * 
+ * @brief:
+ * 	Handles ptrPlayer->ShowAircraftData state.
+ *  
+ * 
+ * @remarks:
+ * 	Called ciclically from GamePlayerHandler().
+ * 
+ * ******************************************************************************************/
 
 void GameStateShowAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
@@ -1526,6 +1599,29 @@ void GameStateShowAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightDa
 		}
 	}
 }
+
+/* ******************************************************************************************
+ * 
+ * @name: void GameStateLockTarget(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ *  TYPE_PLAYER* ptrPlayer:
+ *      Pointer to a player structure
+ *
+ *  TYPE_FLIGH_DATA* ptrFlightData:
+ *      In the end, pointer to FlightData data table, which contains
+ *      information about all available flights.
+ * 
+ * @brief:
+ * 	Handles ptrPlayer->LockTarget state.
+ *  
+ * 
+ * @remarks:
+ * 	Called ciclically from GamePlayerHandler().
+ * 
+ ******************************************************************************************/
 
 void GameStateLockTarget(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
@@ -1571,6 +1667,29 @@ void GameStateLockTarget(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 		}
 	}
 }
+
+/* ******************************************************************************************
+ * 
+ * @name: void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ *  TYPE_PLAYER* ptrPlayer:
+ *      Pointer to a player structure
+ *
+ *  TYPE_FLIGH_DATA* ptrFlightData:
+ *      In the end, pointer to FlightData data table, which contains
+ *      information about all available flights.
+ * 
+ * @brief:
+ * 	Handler for ptrPlayer->SelectTaxiwayRunway.
+ *  
+ * 
+ * @remarks:
+ * 	Called ciclically from GamePlayerHandler().
+ * 
+ * ******************************************************************************************/
 
 void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
@@ -1757,6 +1876,8 @@ void GameStateSelectRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightDa
 		// Under this mode, always reset locking target.
 		ptrPlayer->LockTarget = false;
 		ptrPlayer->LockedAircraft = FLIGHT_DATA_INVALID_IDX;
+
+        GameGetSelectedRunwayArray(GameRwy[ptrPlayer->SelectedRunway], ptrPlayer->RwyArray, sizeof(ptrPlayer->RwyArray));
 		
 		CameraMoveToIsoPos(ptrPlayer, IsoPos);
 		

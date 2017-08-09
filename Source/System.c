@@ -27,6 +27,7 @@
  
 static void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step);
 static void SystemSetStackPattern(void);
+static void ISR_RootCounter2(void);
 
 /* *************************************
  * 	Local Variables
@@ -117,13 +118,26 @@ void SystemInit(void)
 	
 	SystemSetStackPattern();
 	
-	SetRCnt(RCntCNT2,0xFFFF,RCntSC);
-	StartRCnt(RCntCNT2);
+	//SetRCntHandler(&ISR_RootCounter2, 2, 0xA560);
+
+    Serial_printf("Begin SetRCntHandler\n");
+	SetRCntHandler(&ISR_RootCounter2, 2, 0xFFFF);
+    Serial_printf("End SetRCntHandler\n");
+
+    SystemEnableRCnt2Interrupt();
+}
+
+static volatile uint16_t u16_0_01seconds_cnt;
+
+void ISR_RootCounter2(void)
+{
+    Serial_printf("YO\n");
+    u16_0_01seconds_cnt++;
 }
 
 /* *******************************************************************
  * 
- * @name: void SystemInit(void)
+ * @name: void SystemSetRandSeed(void)
  * 
  * @author: Xavier Del Campo
  * 
@@ -1178,8 +1192,8 @@ void SystemDevMenu(void)
         DEVMENU_PAD2_RAW_DATA_TEXT_X = DEVMENU_PAD2_ID_TEXT_X,
         DEVMENU_PAD2_RAW_DATA_TEXT_Y = DEVMENU_PAD2_ID_TEXT_Y + DEVMENU_TEXT_GAP,
 
-        DEVMENU_ROOTCNT0_TEXT_X = DEVMENU_PAD2_RAW_DATA_TEXT_X,
-        DEVMENU_ROOTCNT0_TEXT_Y = DEVMENU_PAD2_RAW_DATA_TEXT_Y + DEVMENU_TEXT_GAP,
+        DEVMENU_ROOTCNT2_TEXT_X = DEVMENU_PAD2_RAW_DATA_TEXT_X,
+        DEVMENU_ROOTCNT2_TEXT_Y = DEVMENU_PAD2_RAW_DATA_TEXT_Y + DEVMENU_TEXT_GAP,
     };
 
     if(devmenu_flag == true)
@@ -1243,10 +1257,16 @@ void SystemDevMenu(void)
                         "Pad2 raw data = 0x%04X",
                         PadTwoGetRawData()   );
 
+        /*FontPrintText(  &SmallFont,
+                        DEVMENU_ROOTCNT2_TEXT_X,
+                        DEVMENU_ROOTCNT2_TEXT_Y,
+                        "Timer2 = 0x%04X",
+                        GetRCnt(2) );*/
+
         FontPrintText(  &SmallFont,
-                        DEVMENU_ROOTCNT0_TEXT_X,
-                        DEVMENU_ROOTCNT0_TEXT_Y,
-                        "Timer0 = 0x%04X",
-                        (uint16_t)((*(uint32_t*)0x1F801100) & 0x00FF) );
+                        DEVMENU_ROOTCNT2_TEXT_X,
+                        DEVMENU_ROOTCNT2_TEXT_Y,
+                        "Timer2 = 0x%04X, timer2 = 0x%04X",
+                        u16_0_01seconds_cnt, GetRCnt(2) );
     }
 }
