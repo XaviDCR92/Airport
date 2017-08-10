@@ -86,7 +86,7 @@ void GfxDrawButton(short x, short y, unsigned short btn);
 // sprite structure pointed to by "spr".
 void GfxSaveDisplayData(GsSprite *spr);
 
-TYPE_CARTESIAN_POS GfxIsometricToCartesian(TYPE_ISOMETRIC_POS * ptrIsoPos);
+TYPE_CARTESIAN_POS GfxIsometricToCartesian(TYPE_ISOMETRIC_POS* ptrIsoPos);
 // Function overload for fixed-point 16.16 data type.
 
 TYPE_CARTESIAN_POS GfxIsometricFix16ToCartesian(TYPE_ISOMETRIC_FIX16_POS * ptrIso16Pos);

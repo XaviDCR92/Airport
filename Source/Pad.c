@@ -4,6 +4,7 @@
 
 #include "Pad.h"
 #include "System.h"
+#include "Timer.h"
 
 /* *************************************
  * 	Defines
@@ -456,8 +457,8 @@ void PadClearData(void)
 
 void PadInit(void)
 {
-	pad1_cheat_timer = SystemCreateTimer(PAD_CHEAT_TIMEOUT,true /* Repeat flag */,&PadOneCleanCheatArray);
-	pad2_cheat_timer = SystemCreateTimer(PAD_CHEAT_TIMEOUT,true /* Repeat flag */,&PadTwoCleanCheatArray);
+	pad1_cheat_timer = TimerCreate(PAD_CHEAT_TIMEOUT,true /* Repeat flag */,&PadOneCleanCheatArray);
+	pad2_cheat_timer = TimerCreate(PAD_CHEAT_TIMEOUT,true /* Repeat flag */,&PadTwoCleanCheatArray);
 	
 	memset(cheatsArray,0, sizeof(cheatsArray));
 }
@@ -524,7 +525,7 @@ void PadCheatHandler(uint8_t n_pad)
 	{
 		if(pressed_callback(available_keys[i]) == true)
 		{
-			SystemTimerRestart(timer);
+			TimerRestart(timer);
 			key = available_keys[i];
 			keys_released++;
 		}

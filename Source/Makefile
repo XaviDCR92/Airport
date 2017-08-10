@@ -35,11 +35,11 @@ GNU_SIZE = mipsel-unknown-elf-size
 OBJECTS = $(addprefix $(OBJ_DIR)/,main.o System.o Menu.o Gfx.o Pad.o MainMenuBtnAni.o 	\
 			LoadMenu.o GameGui.o Sfx.o Camera.o EndAnimation.o			\
 			PSXSDKIntro.o PltParser.o Game.o Font.o MemCard.o			\
-			Aircraft.o Serial.o)
+			Aircraft.o Serial.o Timer.o)
 
 DEPS = $(OBJECTS:.o=.d)
 
-build: levels $(PROJECT).bin
+build: levels $(PROJECT).bin	
 
 rebuild: clean build
 

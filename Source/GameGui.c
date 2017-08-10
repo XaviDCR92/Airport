@@ -7,6 +7,7 @@
 #include "Gfx.h"
 #include "Game.h"
 #include "LoadMenu.h"
+#include "Timer.h"
 
 /* *************************************
  * 	Defines
@@ -288,7 +289,7 @@ void GameGuiInit(void)
 
 	PageUpDownSpr.w = AIRCRAFT_DATA_FLIGHT_PAGEUPDN_SIZE;
 
-	ShowAircraftPassengersTimer = SystemCreateTimer(20, true, GameGuiClearPassengersLeft);
+	ShowAircraftPassengersTimer = TimerCreate(20, true, GameGuiClearPassengersLeft);
 
 	slowScore = 0;
 
@@ -617,11 +618,11 @@ void GameGuiBubbleShow(void)
 	if(GameGuiBubbleTimer == NULL)
 	{
 		Serial_printf("Started GameGuiBubbleTimer...\n");
-		GameGuiBubbleTimer = SystemCreateTimer(50, false, &GameGuiBubbleStop);
+		GameGuiBubbleTimer = TimerCreate(50, false, &GameGuiBubbleStop);
 	}
 	else
 	{
-		SystemTimerRestart(GameGuiBubbleTimer);
+		TimerRestart(GameGuiBubbleTimer);
 	}
 
 	GameGuiBubbleShowFlag = true;
@@ -641,11 +642,11 @@ void GameGuiBubble(TYPE_FLIGHT_DATA* ptrFlightData)
 			if(GameGuiBubbleVibrationTimer == NULL)
 			{
 				Serial_printf("Started GameGuiBubbleVibrationTimer...\n");
-				GameGuiBubbleVibrationTimer = SystemCreateTimer(20, false, &GameGuiBubbleStopVibration);
+				GameGuiBubbleVibrationTimer = TimerCreate(20, false, &GameGuiBubbleStopVibration);
 			}
 			else
 			{
-				SystemTimerRestart(GameGuiBubbleVibrationTimer);
+				TimerRestart(GameGuiBubbleVibrationTimer);
 			}
 		}
 		

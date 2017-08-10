@@ -32,7 +32,6 @@ extern TYPE_PLAYER PlayerData[];
  * *************************************/
 
 void 		Game(bool two_players);
-char* 		GetGameLevelTitle(void);
 void 		GameSetTime(uint8_t hour, uint8_t minutes);
 bool		GameTwoPlayersActive(void);
 uint8_t 	GameGetLevelColumns(void);
@@ -41,7 +40,7 @@ fix16_t 	GameGetYFromTile(uint16_t tile);
 short		GameGetXFromTile_short(uint16_t tile);
 short		GameGetYFromTile_short(uint16_t tile);
 FL_STATE 	GameTargetsReached(uint16_t firstTarget, uint8_t index);
-uint16_t	GameGetTileFromIsoPosition(TYPE_ISOMETRIC_POS * IsoPos);
+uint16_t	GameGetTileFromIsoPosition(TYPE_ISOMETRIC_POS* IsoPos);
 FL_STATE	GameGetFlightDataStateFromIdx(uint8_t FlightDataIdx);
 uint32_t	GameGetScore(void);
 bool		GameInsideLevelFromIsoPos(TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos);

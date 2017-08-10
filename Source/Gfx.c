@@ -593,7 +593,7 @@ bool GfxTPageOffsetFromVRAMPosition(GsSprite * spr, short x, short y)
 	return false;
 }
 
-TYPE_CARTESIAN_POS GfxIsometricToCartesian(TYPE_ISOMETRIC_POS * ptrIsoPos)
+TYPE_CARTESIAN_POS GfxIsometricToCartesian(TYPE_ISOMETRIC_POS* ptrIsoPos)
 {
 	TYPE_CARTESIAN_POS retCartPos;
 	

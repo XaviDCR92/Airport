@@ -8,13 +8,13 @@
 #include "Gfx.h"
 #include "MemCard.h"
 #include "EndAnimation.h"
+#include "Timer.h"
 
 /* *************************************
  * 	Defines
  * *************************************/
 
 #define FILE_BUFFER_SIZE 0x20014
-#define SYSTEM_MAX_TIMERS 16
 
 #define END_STACK_PATTERN (uint32_t) 0x18022015
 #define BEGIN_STACK_ADDRESS (uint32_t*) 0x801FFF00
@@ -49,8 +49,6 @@ static bool five_hundred_ms_timer;
 static bool emergency_mode;
 //Critical section is entered (i.e.: when accessing fopen() or other BIOS functions
 static volatile bool system_busy;
-//Timer array.
-static TYPE_TIMER timer_array[SYSTEM_MAX_TIMERS];
 // When true, it draws a rectangle on top of all primitives with
 // information for development purposes.
 static bool devmenu_flag;
@@ -96,7 +94,7 @@ void SystemInit(void)
 	//SPU init
 	SsInit();
 	//Reset all user-handled timers
-	SystemResetTimers();
+	TimerReset();
 	//Pads init
 	PadInit();
 	//Set Drawing Environment
@@ -665,156 +663,6 @@ bool SystemContains_u16(uint16_t value, uint16_t* buffer, size_t sz)
 	return false;
 }
 
-/* ********************************************************************************************
- * 
- * @name	TYPE_TIMER* SystemCreateTimer(uint32_t t, bool rf, void (*timer_callback)(void) )
- * 
- * @author: Xavier Del Campo
- *
- * @brief:	fills a TYPE_TIMER structure with input parameters
- *
- * @param:	uint32_t t:
- * 				Timeout value (1 unit = 10 ms)
- * 			bool rf:
- * 				Repeat flag
- * 			void (*timer_callback)(void)
- * 				Function to be called on timeout	
- * 
- * @return:	pointer to TYPE_TIMER structure if filled correctly, NULL pointer otherwise.
- * 
- * ********************************************************************************************/
-
-TYPE_TIMER* SystemCreateTimer(uint32_t t, bool rf, void (*timer_callback)(void) )
-{
-	bool success = false;
-	uint8_t i;
-	
-	if(t == 0)
-	{
-		Serial_printf("Cannot create timer with time == 0!\n");
-		return NULL;
-	}
-	
-	for(i = 0; i < SYSTEM_MAX_TIMERS; i++)
-	{
-		if(timer_array[i].busy == false)
-		{
-			timer_array[i].Timeout_Callback = timer_callback;
-			timer_array[i].time = t;
-			timer_array[i].orig_time = t;
-			timer_array[i].repeat_flag = rf;
-			timer_array[i].busy = true;
-			success = true;
-			break;
-		}
-	}
-	
-	if(success == false)
-	{
-		Serial_printf("Could not find any free timer!\n");
-		return NULL;
-	}
-	
-	return &timer_array[i];
-}
-
-/* *******************************************
- * 
- * @name	void SystemResetTimers(void)
- * 
- * @author: Xavier Del Campo
- *
- * @brief:	reportedly, removes all timers.
- * 
- * *******************************************/
-
-void SystemResetTimers(void)
-{
-	uint8_t i;
-	
-	for(i = 0; i < SYSTEM_MAX_TIMERS; i++)
-	{
-		SystemTimerRemove(&timer_array[i]);
-	}
-}
-
-/* *****************************************************
- * 
- * @name	void SystemUserTimersHandler(void)
- * 
- * @author: Xavier Del Campo
- *
- * @brief:	reportedly, handles all available timers.
- *
- * @remarks: calls callback on timeout.
- * 
- * *****************************************************/
-
-void SystemUserTimersHandler(void)
-{
-	uint8_t i;
-	
-	for(i = 0; i < SYSTEM_MAX_TIMERS; i++)
-	{
-		if(timer_array[i].busy == true)
-		{
-			if(System100msTick() == true)
-			{
-				timer_array[i].time--;
-				
-				if(timer_array[i].time == 0)
-				{
-					timer_array[i].Timeout_Callback();
-					
-					if(timer_array[i].repeat_flag == true)
-					{
-						timer_array[i].time = timer_array[i].orig_time;
-					}
-				}
-			}
-		}
-	}
-}
-
-/* *********************************************************************
- * 
- * @name	void SystemUserTimersHandler(void)
- * 
- * @author: Xavier Del Campo
- *
- * @brief:	sets time left for TYPE_TIMER instance to initial value.
- *
- * @remarks: specially used when TYPE_TIMER.rf is enabled.
- * 
- * *********************************************************************/
-
-void SystemTimerRestart(TYPE_TIMER* timer)
-{
-	timer->time = timer->orig_time;
-}
-
-/* *********************************************************************
- * 
- * @name	void SystemTimerRemove(TYPE_TIMER* timer)
- * 
- * @author: Xavier Del Campo
- *
- * @brief:	Resets timer parameters to default values so timer instance
- * 			can be recycled.	
- *
- * @remarks:
- * 
- * *********************************************************************/
-
-void SystemTimerRemove(TYPE_TIMER* timer)
-{
-	timer->time = 0;
-	timer->orig_time = 0;
-	timer->Timeout_Callback = NULL;
-	timer->busy = false;
-	timer->repeat_flag = false;
-}
-
 /* ****************************************************************************************
  * 
  * @name	bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz)
@@ -1028,7 +876,7 @@ void SystemCyclicHandler(void)
 	
 	SystemRunTimers();
 	
-	SystemUserTimersHandler();
+	TimerHandler();
 	
 	SystemDisableScreenRefresh();
 	
