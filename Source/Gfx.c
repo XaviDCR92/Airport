@@ -363,9 +363,10 @@ bool GfxSpriteFromFile(char* fname, GsSprite * spr)
 	
 	gfx_busy = true;
 		
-	GsImageFromTim(&gsi,SystemGetBufferAddress() );
+	GsImageFromTim(&gsi, SystemGetBufferAddress() );
 	
-	GsSpriteFromImage(spr,&gsi,UPLOAD_IMAGE_FLAG);
+	GsSpriteFromImage(spr, &gsi, UPLOAD_IMAGE_FLAG);
+
 	gfx_busy = false;
 
     DEBUG_PRINT_VAR(spr->tpage);

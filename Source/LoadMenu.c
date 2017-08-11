@@ -456,12 +456,14 @@ void LoadMenuLoadFileList(	char* fileList[], 	void* dest[],
 	
 	for(fileLoadedCount = 0; fileLoadedCount < szFileList ; fileLoadedCount++)
 	{
-		if(fileList[fileLoadedCount] == NULL)
+        DEBUG_PRINT_VAR(fileLoadedCount);
+
+        strCurrentFile = fileList[fileLoadedCount];
+        
+		if(strCurrentFile == NULL)
 		{
 			continue;
 		}
-		
-		strCurrentFile = fileList[fileLoadedCount];
 		
 		x_increment = (short)(LOADING_BAR_WIDTH / szFileList);
 		
@@ -474,21 +476,21 @@ void LoadMenuLoadFileList(	char* fileList[], 	void* dest[],
 		//Serial_printf("Files %d / %d loaded. New plane X = %d.\n",fileLoadedCount,szFileList,LoadMenuPlaneSpr.x);
 		
 		// Backup original file path
-		strncpy(aux_file_name,fileList[fileLoadedCount],100);
+		strncpy(aux_file_name, strCurrentFile, 100);
 		
 		//We want to get file extension, so split into tokens
-		strtok(fileList[fileLoadedCount],".;");
-		extension = strtok(NULL,".;");
+		strtok(strCurrentFile, ".;");
+		extension = strtok(NULL, ".;");
 		
-		Serial_printf("File extension: .%s\n",extension);
+		Serial_printf("File extension: .%s\n", extension);
 		//Restore original file path in order to load file
-		strncpy(fileList[fileLoadedCount],aux_file_name,100);
+		strncpy(strCurrentFile, aux_file_name, 100);
 		
 		if(strncmp(extension,"TIM",3) == 0)
 		{
-			if(GfxSpriteFromFile(fileList[fileLoadedCount], dest[fileLoadedCount]) == false)
+			if(GfxSpriteFromFile(strCurrentFile, dest[fileLoadedCount]) == false)
 			{
-				Serial_printf("Could not load image file \"%s\"!\n",fileList[fileLoadedCount]);
+				Serial_printf("Could not load image file \"%s\"!\n", strCurrentFile);
 			}
 		}
 		else if(strncmp(extension,"CLT",3) == 0)
@@ -498,30 +500,30 @@ void LoadMenuLoadFileList(	char* fileList[], 	void* dest[],
 				Serial_printf("WARNING: File %s linked to non-NULL destination pointer!\n", dest[fileLoadedCount]);
 			}
 			
-			if(GfxCLUTFromFile(fileList[fileLoadedCount]) == false)
+			if(GfxCLUTFromFile(strCurrentFile) == false)
 			{
-				Serial_printf("Could not load CLUT file \"%s\"!\n",fileList[fileLoadedCount]);
+				Serial_printf("Could not load CLUT file \"%s\"!\n", strCurrentFile);
 			}
 		}
 		else if(strncmp(extension,"VAG",3) == 0)
 		{
-			if(SfxUploadSound(fileList[fileLoadedCount], dest[fileLoadedCount]) == false)
+			if(SfxUploadSound(strCurrentFile, dest[fileLoadedCount]) == false)
 			{
-				Serial_printf("Could not load sound file \"%s\"!\n",fileList[fileLoadedCount]);
+				Serial_printf("Could not load sound file \"%s\"!\n", strCurrentFile);
 			}
 		}
 		else if(strncmp(extension,"FNT",3) == 0)
 		{
-			if(FontLoadImage(fileList[fileLoadedCount], dest[fileLoadedCount]) == false)
+			if(FontLoadImage(strCurrentFile, dest[fileLoadedCount]) == false)
 			{
-				Serial_printf("Could not load font file \"%s\"!\n",fileList[fileLoadedCount]);
+				Serial_printf("Could not load font file \"%s\"!\n", strCurrentFile);
 			}
 		}
 		else if(strncmp(extension,"PLT",3) == 0)
 		{
-			if(PltParserLoadFile(fileList[fileLoadedCount], dest[fileLoadedCount]) == false)
+			if(PltParserLoadFile(strCurrentFile, dest[fileLoadedCount]) == false)
 			{
-				Serial_printf("Could not load pilots file \"%s\"!\n",fileList[fileLoadedCount]);
+				Serial_printf("Could not load pilots file \"%s\"!\n", strCurrentFile);
 			}
 		}
 		else

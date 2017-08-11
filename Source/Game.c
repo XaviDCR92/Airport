@@ -151,7 +151,6 @@ static void GamePlayerAddWaypoint(TYPE_PLAYER* ptrPlayer);
 static void GamePlayerAddWaypoint_Ex(TYPE_PLAYER* ptrPlayer, uint16_t tile);
 static void GameGraphics(void);
 static void GameRenderLevel(TYPE_PLAYER* ptrPlayer);
-//static void GameLoadPilots(char* strPath);
 static void GameClock(void);
 static void GameClockFlights(uint8_t i);
 static void GameAircraftState(uint8_t i);

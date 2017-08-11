@@ -19,7 +19,7 @@
 #define END_STACK_PATTERN (uint32_t) 0x18022015
 #define BEGIN_STACK_ADDRESS (uint32_t*) 0x801FFF00
 #define STACK_SIZE 0x1000
-#define I_MASK (*(unsigned int*)0x1F801074)
+#define I_MASK (*(volatile unsigned int*)0x1F801074)
 
 /* *************************************
  * 	Local Prototypes
@@ -558,6 +558,11 @@ void SystemWaitCycles(uint32_t cycles)
 
 uint32_t SystemRand(uint32_t min, uint32_t max)
 {
+    if(rand_seed == false)
+    {
+        Serial_printf("Warning: calling rand() before srand()\n");
+    }
+    
 	return rand() % (max - min + 1) + min;
 }
 
