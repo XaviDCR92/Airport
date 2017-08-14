@@ -39,6 +39,7 @@ enum
 {
 	MAIN_MENU_PLAY_OPTIONS_LEVEL_BUTTONS = 2,
 	MAIN_MENU_ONE_TWO_PLAYERS_LEVEL_BUTTONS = 2,
+	MAIN_MENU_ONE_TWO_PLAYERS_LEVEL_BUTTONS_PAD_TWO_DISCONNECTED = 1,
 	MAIN_MENU_OPTIONS_LEVEL_BUTTONS = 1
 };
 
@@ -398,19 +399,33 @@ void MainMenuButtonHandler(void)
 		break;
 		
 		case ONE_TWO_PLAYERS_LEVEL:
-			max_buttons = MAIN_MENU_ONE_TWO_PLAYERS_LEVEL_BUTTONS;
+
+            if( (btn_selected == TWO_PLAYER_BUTTON_INDEX)
+                            &&
+                (PadTwoConnected() == false)                )
+            {
+                max_buttons = MAIN_MENU_ONE_TWO_PLAYERS_LEVEL_BUTTONS_PAD_TWO_DISCONNECTED;
+            }
+            else
+            {
+                max_buttons = MAIN_MENU_ONE_TWO_PLAYERS_LEVEL_BUTTONS;
+            }
+
 			if(PadOneKeySinglePress(PAD_TRIANGLE) == true)
 			{
 				menuLevel = PLAY_OPTIONS_LEVEL;
 				MainMenuMinimumBtn = PLAY_BUTTON_INDEX;
 				btn_selected = PLAY_BUTTON_INDEX;
 			}
+
 		break;
 		
 		default:
 			max_buttons = 0;
 		break;
 	}
+
+    //DEBUG_PRINT_VAR(btn_selected);
 	
 	MainMenuBtn[previous_btn_selected].was_selected = MainMenuBtn[previous_btn_selected].selected;
 	MainMenuBtn[btn_selected].was_selected = MainMenuBtn[btn_selected].selected;
@@ -428,7 +443,7 @@ void MainMenuButtonHandler(void)
 	{
 		MainMenuBtn[btn_selected].selected = false;
 		previous_btn_selected = btn_selected;
-		btn_selected++;
+		btn_selected++;            
 		SfxPlaySound(&BellSnd);
 	}
 	
@@ -447,10 +462,11 @@ void MainMenuButtonHandler(void)
 	{
 		if(menuLevel == ONE_TWO_PLAYERS_LEVEL)
 		{
-			MainMenuBtn[btn_selected].f();
-			// Once gameplay has finished, turn back to first level
-			MainMenuRestoreInitValues();
-			btn_selected = PLAY_BUTTON_INDEX;
+            // Start gameplay!
+            MainMenuBtn[btn_selected].f();
+            // Once gameplay has finished, turn back to first level
+            MainMenuRestoreInitValues();
+            btn_selected = PLAY_BUTTON_INDEX;
 		}
 		else
 		{
@@ -536,6 +552,15 @@ void MainMenuDrawButton(TYPE_MMBtn * btn)
 			MenuSpr.y = MAIN_MENU_TWO_PLAYER_BUTTON_Y - MainMenuBtnAni[btn->timer];
 			MenuSpr.u += btn->offset_u;
 			MenuSpr.v += btn->offset_v;
+
+            // Exception: turn option dimmer if second player pad isn't connected
+
+            if(PadTwoConnected() == false)
+            {
+                MenuSpr.r = NORMAL_LUMINANCE >> 1;
+                MenuSpr.g = NORMAL_LUMINANCE >> 1;
+                MenuSpr.b = NORMAL_LUMINANCE >> 1;
+            }
 					
 			GsSortSprite(&MenuSpr);
 		break;

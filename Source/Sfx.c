@@ -47,7 +47,10 @@ bool SfxUploadSound(char* file_path, SsVag * vag)
 		SsUploadVag(vag);
 		
 		vag->cur_voice = voiceIndex;
+        
 		voiceIndex++;
+
+        Serial_printf("SPU voices used = %d\n", voiceIndex);
 	}
 	else
 	{

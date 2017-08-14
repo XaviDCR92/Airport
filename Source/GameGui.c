@@ -335,11 +335,19 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlig
 			ptrPlayer->SelectedAircraft--;
 		}
 	}
-	
-	while(ptrPlayer->ActiveAircraft < (uint8_t)(GAME_GUI_AIRCRAFT_DATA_MAX_PAGE * ptrPlayer->FlightDataPage) )
-	{
-		ptrPlayer->FlightDataPage--;
-	}
+
+    if(ptrPlayer->ActiveAircraft != 0)
+    {
+        while(ptrPlayer->ActiveAircraft <= (uint8_t)(GAME_GUI_AIRCRAFT_DATA_MAX_PAGE * ptrPlayer->FlightDataPage) )
+        {
+            ptrPlayer->FlightDataPage--;
+        }
+    }
+
+    while(ptrPlayer->SelectedAircraft > (uint8_t)(GAME_GUI_AIRCRAFT_DATA_MAX_PAGE * (ptrPlayer->FlightDataPage + 1)) )
+    {
+        ptrPlayer->FlightDataPage++;
+    }
 	
 	if(ptrPlayer->ShowAircraftData == true)
 	{

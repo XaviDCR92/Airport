@@ -261,11 +261,29 @@ void ISR_LoadMenuVBlank(void)
 	uint8_t i;
 
     SystemIncreaseGlobalTimer();
+
+    if(SystemIsBusy() == true)
+    {
+        dprintf("SystemIsBusy...\n");
+        return;
+    }
+
+    if((GfxIsGPUBusy() == true))
+    {
+        dprintf("(GfxIsGPUBusy() == true)\n");
+        return;
+    }
+
+    if(SerialIsBusy() == true)
+    {
+        dprintf("Serialisbusy\n");
+        return;
+    }
 	
-	if( (SystemIsBusy() == true) || (GfxIsGPUBusy() == true) || (SerialIsBusy() == true) )
+	/*if( (SystemIsBusy() == true) || (GfxIsGPUBusy() == true) || (SerialIsBusy() == true) )
 	{
 		return;
-	}
+	}*/
 	
 	if(startup_flag == true)
 	{
@@ -456,8 +474,6 @@ void LoadMenuLoadFileList(	char* fileList[], 	void* dest[],
 	
 	for(fileLoadedCount = 0; fileLoadedCount < szFileList ; fileLoadedCount++)
 	{
-        DEBUG_PRINT_VAR(fileLoadedCount);
-
         strCurrentFile = fileList[fileLoadedCount];
         
 		if(strCurrentFile == NULL)

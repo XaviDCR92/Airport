@@ -25,7 +25,6 @@
  * *************************************/
 
 extern bool GameStartupFlag;
-extern TYPE_PLAYER PlayerData[];
 
 /* *************************************
  * 	Global prototypes

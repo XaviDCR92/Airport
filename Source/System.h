@@ -105,6 +105,12 @@ int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz);
 // Function overload for uint8_t data type.
 int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t sz);
 
+// Returns frames per second.
+volatile uint8_t SystemGetFPS(void);
+
+// Increase temp_fps in order to calculate frame rate.
+void SystemAcknowledgeFrame(void);
+
 void SystemCyclicHandler(void);
 
 void SystemClearBuffer(void);
@@ -122,6 +128,10 @@ void SystemReturnToLoader(void);
 void SystemDevMenuToggle(void);
 
 void SystemDevMenu(void);
+
+void SystemCalculateSine(void);
+
+unsigned char SystemGetSineValue(void);
 
 /* **************************************
  * 	Global Variables					*	

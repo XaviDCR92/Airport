@@ -41,6 +41,9 @@ static volatile uint64_t global_timer;
 static bool rand_seed;
 //Screen refresh flag (called by interrupt)
 static volatile bool refresh_needed;
+// Frames per second measurement
+static volatile uint8_t fps;
+static volatile uint8_t temp_fps;
 //Timers
 static bool one_second_timer;
 static bool hundred_ms_timer;
@@ -52,6 +55,8 @@ static volatile bool system_busy;
 // When true, it draws a rectangle on top of all primitives with
 // information for development purposes.
 static bool devmenu_flag;
+// Used for sine-like effect.
+static unsigned char sine_counter;
 
 /* *******************************************************************
  * 
@@ -111,6 +116,8 @@ void SystemInit(void)
 	system_busy = false;
     //Development menu flag
     devmenu_flag = false;
+    //Emergency mode flag
+    emergency_mode = false;
 	
 	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
 	
@@ -218,7 +225,97 @@ bool SystemRefreshNeeded(void)
 
 void ISR_SystemDefaultVBlank(void)
 {
+    if(System1SecondTick() == true)
+    {
+        fps = temp_fps;
+        temp_fps = 0;
+    }
+    
 	refresh_needed = true;
+}
+
+/* *******************************************************************
+ * 
+ * @name: void SystemAcknowledgeFrame(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:
+ * 
+ * @remarks:
+ * 	Called by Game module in order to calculate frames per second.
+ * 
+ * *******************************************************************/
+
+void SystemAcknowledgeFrame(void)
+{
+    temp_fps++;
+}
+
+/* *******************************************************************
+ * 
+ * @name: void SystemAcknowledgeFrame(void)
+ * 
+ * @author: Xavier Del Campo
+ * 
+ * @brief:
+ *  Creates a sine-line (more exactly, a parabola-like) effect and
+ *  stores its value into a variable.
+ * 
+ * @remarks:
+ * 	To be called only once, preferibly on SystemCyclic().
+ * 
+ * *******************************************************************/
+
+void SystemCalculateSine(void)
+{
+    enum
+    {
+        SINE_EFFECT_STEP = 24,
+        SINE_EFFECT_MAX = 240
+    };
+
+	static bool sine_decrease = false;    
+
+    if(sine_decrease == false)
+    {
+        if(sine_counter < SINE_EFFECT_MAX)
+        {
+            sine_counter += SINE_EFFECT_STEP;
+        }
+        else
+        {
+            sine_decrease = true;
+        }
+    }
+    else
+    {
+        if(sine_counter > SINE_EFFECT_STEP)
+        {
+            sine_counter -= SINE_EFFECT_STEP;
+        }
+        else
+        {
+            sine_decrease = false;
+        }
+    }
+}
+
+/* *******************************************************************
+ * 
+ * @name: unsigned char SystemGetSineValue(void)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @return:
+ *  Returns a value which oscillates like a sine (more exactly, like
+ *  a parabola) function to be used wherever you want.
+ * 
+ * *******************************************************************/
+
+unsigned char SystemGetSineValue(void)
+{
+    return sine_counter;
 }
 
 /* *******************************************************************
@@ -864,6 +961,21 @@ int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t 
 
 /* ****************************************************************************************
  * 
+ * @name	volatile uint8_t SystemGetFPS(void)
+ * 
+ * @author: Xavier Del Campo
+ *          
+ * @return: Frames per second
+ * 
+ * ****************************************************************************************/
+
+volatile uint8_t SystemGetFPS(void)
+{
+    return fps;
+}
+
+/* ****************************************************************************************
+ * 
  * @name	void SystemCyclicHandler(void)
  * 
  * @author: Xavier Del Campo
@@ -886,6 +998,8 @@ void SystemCyclicHandler(void)
 	SystemDisableScreenRefresh();
 	
 	MemCardHandler();
+
+    SystemCalculateSine();
 	
 	SystemCheckStack();
 }

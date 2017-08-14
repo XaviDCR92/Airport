@@ -17,8 +17,8 @@
 #define UPLOAD_IMAGE_FLAG 1
 #define MAX_LUMINANCE 0xFF
 #define ROTATE_BIT_SHIFT 12
-#define GPUSTAT (*(unsigned int*)0x1F801814)
-#define D2_CHCR (*(unsigned int*)0x1F8010A8)
+#define GPUSTAT (*(volatile unsigned int*)0x1F801814)
+#define D2_CHCR (*(volatile unsigned int*)0x1F8010A8)
 
 /* *************************************
  * 	Structs and enums
@@ -179,7 +179,17 @@ void GfxSetPrimitiveList(void)
 
 void GfxDrawScene_Fast(void)
 {
+    enum
+    {
+        FPS_INFO_X = 16,
+        FPS_INFO_Y = 16
+    };
+
     SystemDevMenu();
+
+    FontSetFlags(&SmallFont, FONT_NOFLAGS);
+
+    FontPrintText(&SmallFont, FPS_INFO_X, FPS_INFO_Y, "%d/%d", SystemGetFPS(), REFRESH_FREQUENCY);
 
 	if(System1SecondTick() == true)
 	{
@@ -302,7 +312,7 @@ void GfxSortSprite(GsSprite * spr)
 		spr->x = aux_x;
 	}
 	else
-	{
+	{        
 		GsSortSprite(spr);
 	}
 	

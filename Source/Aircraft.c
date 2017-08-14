@@ -355,9 +355,46 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx)
 
     CameraApplyCoordinatesToSprite(ptrPlayer, &AircraftSpr);
 
-    AircraftSpr.r = NORMAL_LUMINANCE;
-    AircraftSpr.g = NORMAL_LUMINANCE;
-    AircraftSpr.b = NORMAL_LUMINANCE;
+    if( (ptrPlayer->FlightDataSelectedAircraft == aircraftIdx)
+                        &&
+        (ptrPlayer->ShowAircraftData == true)                   )
+    {
+        static uint8_t aircraft_sine;
+        static bool aircraft_sine_decrease;
+        
+        if(aircraft_sine_decrease == false)
+		{
+			if(aircraft_sine < 240)
+			{
+				aircraft_sine += 24;
+			}
+			else
+			{
+				aircraft_sine_decrease = true;
+			}
+		}
+		else
+		{
+			if(aircraft_sine > 24)
+			{
+				aircraft_sine -= 24;
+			}
+			else
+			{
+				aircraft_sine_decrease = false;
+			}
+		}
+
+        AircraftSpr.r = NORMAL_LUMINANCE >> 2;
+        AircraftSpr.g = NORMAL_LUMINANCE >> 2;
+        AircraftSpr.b = aircraft_sine;
+    }
+    else
+    {
+        AircraftSpr.r = NORMAL_LUMINANCE;
+        AircraftSpr.g = NORMAL_LUMINANCE;
+        AircraftSpr.b = NORMAL_LUMINANCE;
+    }
 
     GfxSortSprite(&AircraftSpr);
 }

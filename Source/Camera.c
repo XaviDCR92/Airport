@@ -18,6 +18,13 @@
 #define CAMERA_INITIAL_X_OFFSET_2PLAYER (X_SCREEN_RESOLUTION >> 2)
 
 /* *************************************
+ * 	Local Variables
+ * *************************************/
+
+static int32_t Camera_Max_X_Offset;
+static int32_t Camera_Max_Y_Offset;
+
+/* *************************************
  * 	Local Prototypes
  * *************************************/
 
@@ -32,6 +39,9 @@ void CameraInit(TYPE_PLAYER* ptrPlayer)
 	ptrPlayer->Camera.X_Speed = 0;
 	ptrPlayer->Camera.Y_Speed = 0;
 	ptrPlayer->Camera.Speed_Timer = SPEED_CALCULATION_TIME;
+
+    Camera_Max_X_Offset = GameGetLevelColumns() << TILE_SIZE_BIT_SHIFT;
+    Camera_Max_Y_Offset = GameGetLevelColumns() * TILE_SIZE_H;
 }
 
 void CameraApplyCoordinatesToSprite(TYPE_PLAYER* ptrPlayer, GsSprite * spr)
@@ -149,6 +159,9 @@ void CameraHandler(TYPE_PLAYER* ptrPlayer)
 
 	ptrPlayer->Camera.X_Offset += ptrPlayer->Camera.X_Speed;
 	ptrPlayer->Camera.Y_Offset += ptrPlayer->Camera.Y_Speed;
+
+    //DEBUG_PRINT_VAR(ptrPlayer->Camera.X_Offset);
+    //DEBUG_PRINT_VAR(ptrPlayer->Camera.Y_Offset);
 }
 
 bool CameraSpecialConditions(TYPE_PLAYER* ptrPlayer)

@@ -203,7 +203,6 @@ static uint16_t GameRwy[GAME_MAX_RUNWAYS];
 static TYPE_FLIGHT_DATA FlightData;
 static uint16_t GameUsedRwy[GAME_MAX_RUNWAYS];
 static uint16_t GameSelectedTile;
-static bool firstLevelRender; // Used to avoid reentrance issues on GameRenderLevel()
 static TYPE_TIMER* GameSpawnMinTime;
 static bool spawnMinTimeFlag;
 static bool GameAircraftCreatedFlag;
@@ -213,7 +212,7 @@ static TYPE_BUILDING_DATA GameBuildingData[MAX_BUILDING_ID];
 static uint8_t GameAircraftTilemap[GAME_MAX_MAP_SIZE][GAME_MAX_AIRCRAFT_PER_TILE];
 
 // Instances for player-specific data
-TYPE_PLAYER PlayerData[MAX_PLAYERS];
+static TYPE_PLAYER PlayerData[MAX_PLAYERS];
 
 static char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\TILESET1.TIM;1"	,
                                 "cdrom:\\DATA\\SPRITES\\GAMEPLN.TIM;1"	,
@@ -655,6 +654,7 @@ void GameBuildingsInit(void)
 void GameEmergencyMode(void)
 {
     uint8_t i;
+    uint8_t disconnected_players = 0x00;
     bool (*PadXConnected[MAX_PLAYERS])(void) = {    [PLAYER_ONE] = &PadOneConnected,
                                                     [PLAYER_TWO] = &PadTwoConnected };
 
@@ -670,9 +670,18 @@ void GameEmergencyMode(void)
 		ERROR_RECT_G = 32,
 		ERROR_RECT_B = NORMAL_LUMINANCE
 	};
+
+    enum
+    {
+        PAD_DISCONNECTED_TEXT_X = 48,
+        PAD_DISCONNECTED_TEXT_Y = 48,
+        PAD_DISCONNECTED_TEXT_Y_OFFSET_BITSHIFT = 5
+    };
 	
-	while(SystemGetEmergencyMode() == true)
+	do
 	{
+        bool enabled = false;
+
         GsRectangle errorRct = {.x = ERROR_RECT_X,
                                 .w = ERROR_RECT_W,
                                 .y = ERROR_RECT_Y,
@@ -681,12 +690,27 @@ void GameEmergencyMode(void)
                                 .g = ERROR_RECT_G,
                                 .b = ERROR_RECT_B   };
 
-		// Pad one has been disconnected during gameplay
-		// Show an error screen until it is disconnected again.
-		
-		GsSortCls(0,0,0);
-		
-		GsSortRectangle(&errorRct);
+        if(SystemGetEmergencyMode() == true)
+        {
+            // One of the pads has been disconnected during gameplay
+            // Show an error screen until it is disconnected again.
+        
+            GsSortCls(0,0,0);
+            GsSortRectangle(&errorRct);
+            
+            for(i = 0; i < MAX_PLAYERS; i++)
+            {
+                if(disconnected_players & (1<<i) )
+                {
+                    FontPrintText(  &SmallFont,
+                                    PAD_DISCONNECTED_TEXT_X,
+                                    PAD_DISCONNECTED_TEXT_Y + (i << PAD_DISCONNECTED_TEXT_Y_OFFSET_BITSHIFT),
+                                    "Pad %s disconnected", i? "right" : "left"    );
+                }
+            }
+            
+            GfxDrawScene_Slow();
+        }
 
         for(i = 0; i < MAX_PLAYERS; i++)
         {
@@ -696,14 +720,19 @@ void GameEmergencyMode(void)
             {
                 if(PadXConnected[i]() == false)
                 {
-                    FontPrintText(&SmallFont, 48, 48 + (i << 5), "Pad %d disconnected", i);
-                    SystemSetEmergencyMode(true);
+                    enabled = true;
+                    disconnected_players |= 1<<i;
+                }
+                else
+                {
+                    disconnected_players &= ~(1<<i);
                 }
             }
         }
 
-		GfxDrawScene_Slow();
-	}
+        SystemSetEmergencyMode(enabled);
+
+	}while(SystemGetEmergencyMode() == true);
 }
 
 /* ***************************************************************************************
@@ -837,6 +866,13 @@ void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 		CameraMoveToIsoPos(ptrPlayer, IsoPos);
 	}
 
+    if(System1SecondTick() == true)
+    {
+        dprintf("ptrPlayer = 0x%08X\n", ptrPlayer);
+        DEBUG_PRINT_VAR(ptrPlayer->ActiveAircraft);
+        DEBUG_PRINT_VAR(ptrPlayer->FlightDataPage);
+    }
+
 	GameActiveAircraftList(ptrPlayer, ptrFlightData);
 	GameStateUnboarding(ptrPlayer, ptrFlightData);
 	GameStateLockTarget(ptrPlayer, ptrFlightData);
@@ -946,9 +982,11 @@ void GameGraphics(void)
 {
 	int i;
 	bool split_screen = false;
+
+    SystemAcknowledgeFrame();
 	
 	while( (SystemRefreshNeeded() == false) || (GfxIsGPUBusy() == true) );
-			
+
 	if(TwoPlayersActive == true)
 	{
 		split_screen = true;
@@ -960,14 +998,16 @@ void GameGraphics(void)
 		GfxIncreaseGlobalLuminance(1);
 	}
 
-	firstLevelRender = true;
+    GsSortCls(0,0,GfxGetGlobalLuminance() >> 1);
+
+    while(GsIsDrawing());
 	
 	for(i = 0; i < MAX_PLAYERS ; i++)
 	{
         TYPE_PLAYER* ptrPlayer = &PlayerData[i];
 
 		if(ptrPlayer->Active == true)
-		{	
+		{
 			if(split_screen == true)
 			{
 				GfxSetSplitScreen(i);
@@ -976,8 +1016,6 @@ void GameGraphics(void)
 			// Draw half split screen for each player
 			// only if 2-player mode is active. Else, render
 			// the whole screen as usual.
-			
-			GsSortCls(0,0,GfxGetGlobalLuminance() >> 1);
 
             // Ground tiles must be rendered first.
 
@@ -1415,9 +1453,7 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 	bool used_rwy = SystemContains_u16(ptrPlayer->RwyArray[0], GameUsedRwy, GAME_MAX_RUNWAYS);
 	uint8_t aux_id;
 	GsSprite * ptrTileset;
-	const uint8_t rwy_sine_step = 24;
-	static unsigned char rwy_sine = rwy_sine_step;
-	static bool rwy_sine_decrease = false;
+	unsigned char rwy_sine = SystemGetSineValue();
 	TYPE_ISOMETRIC_POS tileIsoPos;
 	TYPE_CARTESIAN_POS tileCartPos;
 
@@ -1436,36 +1472,6 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 		}
 		
 		Serial_printf("\n");*/
-	}
-
-	if(firstLevelRender == true)
-	{
-		// Avoid re-entrance.
-
-		firstLevelRender = false;
-
-		if(rwy_sine_decrease == false)
-		{
-			if(rwy_sine < 240)
-			{
-				rwy_sine += rwy_sine_step;
-			}
-			else
-			{
-				rwy_sine_decrease = true;
-			}
-		}
-		else
-		{
-			if(rwy_sine > rwy_sine_step)
-			{
-				rwy_sine -= rwy_sine_step;
-			}
-			else
-			{
-				rwy_sine_decrease = false;
-			}
-		}
 	}
 	
 	for(i = 0 ; i < GameLevelSize; i++)
@@ -3191,6 +3197,21 @@ void GameDrawMouse(TYPE_PLAYER* ptrPlayer)
 	}
 }
 
+/* ********************************************************************************
+ * 
+ * @name: FL_STATE GameGetFlightDataStateFromIdx(uint8_t FlightDataIdx)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ *  uint8_t FlightDataIdx:
+ *      Index from FlightData.
+ *
+ * @return:
+ *  Returns .State variable given offset from FlightData.
+ * 
+ * ********************************************************************************/
+
 FL_STATE GameGetFlightDataStateFromIdx(uint8_t FlightDataIdx)
 {
 	if(FlightDataIdx >= FlightData.nAircraft)
@@ -3201,13 +3222,43 @@ FL_STATE GameGetFlightDataStateFromIdx(uint8_t FlightDataIdx)
 	return FlightData.State[FlightDataIdx];
 }
 
+/* ********************************************************************************
+ * 
+ * @name: uint32_t GameGetScore(void)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @return:
+ *  Returns game score to other modules.
+ * 
+ * ********************************************************************************/
+
 uint32_t GameGetScore(void)
 {
 	return GameScore;
 }
 
+/* *******************************************************************************************
+ * 
+ * @name: void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ *  TYPE_PLAYER* ptrPlayer:
+ *      Pointer to a player structure
+ *
+ *  TYPE_FLIGHT_DATA* ptrFlightData:
+ *      In the end, pointer to FlightData data table, which contains
+ *      information about all available flights.
+ *
+ * @brief:
+ *  Handler for StateUnboarding.
+ * 
+ * *******************************************************************************************/
+
 void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
-{	
+{
 	if(ptrPlayer->Unboarding == true)
 	{
 		if(ptrPlayer->PadKeySinglePress_Callback(PAD_CIRCLE) == true)
@@ -3254,6 +3305,25 @@ void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 	}
 }
 
+/* *******************************************************************************************
+ * 
+ * @name: void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ *  TYPE_PLAYER* ptrPlayer:
+ *      Pointer to a player structure
+ *
+ * @brief:
+ *  Modifies ptrPlayer->UnboardingSequence creating a random sequence of numbers
+ *  using SystemRand().
+ *
+ * @todo:
+ *  Maximum number of sequence keys should be adjusted according to difficulty.
+ * 
+ * *******************************************************************************************/
+
 void GameGenerateUnboardingSequence(TYPE_PLAYER* ptrPlayer)
 {
 	uint8_t i;
@@ -3292,22 +3362,22 @@ void GameCreateTakeoffWaypoints(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 	switch(aircraftDir)
 	{
 		case AIRCRAFT_DIR_EAST:
-			Serial_printf("EAST\n");
+			//Serial_printf("EAST\n");
 			rwyStep = 1;
 		break;
 
 		case AIRCRAFT_DIR_WEST:
-			Serial_printf("WEST\n");
+			//Serial_printf("WEST\n");
 			rwyStep = -1;
 		break;
 
 		case AIRCRAFT_DIR_NORTH:
-			Serial_printf("NORTH\n");
+			//Serial_printf("NORTH\n");
 			rwyStep = -GameLevelColumns;
 		break;
 
 		case AIRCRAFT_DIR_SOUTH:
-			Serial_printf("SOUTH\n");
+			//Serial_printf("SOUTH\n");
 			rwyStep = GameLevelColumns;
 		break;
 
