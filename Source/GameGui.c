@@ -82,6 +82,14 @@ enum
 
 enum
 {
+    AIRCRAFT_STOP_X = 192,
+    AIRCRAFT_STOP_TEXT_X = AIRCRAFT_STOP_X + 16,
+    AIRCRAFT_STOP_Y = AIRCRAFT_LOCK_TARGET_Y,
+    AIRCRAFT_STOP_TEXT_Y = AIRCRAFT_STOP_Y + 4
+};
+
+enum
+{
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R0 = NORMAL_LUMINANCE,
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R1 = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R0,
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R2 = 0,
@@ -593,6 +601,16 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 			{
 				FontPrintText(&SmallFont, AIRCRAFT_LOCK_TARGET_TEXT_X, AIRCRAFT_LOCK_TARGET_TEXT_Y, "Lock target");
 			}
+
+            if(ptrFlightData->State[ptrPlayer->FlightDataSelectedAircraft] == STATE_STOPPED)
+            {
+                GfxDrawButton(AIRCRAFT_STOP_X, AIRCRAFT_STOP_Y, PAD_L1);
+                FontPrintText(&SmallFont, AIRCRAFT_STOP_TEXT_X, AIRCRAFT_STOP_TEXT_Y, "Resume taxiing");
+            }
+            else if(ptrFlightData->State[ptrPlayer->FlightDataSelectedAircraft] == STATE_TAXIING)
+            {
+                FontPrintText(&SmallFont, AIRCRAFT_STOP_TEXT_X, AIRCRAFT_STOP_TEXT_Y, "Stop immediately");
+            }
 		}
 		else
 		{
@@ -842,6 +860,13 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlight
 								AircraftDataDirection_X + AircraftDataState_X_Offset,
 								AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
 								"Holding"	);
+			break;
+
+            case STATE_STOPPED:
+				FontPrintText(	&SmallFont,
+								AircraftDataDirection_X + AircraftDataState_X_Offset,
+								AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
+								"Stopped"	);
 			break;
 			
 			default:

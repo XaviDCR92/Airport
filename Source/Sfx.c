@@ -30,11 +30,16 @@ static uint16_t SfxCddaVolumeReduction;
 
 void SfxPlaySound(SsVag * sound)
 {
-	SsPlayVag(sound, sound->cur_voice, MAX_VOLUME - SfxGlobalVolumeReduction, MAX_VOLUME - SfxGlobalVolumeReduction);
+    if(sound->data_size != 0)
+    {
+        SsPlayVag(sound, sound->cur_voice, MAX_VOLUME - SfxGlobalVolumeReduction, MAX_VOLUME - SfxGlobalVolumeReduction);
+    }
 }
 
 bool SfxUploadSound(char* file_path, SsVag * vag)
 {
+    static size_t SPUBytesUsed;
+
 	if(SystemLoadFile(file_path) == false)
 	{
 		return false;
@@ -51,6 +56,20 @@ bool SfxUploadSound(char* file_path, SsVag * vag)
 		voiceIndex++;
 
         Serial_printf("SPU voices used = %d\n", voiceIndex);
+
+        SPUBytesUsed += vag->data_size;
+
+        if(SPUBytesUsed != 0)
+        {
+            enum
+            {
+                SPU_MAX_ALLOWED_BYTES = 512 * 1024 // 512 KBytes
+            };
+
+            uint16_t percentage = SPUBytesUsed * 100 / SPU_MAX_ALLOWED_BYTES;
+
+            dprintf("SPU usage: %d%%\n", percentage);
+        }
 	}
 	else
 	{

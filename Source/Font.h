@@ -12,9 +12,6 @@
  * 	Defines
  * *************************************/
 
-#define FONT_DEFAULT_CHAR_SIZE 16
-#define FONT_DEFAULT_INIT_CHAR '!'
-
 /* **************************************
  * 	Structs and enums					*
  * *************************************/

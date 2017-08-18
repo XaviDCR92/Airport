@@ -269,6 +269,10 @@ void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft)
 {
 	switch(ptrAircraft->State)
 	{
+        case STATE_STOPPED:
+            ptrAircraft->Speed = 0;
+        break;
+
 		case STATE_FINAL:
 			ptrAircraft->Speed = AircraftSpeedsTable[AIRCRAFT_SPEED_FINAL];
 		break;

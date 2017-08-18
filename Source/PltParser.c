@@ -63,8 +63,6 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 	}
 
 	strPltBuffer = SystemGetBufferAddress();
-
-    dprintf("%s\n", strPltBuffer);
 	
 	PltParserResetBuffers(ptrFlightData);
 	

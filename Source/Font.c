@@ -12,6 +12,8 @@
  * *************************************/
 
 #define FONT_INTERNAL_TEXT_BUFFER_MAX_SIZE 200
+#define FONT_DEFAULT_CHAR_SIZE 16
+#define FONT_DEFAULT_INIT_CHAR '!'
 
 /* *************************************
  * 	Local Prototypes

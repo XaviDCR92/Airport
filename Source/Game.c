@@ -136,6 +136,14 @@ enum
     LAST_TILE_TILESET2 = LAST_TILE_TILESET1
 };
 
+enum
+{
+    SOUND_M1_INDEX = 0,
+    SOUND_W1_INDEX,
+
+    MAX_RADIO_CHATTER_SOUNDS
+}RADIO_CHATTER_VOICE_NUMBERS;
+
 /* *************************************
  * 	Local Prototypes
  * *************************************/
@@ -211,6 +219,16 @@ static uint8_t GameAircraftCollisionIdx;
 static TYPE_BUILDING_DATA GameBuildingData[MAX_BUILDING_ID];
 static uint8_t GameAircraftTilemap[GAME_MAX_MAP_SIZE][GAME_MAX_AIRCRAFT_PER_TILE];
 
+// Radio chatter
+static SsVag ApproachSnds[MAX_RADIO_CHATTER_SOUNDS];
+static SsVag TowerFinalSnds[MAX_RADIO_CHATTER_SOUNDS];
+
+// Takeoff sounds
+static SsVag TakeoffSnd;
+
+// Beep sounds (taxiway/parking accept)
+static SsVag BeepSnd;
+
 // Instances for player-specific data
 static TYPE_PLAYER PlayerData[MAX_PLAYERS];
 
@@ -218,18 +236,28 @@ static char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\TILESET1.TIM;1"	,
                                 "cdrom:\\DATA\\SPRITES\\GAMEPLN.TIM;1"	,
                                 "cdrom:\\DATA\\SPRITES\\PLNBLUE.CLT;1"	,
                                 "cdrom:\\DATA\\SPRITES\\MOUSE.TIM;1"	,
-                                "cdrom:\\DATA\\SPRITES\\BLDNGS1.TIM;1"	};
+                                "cdrom:\\DATA\\SPRITES\\BLDNGS1.TIM;1"	,
+                                "cdrom:\\DATA\\SOUNDS\\RCPW1A1.VAG;1"   ,
+                                "cdrom:\\DATA\\SOUNDS\\RCPM1A1.VAG;1"   ,
+                                "cdrom:\\DATA\\SOUNDS\\RCTM1F1.VAG;1"   ,
+                                "cdrom:\\DATA\\SOUNDS\\TAKEOFF1.VAG;1"  ,
+                                "cdrom:\\DATA\\SOUNDS\\BEEP.VAG;1"      };
 									
-static void* GameFileDest[] = { (GsSprite*)&GameTilesetSpr		,
-                                (GsSprite*)&GamePlaneSpr		,
-                                NULL,
-                                (GsSprite*)&GameMouseSpr		,
-                                (GsSprite*)&GameBuildingSpr		};
+static void* GameFileDest[] = { (GsSprite*)&GameTilesetSpr		        ,
+                                (GsSprite*)&GamePlaneSpr		        ,
+                                NULL                                    ,   // CLT files must use NULL pointers
+                                (GsSprite*)&GameMouseSpr		        ,
+                                (GsSprite*)&GameBuildingSpr		        ,
+                                (SsVag*)&ApproachSnds[SOUND_M1_INDEX]   ,
+                                (SsVag*)&ApproachSnds[SOUND_W1_INDEX]   ,
+                                (SsVag*)&TowerFinalSnds[SOUND_M1_INDEX] ,
+                                (SsVag*)&TakeoffSnd                     ,
+                                (SsVag*)&BeepSnd                        };
 
 static char* GamePlt[] = { "cdrom:\\DATA\\LEVELS\\LEVEL1.PLT;1"	};
-static void* GamePltDest[] = {(TYPE_FLIGHT_DATA*)&FlightData	,};
+static void* GamePltDest[] = {(TYPE_FLIGHT_DATA*)&FlightData	};
 									
-static char* GameLevelList[] = {	"cdrom:\\DATA\\LEVELS\\LEVEL1.LVL;1"};
+static char* GameLevelList[] = {"cdrom:\\DATA\\LEVELS\\LEVEL1.LVL;1"};
 static uint16_t GameLevelBuffer[GAME_MAX_MAP_SIZE];
 									
 static uint8_t GameLevelColumns;
@@ -866,13 +894,6 @@ void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 		CameraMoveToIsoPos(ptrPlayer, IsoPos);
 	}
 
-    if(System1SecondTick() == true)
-    {
-        dprintf("ptrPlayer = 0x%08X\n", ptrPlayer);
-        DEBUG_PRINT_VAR(ptrPlayer->ActiveAircraft);
-        DEBUG_PRINT_VAR(ptrPlayer->FlightDataPage);
-    }
-
 	GameActiveAircraftList(ptrPlayer, ptrFlightData);
 	GameStateUnboarding(ptrPlayer, ptrFlightData);
 	GameStateLockTarget(ptrPlayer, ptrFlightData);
@@ -1181,9 +1202,6 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* ptrPlayer)
             GameBuildingSpr.w = GameBuildingData[CurrentBuilding].w;
             GameBuildingSpr.h = GameBuildingData[CurrentBuilding].h;
 
-            //DEBUG_PRINT_VAR(buildingIsoPos.x);
-            //DEBUG_PRINT_VAR(buildingIsoPos.y);
-
             CameraApplyCoordinatesToSprite(ptrPlayer, &GameBuildingSpr);
 
             for(k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
@@ -1408,6 +1426,8 @@ void GameAircraftState(uint8_t i)
                 Serial_printf("Flight %d set to STATE_APPROACH.\n", i);
                 FlightData.State[i] = STATE_APPROACH;
                 GameAircraftCreatedFlag = true;
+
+                SfxPlaySound(&ApproachSnds[SystemRand(SOUND_M1_INDEX, MAX_RADIO_CHATTER_SOUNDS - 1)]);
 
                 // Create notification request for incoming aircraft
                 GameGuiBubbleShow();
@@ -1908,6 +1928,8 @@ void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrF
 				}
 				
 				target_tile = GameLevelBuffer[ptrPlayer->Waypoints[ptrPlayer->LastWaypointIdx]];
+
+                SfxPlaySound(&BeepSnd);
 				
 				switch(target_tile)
 				{
@@ -2021,6 +2043,8 @@ void GameStateSelectTaxiwayParking(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptr
 				Serial_printf("target_tile = %d, TILE_PARKING = %d\n",
 						target_tile,
 						TILE_PARKING);
+
+                SfxPlaySound(&BeepSnd);
 				
 				if(	(target_tile == TILE_PARKING)
 								||
@@ -2262,6 +2286,7 @@ void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 					case STATE_READY_FOR_TAKEOFF:
 						ptrFlightData->State[AircraftIdx] = STATE_TAKEOFF;
 						GameCreateTakeoffWaypoints(ptrPlayer, ptrFlightData, AircraftIdx);
+                        SfxPlaySound(&TakeoffSnd);
 					break;
 
 					case STATE_HOLDING_RWY:
@@ -2298,6 +2323,19 @@ void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 			Serial_printf("aircraftState = %d\n", aircraftState);
 			Serial_printf("AircraftIdx = %d\n", AircraftIdx);
 		}
+        else if(ptrPlayer->PadKeySinglePress_Callback(PAD_L1) == true)
+        {
+            FL_STATE* AircraftState = &FlightData.State[ptrPlayer->FlightDataSelectedAircraft];
+
+            if(*AircraftState == STATE_TAXIING)
+            {
+                *AircraftState = STATE_STOPPED;
+            }
+            else if(*AircraftState == STATE_STOPPED)
+            {
+                *AircraftState = STATE_TAXIING;
+            }
+        }
 	}
 }
 
@@ -2456,15 +2494,6 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 	// Remember that ptrPlayer->SelectedAircraft contains an index to
 	// be used with ptrFlightData.
 	
-	/*typedef enum t_flstate
-{
-	STATE_IDLE = 0,
-	STATE_PARKED,
-	STATE_TAXIING,
-	STATE_APPROACH,
-	STATE_FINAL
-	}FL_STATE;*/
-	
 	Serial_printf("aircraftIndex = %d\n",aircraftIndex);
 	
 	if(ptrFlightData->State[aircraftIndex] == STATE_APPROACH)
@@ -2511,6 +2540,8 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 			Serial_printf("Exceeded maximum aircraft number!\n");
 			return;
 		}
+
+        SfxPlaySound(&TowerFinalSnds[SystemRand(SOUND_M1_INDEX, MAX_RADIO_CHATTER_SOUNDS - 1)]);
 	}
 	else if(ptrFlightData->State[aircraftIndex] == STATE_HOLDING_RWY)
 	{
@@ -3297,6 +3328,8 @@ void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 			}
 
 			Serial_printf("ptrPlayer->UnboardingSequenceIdx = %d\n", ptrPlayer->UnboardingSequenceIdx);
+
+            SfxPlaySound(&BeepSnd);
 		}
 		else if(ptrPlayer->PadLastKeySinglePressed_Callback() != 0)
 		{
@@ -3347,6 +3380,29 @@ void GameGenerateUnboardingSequence(TYPE_PLAYER* ptrPlayer)
 
 	Serial_printf("\n");
 }
+
+/* *********************************************************************************************************************
+ * 
+ * @name: void GameCreateTakeoffWaypoints(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData, uint8_t aircraftIdx)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ *  TYPE_PLAYER* ptrPlayer:
+ *      Pointer to a player structure
+ *
+ *  TYPE_FLIGHT_DATA* ptrFlightData:
+ *      In the end, pointer to FlightData data table, which contains
+ *      information about all available flights.
+ *
+ *  uint8_t aircraftIdx:
+ *      Index from FlightData.
+ *
+ * @brief:
+ *  Given input aircraft from FlightData, it automatically looks for selected runway and creates an array
+ *  of waypoints to be then executed by corresponding TYPE_AIRCRAFT_DATA instance.
+ * 
+ * *********************************************************************************************************************/
 
 void GameCreateTakeoffWaypoints(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData, uint8_t aircraftIdx)
 {
@@ -3414,6 +3470,25 @@ void GameCreateTakeoffWaypoints(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 
 	AircraftAddTargets(AircraftFromFlightDataIndex(aircraftIdx), targets);
 }
+
+/* *******************************************************************************************
+ * 
+ * @name: void GameGetRunwayEntryTile(uint8_t aircraftIdx, TYPE_RWY_ENTRY_DATA* ptrRwyEntry)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ * 
+ *  uint8_t aircraftIdx:
+ *      Index from FlightData. Used to determine target tile.
+ * 
+ *  TYPE_RWY_ENTRY_DATA* ptrRwyEntry:
+ *      Instance to be filled with runway data.
+ *
+ * @brief:
+ *  Fills a TYPE_RWY_ENTRY_DATA instance with information about runway.
+ * 
+ * *******************************************************************************************/
 
 void GameGetRunwayEntryTile(uint8_t aircraftIdx, TYPE_RWY_ENTRY_DATA* ptrRwyEntry)
 {
@@ -3484,6 +3559,22 @@ void GameGetRunwayEntryTile(uint8_t aircraftIdx, TYPE_RWY_ENTRY_DATA* ptrRwyEntr
 	}
 }
 
+/* *******************************************************************************************
+ * 
+ * @name: bool GameInsideLevelFromIsoPos(TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ * 
+ *  TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos:
+ *      (x, y, z) coordinate data in an isometric system.
+ *
+ * @return:
+ *  Returns true if a (x, y, z) coordinate is inside level coordinates. False otherwise.
+ * 
+ * *******************************************************************************************/
+
 bool GameInsideLevelFromIsoPos(TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos)
 {
 	short x = (short)fix16_to_int(ptrIsoPos->x);
@@ -3511,6 +3602,28 @@ bool GameInsideLevelFromIsoPos(TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos)
 
 	return false;
 }
+
+/* *******************************************************************************************
+ * 
+ * @name: void GameRemoveFlight(uint8_t idx, bool successful)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ * 
+ *  uint8_t idx:
+ *      Index from FlightData.
+ *
+ *  bool successful:
+ *      False if flight was lost on timeout, true otherwise.
+ *
+ * @brief:
+ *  Actions to be performed when a flight ends, both successfully or not (lost flight).
+ *
+ * @remarks:
+ *  GameScore is updated here depending on player actions.
+ * 
+ * *******************************************************************************************/
 
 void GameRemoveFlight(uint8_t idx, bool successful)
 {
@@ -3623,6 +3736,26 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 	}
 }
 
+/* *******************************************************************************************
+ * 
+ * @name: void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ * 
+ *  TYPE_PLAYER* ptrPlayer:
+ *      Pointer to a player structure
+ *
+ *  TYPE_FLIGHT_DATA* ptrFlightData:
+ *      In the end, pointer to FlightData data table, which contains
+ *      information about all available flights.
+ *
+ * @brief:
+ *  Rebuilds flight data arrray for a specific player.
+ *
+ * *******************************************************************************************/
+
 void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	uint8_t i;
@@ -3634,7 +3767,7 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightD
 	// Clear all pointers for aircraft data first.
 	// Then, rebuild aircraft list for player.
 	
-	lastFlightDataIdx = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
+	lastFlightDataIdx = ptrPlayer->FlightDataSelectedAircraft;
 
 	memset(ptrPlayer->ActiveAircraftList, 0, GAME_MAX_AIRCRAFT);
 	ptrPlayer->ActiveAircraft = 0;
@@ -3650,7 +3783,7 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightD
 		}
 	}
 
-	currentFlightDataIdx = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
+	currentFlightDataIdx = ptrPlayer->FlightDataSelectedAircraft;
 
 	if(GameAircraftCreatedFlag == true)
 	{
@@ -3662,7 +3795,7 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightD
 			{	
 				for(ptrPlayer->SelectedAircraft = 0; ptrPlayer->SelectedAircraft < FlightData.nAircraft; ptrPlayer->SelectedAircraft++)
 				{
-					if(ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft] == lastFlightDataIdx)
+					if(ptrPlayer->FlightDataSelectedAircraft == lastFlightDataIdx)
 					{
 						break;
 					}
@@ -3671,6 +3804,26 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightD
 		}
 	}
 }
+
+/* *******************************************************************************************
+ * 
+ * @name: void GameRemainingAircraft(uint8_t i)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ * 
+ *  uint8_t i:
+ *      Index from FlightData.
+ *
+ * @brief:
+ *  Reportedly, it updates FlightData.nRemainingAircraft depending on game status.
+ *
+ * @remarks:
+ *  This function is called nActiveAircraft times. See loop inside GameCalculations()
+ *  for further reference.
+ *
+ * *******************************************************************************************/
 
 void GameRemainingAircraft(uint8_t i)
 {
@@ -3687,19 +3840,28 @@ void GameRemainingAircraft(uint8_t i)
     }
 }
 
+/* *******************************************************************************************
+ * 
+ * @name: void GameFinished(uint8_t i)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ * 
+ *  uint8_t i:
+ *      Index from FlightData.
+ *
+ * @brief:
+ *  Sets GameFinishedFlag if there are no more active aircraft.
+ *
+ * @remarks:
+ *  This function is called nActiveAircraft times. See loop inside GameCalculations()
+ *  for further reference.
+ *
+ * *******************************************************************************************/
+
 void GameFinished(uint8_t i)
 {
-	/*uint8_t i;
-
-	for(i = 0; i < FlightData.nAircraft; i++)
-	{
-		if(FlightData.Finished[i] == false)
-		{
-			// At least one aircraft still not finished
-			return false;
-		}
-	}*/
-
     if(i == 0)
     {
         GameFinishedFlag = true;
@@ -3711,10 +3873,44 @@ void GameFinished(uint8_t i)
     }
 }
 
+/* *******************************************************************************************
+ * 
+ * @name: void GameMinimumSpawnTimeout(void)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ * 
+ *  uint8_t i:
+ *      Index from FlightData.
+ *
+ * @brief:
+ *  Callback automatically executed on GameSpawnMinTime expired. spawnMinTimeFlag is used
+ *  to set a minimum time between flight ended and flight spawn.
+ *
+ * *******************************************************************************************/
+
 void GameMinimumSpawnTimeout(void)
 {
 	spawnMinTimeFlag = false;
 }
+
+/* *******************************************************************************************
+ * 
+ * @name: void GameAircraftCollision(uint8_t AircraftIdx)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ * 
+ *  uint8_t AircraftIdx:
+ *      Index from FlightData.
+ *
+ * @brief:
+ *  Sets GameAircraftCollisionFlag when two or more aircraft collide. This flag is then
+ *  checked by Game().
+ *
+ * *******************************************************************************************/
 
 void GameAircraftCollision(uint8_t AircraftIdx)
 {

@@ -1,46 +1,77 @@
+# Project-wise definitions
+PROJECT = AIRPORT
+
+# GNU Toolchain definitions
 CC = psx-gcc
+LINKER = psx-gcc
+GNU_SIZE = mipsel-unknown-elf-size
+
+# Custom define flags for GCC
 DEFINE= -DFIXMATH_FAST_SIN -D_PAL_MODE_
 DEFINE += -DPSXSDK_DEBUG
 DEFINE +=  -DNO_CDDA
 DEFINE +=  -DNO_INTRO
 
-#DEFINE +=  -DSERIAL_INTERFACE
-PSXSDK_PATH = /usr/local/psxsdk
+# Compiler flags
 LIBS= -lfixmath
 CC_FLAGS = -Wall -Werror -c -Os -Wfatal-errors
-LINKER = psx-gcc
+
+# Path definitions
+PSXSDK_PATH = /usr/local/psxsdk
 PATH := $(PATH):$(PSXSDK_PATH)/bin/
+PROJECT_DIR = ~/$(PROJECT)
 
-PROJECT = AIRPORT
-PROJECT_DIR = ~/Airport
+#Uncomment this DEFINE below to use Airport together with OpenSend + QPSXSerial toolchain.
+#DEFINE +=  -DSERIAL_INTERFACE
 
+# PSXSDK tools definitions
+# ELF2EXE:
 ELF2EXE = elf2exe
 ELF2EXE_FLAGS = -mark="A homebrew game created with PSXSDK"
 LICENSE_FILE = /usr/local/psxsdk/share/licenses/infoeur.dat
 
-PSXSDK_DIR = /usr/local/psxsdk/bin
-
+# PCSX-R
 EMULATOR_DIR = ~/pcsxr
 EMULATOR = pcsxr.exe
-SOUND_INTERFACE =
+# Uncomment the line below if you get no sound output under Linux.
+#SOUND_INTERFACE += padsp
 EMULATOR_FLAGS = -nogui -psxout
+
+# Objects definition
+# Compiled objects list
 OBJ_DIR = Obj
 SRC_DIR = .
+OBJECTS = $(addprefix $(OBJ_DIR)/,main.o System.o Menu.o Gfx.o Pad.o MainMenuBtnAni.o 	\
+	LoadMenu.o GameGui.o Sfx.o Camera.o EndAnimation.o			\
+	PSXSDKIntro.o PltParser.o Game.o Font.o MemCard.o			\
+	Aircraft.o Serial.o Timer.o)
+		
+# Source dependencies:
+DEPS = $(OBJECTS:.o=.d)
+
+# CD-DA objects:
 MUSIC_TRACKS = --track=../Bin/TRACK01.bin --track=../Bin/TRACK02.bin --track=../Bin/TRACK03.bin
 FFMPEG = ffmpeg
 FFMPEG_DIR = ../Music/ffmpeg/bin
 FFMPEG_FLAGS = -f s16le -acodec pcm_s16le
 
-GNU_SIZE = mipsel-unknown-elf-size
+# VAG objects:
+SOURCE_SOUNDS_FOLDER = ../Sounds
+SOUNDS_FOLDER = ../cdimg/DATA/SOUNDS
+SOUND_OBJECTS = $(addprefix $(SOUNDS_FOLDER)/,	BELL.VAG		\
+												ACCEPT.VAG		\
+												TRAYCL.VAG		\
+												SPINDISK.VAG	\
+												BEEP.VAG		\
+												TAKEOFF1.VAG	\
+												RCTM1F1.VAG		\
+												RCPW1A1.VAG		\
+												RCPM1A1.VAG		)
+# ------------------------------------
+# Instructions
+# ------------------------------------
 
-OBJECTS = $(addprefix $(OBJ_DIR)/,main.o System.o Menu.o Gfx.o Pad.o MainMenuBtnAni.o 	\
-			LoadMenu.o GameGui.o Sfx.o Camera.o EndAnimation.o			\
-			PSXSDKIntro.o PltParser.o Game.o Font.o MemCard.o			\
-			Aircraft.o Serial.o Timer.o)
-
-DEPS = $(OBJECTS:.o=.d)
-
-build: levels $(PROJECT).bin	
+build: sounds levels $(PROJECT).bin
 
 rebuild: clean build
 
@@ -50,6 +81,7 @@ music_objects:	$(addprefix ../Music/, TRACK01.bin TRACK02.bin TRACK03.bin)
 			
 clean:
 	rm -f Obj/*.o
+	rm -f ../cdimg/DATA/SOUNDS/*.VAG
 	
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(OBJ_DIR)/%.d
 	$(CC) $< -o $@ $(DEFINE) $(CC_FLAGS) -MMD
@@ -105,13 +137,11 @@ tiles:
 	bmp2tim ../Sprites/DepArr.bmp		../cdimg/DATA/SPRITES/DEPARR.TIM 16 -org=552,240 -mpink
 	bmp2tim ../Sprites/PageUpDn.bmp		../cdimg/DATA/SPRITES/PAGEUPDN.TIM 16 -org=504,240 -mpink
 	bmp2tim ../Sprites/Bldngs1.bmp		../cdimg/DATA/SPRITES/BLDNGS1.TIM 16 -org=640,128 -mpink
+
+$(SOUNDS_FOLDER)/%.VAG: $(SOURCE_SOUNDS_FOLDER)/%.wav
+	wav2vag $^	$@
 	
-sounds:
-	rm -f ../cdimg/DATA/SOUNDS/*.VAG
-	wav2vag ../Sounds/Bell.wav 		../cdimg/DATA/SOUNDS/BELL.VAG
-	wav2vag ../Sounds/Accept.wav 	../cdimg/DATA/SOUNDS/ACCEPT.VAG
-	wav2vag ../Sounds/TrayCl.wav 	../cdimg/DATA/SOUNDS/TRAYCL.VAG
-	wav2vag ../Sounds/SpinDisk.wav	../cdimg/DATA/SOUNDS/SPINDISK.VAG
+sounds: $(SOUND_OBJECTS)
 	
 levels: LEVEL1.LVL LEVEL1.PLT
 
