@@ -313,6 +313,7 @@ bool UpdatePads(void)
 {
     unsigned short adc_mouse;
     static unsigned short old_adc_mouse;
+    bool both_pads_connected = true;
     
     PadOneVibrationHandler();
 	
@@ -344,12 +345,12 @@ bool UpdatePads(void)
     
 	if(PadOneConnected() == false)
 	{
-		return false;
+		both_pads_connected = false;
 	}
 
     if(PadTwoConnected() == false)
     {
-        return false;
+        both_pads_connected = false;
     }
 
 	if(!(previous_pad1 & pad1) )
@@ -370,7 +371,7 @@ bool UpdatePads(void)
 		pad2_last_key_single_pressed = 0;
 	}
 	
-	return true;
+	return both_pads_connected;
 }
 
 bool PadOneKeyReleased(unsigned short key)

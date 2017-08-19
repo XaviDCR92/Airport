@@ -22,7 +22,7 @@ PATH := $(PATH):$(PSXSDK_PATH)/bin/
 PROJECT_DIR = ~/$(PROJECT)
 
 #Uncomment this DEFINE below to use Airport together with OpenSend + QPSXSerial toolchain.
-#DEFINE +=  -DSERIAL_INTERFACE
+DEFINE +=  -DSERIAL_INTERFACE
 
 # PSXSDK tools definitions
 # ELF2EXE:
