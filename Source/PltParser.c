@@ -16,23 +16,6 @@
  * 	Structs and enums					*
  * *************************************/
 
-enum
-{
-	DEPARTURE_ARRIVAL_INDEX = 0,
-	FLIGHT_NUMBER_INDEX,
-	PASSENGERS_INDEX,
-	HOURS_MINUTES_INDEX,
-	PARKING_INDEX,
-	REMAINING_TIME_INDEX
-};
-
-enum
-{
-	PLT_HOUR_MINUTE_CHARACTERS = 2,
-	PLT_FIRST_LINE_CHARACTERS = 5,
-	PLT_COLON_POSITION = 2
-};
-
 /* *************************************
  * 	Local Variables
  * *************************************/
@@ -44,6 +27,23 @@ static void PltParserResetBuffers(TYPE_FLIGHT_DATA* ptrFlightData);
 
 bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 {
+    enum
+    {
+        DEPARTURE_ARRIVAL_INDEX = 0,
+        FLIGHT_NUMBER_INDEX,
+        PASSENGERS_INDEX,
+        HOURS_MINUTES_INDEX,
+        PARKING_INDEX,
+        REMAINING_TIME_INDEX
+    };
+
+    enum
+    {
+        PLT_HOUR_MINUTE_CHARACTERS = 2,
+        PLT_FIRST_LINE_CHARACTERS = 5,
+        PLT_COLON_POSITION = 2
+    };
+
 	uint8_t i;
 	uint8_t j;
 	uint8_t aircraftIndex;
@@ -136,16 +136,6 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 			
 			while(lineBufferPtr != NULL)
 			{
-				/*
-				 * enum
-					{
-						DEPARTURE_ARRIVAL_INDEX = 0,
-						FLIGHT_NUMBER_INDEX,
-						PASSENGERS_INDEX,
-						HOURS_MINUTES_INDEX,
-						PARKING_INDEX,
-						REMAINING_TIME_INDEX
-					};*/
 				switch(i)
 				{
 					case DEPARTURE_ARRIVAL_INDEX:
@@ -212,7 +202,7 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 					break;
 
 					case REMAINING_TIME_INDEX:
-						ptrFlightData->RemainingTime[aircraftIndex] = (uint8_t)atoi(lineBufferPtr);
+						ptrFlightData->RemainingTime[aircraftIndex] = (uint16_t)atoi(lineBufferPtr);
 						Serial_printf("ptrFlightData->RemainingTime[%d] = %d\n", aircraftIndex, ptrFlightData->RemainingTime[aircraftIndex]);
 					break;
 					

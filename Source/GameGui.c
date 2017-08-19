@@ -82,14 +82,6 @@ enum
 
 enum
 {
-    AIRCRAFT_STOP_X = 192,
-    AIRCRAFT_STOP_TEXT_X = AIRCRAFT_STOP_X + 16,
-    AIRCRAFT_STOP_Y = AIRCRAFT_LOCK_TARGET_Y,
-    AIRCRAFT_STOP_TEXT_Y = AIRCRAFT_STOP_Y + 4
-};
-
-enum
-{
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R0 = NORMAL_LUMINANCE,
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R1 = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R0,
 	AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R2 = 0,
@@ -412,6 +404,14 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 		GAME_GUI_REMAINING_AIRCRAFT_X_2PLAYER = AIRCRAFT_DATA_GSGPOLY4_X0_2PLAYER + 16,
 		GAME_GUI_REMAINING_AIRCRAFT_Y_2PLAYER = AIRCRAFT_DATA_GSGPOLY4_Y2_2PLAYER - 16
 	};
+
+    enum
+    {
+        AIRCRAFT_STOP_X = 128,
+        AIRCRAFT_STOP_TEXT_X = AIRCRAFT_STOP_X + 32,
+        AIRCRAFT_STOP_Y = AIRCRAFT_LOCK_TARGET_Y,
+        AIRCRAFT_STOP_TEXT_Y = AIRCRAFT_STOP_Y + 4
+    };
 	
 	if(ptrPlayer->ShowAircraftData == true)
 	{
@@ -543,7 +543,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 			
 			GsSortGPoly4(&SelectedAircraftGPoly4);
 
-			PageUpDownSpr.attribute |= GFX_1HZ_FLASH;
+			PageUpDownSpr.attribute |= GFX_2HZ_FLASH;
 			
 			if(ptrPlayer->ActiveAircraft > (GAME_GUI_AIRCRAFT_DATA_MAX_PAGE * (ptrPlayer->FlightDataPage + 1) ) )
 			{
@@ -609,6 +609,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
             }
             else if(ptrFlightData->State[ptrPlayer->FlightDataSelectedAircraft] == STATE_TAXIING)
             {
+                GfxDrawButton(AIRCRAFT_STOP_X, AIRCRAFT_STOP_Y, PAD_L1);
                 FontPrintText(&SmallFont, AIRCRAFT_STOP_TEXT_X, AIRCRAFT_STOP_TEXT_Y, "Stop immediately");
             }
 		}

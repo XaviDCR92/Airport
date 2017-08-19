@@ -443,6 +443,12 @@ void GfxButtonRemoveFlags(uint8_t flags)
 
 void GfxDrawButton(short x, short y, unsigned short btn)
 {
+    enum
+    {
+        LR_BUTTON_TEXT_OFFSET_X = 4,
+        LR_BUTTON_TEXT_OFFSET_Y = 4
+    };
+
 	static bool first_entered = true;
 	static short orig_u;
 	static short orig_v;
@@ -538,6 +544,37 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 	PSXButtons.v += orig_v;
 	
 	GfxSortSprite(&PSXButtons);
+
+    switch(btn)
+    {
+        case PAD_L1:
+            FontPrintText(  &SmallFont,
+                            x + LR_BUTTON_TEXT_OFFSET_X,
+                            y + LR_BUTTON_TEXT_OFFSET_Y,
+                            "L1"    );
+        break;
+
+        case PAD_L2:
+            FontPrintText(  &SmallFont,
+                            x + LR_BUTTON_TEXT_OFFSET_X,
+                            y + LR_BUTTON_TEXT_OFFSET_Y,
+                            "L2"    );
+        break;
+
+        case PAD_R1:
+            FontPrintText(  &SmallFont,
+                            x + LR_BUTTON_TEXT_OFFSET_X,
+                            y + LR_BUTTON_TEXT_OFFSET_Y,
+                            "R1"    );
+        break;
+
+        case PAD_R2:
+            FontPrintText(  &SmallFont,
+                            x + LR_BUTTON_TEXT_OFFSET_X,
+                            y + LR_BUTTON_TEXT_OFFSET_Y,
+                            "R2"    );
+        break;
+    }
 
 	PSXButtons.attribute &= ~H_FLIP;
 	PSXButtons.rotate = 0;

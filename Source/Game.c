@@ -149,6 +149,7 @@ enum
  * *************************************/
 
 static void GameInit(void);
+static bool GameExit(void);
 static void GameLoadLevel(void);
 static bool GamePause(void);
 static void GameFinished(uint8_t i);
@@ -295,26 +296,10 @@ void Game(bool two_players)
 	
 	while(1)
 	{
-		if(GameFinishedFlag == true)
-		{
-			// Exit game on level finished.
-            if(GameGuiFinishedDialog(&PlayerData[PLAYER_ONE]) == true)
-            {
-                break;
-            }
-		}
-
-		if(GamePause() == true)
-		{
-			// Exit game if player desires to exit.
-			break;
-		}
-
-		if(GameAircraftCollisionFlag == true)
-		{
-			GameGuiAircraftCollision(&PlayerData[PLAYER_ONE]);
-			break;
-		}
+        if(GameExit() == true)
+        {
+            break;
+        }
 		
 		GameEmergencyMode();
 		
@@ -331,8 +316,46 @@ void Game(bool two_players)
 	GfxDisableSplitScreen();
 	
 	EndAnimation();
-	
-	SfxPlayTrack(INTRO_TRACK);
+}
+
+/* ***************************************************************************************
+ * 
+ * @name: bool GameExit(void)
+ * 
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Evaluates special conditions which end current game and return to main menu.
+ *	
+ * @returns:
+ *  True if game has to be exitted, false otherwise.
+ * 
+ * ***************************************************************************************/
+
+bool GameExit(void)
+{
+    if(GameFinishedFlag == true)
+    {
+        // Exit game on level finished.
+        if(GameGuiFinishedDialog(&PlayerData[PLAYER_ONE]) == true)
+        {
+            return true;
+        }
+    }
+
+    if(GamePause() == true)
+    {
+        // Exit game if player desires to exit.
+        return true;
+    }
+
+    if(GameAircraftCollisionFlag == true)
+    {
+        GameGuiAircraftCollision(&PlayerData[PLAYER_ONE]);
+        return true;
+    }
+
+    return false;
 }
 
 /* ***************************************************************************************
@@ -856,7 +879,7 @@ void GameCalculations(void)
 		{
 			GamePlayerHandler(&PlayerData[i], &FlightData);
 		}
-	}	
+	}
 }
 
 /* ***************************************************************************************
@@ -886,15 +909,16 @@ void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 									// which use this are currently active.
 	ptrPlayer->InvalidPath = false; // Do the same thing for "InvalidPath".
 
-	ptrPlayer->FlightDataSelectedAircraft = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
+    // Recalculate ptrPlayer->SelectedAircraft. In case new aircraft appear, we may be pointing
+    // to a incorrect instance.
+    GameActiveAircraftList(ptrPlayer, ptrFlightData);
 
 	if(GameAircraftCollisionFlag == true)
 	{
 		TYPE_ISOMETRIC_POS IsoPos = AircraftGetIsoPos(GameAircraftCollisionIdx);
 		CameraMoveToIsoPos(ptrPlayer, IsoPos);
 	}
-
-	GameActiveAircraftList(ptrPlayer, ptrFlightData);
+    
 	GameStateUnboarding(ptrPlayer, ptrFlightData);
 	GameStateLockTarget(ptrPlayer, ptrFlightData);
 	GameStateSelectRunway(ptrPlayer, ptrFlightData);
@@ -1411,8 +1435,6 @@ void GameAircraftState(uint8_t i)
                     target[0] = FlightData.Parking[i];
                     
                     Serial_printf("Target assigned = %d\n", target[0]);
-
-                    Serial_printf("2\n");
                     
                     if(AircraftAddNew(&FlightData, i, target) == false)
                     {
@@ -2530,8 +2552,6 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 		
 		targets[0] = assignedRwy;
 		targets[1] = rwyExit;
-
-		Serial_printf("1\n");
 		
 		if( AircraftAddNew(ptrFlightData,
 							aircraftIndex,
@@ -3767,7 +3787,7 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightD
 	// Clear all pointers for aircraft data first.
 	// Then, rebuild aircraft list for player.
 	
-	lastFlightDataIdx = ptrPlayer->FlightDataSelectedAircraft;
+	lastFlightDataIdx = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
 
 	memset(ptrPlayer->ActiveAircraftList, 0, GAME_MAX_AIRCRAFT);
 	ptrPlayer->ActiveAircraft = 0;
@@ -3783,7 +3803,7 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightD
 		}
 	}
 
-	currentFlightDataIdx = ptrPlayer->FlightDataSelectedAircraft;
+	currentFlightDataIdx = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
 
 	if(GameAircraftCreatedFlag == true)
 	{
@@ -3791,18 +3811,26 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightD
 
 		if(ptrPlayer->ActiveAircraft > 1)
 		{
+            dprintf("currentFlightDataIdx = %d, lastFlightDataIdx = %d\n",
+                    currentFlightDataIdx,
+                    lastFlightDataIdx   );
 			if(currentFlightDataIdx != lastFlightDataIdx)
 			{	
 				for(ptrPlayer->SelectedAircraft = 0; ptrPlayer->SelectedAircraft < FlightData.nAircraft; ptrPlayer->SelectedAircraft++)
 				{
-					if(ptrPlayer->FlightDataSelectedAircraft == lastFlightDataIdx)
+					if(ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft] == lastFlightDataIdx)
 					{
+                        dprintf("Recalculated ptrPlayer->SelectedAircraft from %d to %d.\n",
+                                currentFlightDataIdx,
+                                ptrPlayer->SelectedAircraft   );
 						break;
 					}
 				}
 			}
 		}
 	}
+
+    ptrPlayer->FlightDataSelectedAircraft = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
 }
 
 /* *******************************************************************************************

@@ -369,6 +369,8 @@ void MainMenuRestoreInitValues(void)
 	MainMenuBtn[TWO_PLAYER_BUTTON_INDEX].timer = 0;	
 	
 	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
+
+    SfxPlayTrack(INTRO_TRACK);
 }
 
 void MainMenuButtonHandler(void)

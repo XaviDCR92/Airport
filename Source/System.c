@@ -14,7 +14,7 @@
  * 	Defines
  * *************************************/
 
-#define FILE_BUFFER_SIZE 0x4AA60
+#define FILE_BUFFER_SIZE 0x20014
 
 #define END_STACK_PATTERN (uint32_t) 0x18022015
 #define BEGIN_STACK_ADDRESS (uint32_t*) 0x801FFF00
