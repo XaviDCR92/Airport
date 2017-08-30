@@ -56,7 +56,7 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 	char strMinutes[PLT_HOUR_MINUTE_CHARACTERS];
 	uint8_t* strPltBuffer;
 
-	if(SystemLoadFile(strPath) == false)
+	if (SystemLoadFile(strPath) == false)
 	{
 		Serial_printf("Error loading file %s!\n",strPath);
 		return false;
@@ -72,29 +72,29 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 	
 	aircraftIndex = 0;
 	
-	while(buffer != NULL)
+	while (buffer != NULL)
 	{
-		if(buffer[0] == '#')
+		if (buffer[0] == '#')
 		{
 			// Comment line
 			buffer = strtok_r(NULL,"\n",&pltBufferSavePtr);
 			continue;
 		}
 		
-		if(first_line_read == false)
+		if (first_line_read == false)
 		{
 			// First (non-comment) line should indicate level time
 			// i.e.: 10:30, or 22:45
 			first_line_read = true;
 			
-			if(strlen(buffer) != PLT_FIRST_LINE_CHARACTERS)
+			if (strlen(buffer) != PLT_FIRST_LINE_CHARACTERS)
 			{
 				// Format should always be HH:MM (5 characters)
 				// Treat any other combination as possible error
 				return false;
 			}
 			
-			if(buffer[PLT_COLON_POSITION] != ':')
+			if (buffer[PLT_COLON_POSITION] != ':')
 			{
 				// Check whether time format is HH:MM
 				return false;
@@ -102,15 +102,15 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 			
 			j = 0;
 			
-			for(i = 0; i < PLT_FIRST_LINE_CHARACTERS ; i++)
+			for (i = 0; i < PLT_FIRST_LINE_CHARACTERS ; i++)
 			{
-				if(i == PLT_COLON_POSITION)
+				if (i == PLT_COLON_POSITION)
 				{
 					j = 0;
 					buffer = strtok(NULL,"\n");
 					continue;
 				}
-				else if(i < PLT_COLON_POSITION)
+				else if (i < PLT_COLON_POSITION)
 				{
 					strHour[j++] = buffer[i];
 				}
@@ -134,18 +134,18 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 			
 			Serial_printf("New line read: %s\n",buffer);
 			
-			while(lineBufferPtr != NULL)
+			while (lineBufferPtr != NULL)
 			{
 				switch(i)
 				{
 					case DEPARTURE_ARRIVAL_INDEX:
 					
-						if(strncmp(lineBufferPtr,"DEPARTURE",strlen("DEPARTURE") ) == 0)
+						if (strncmp(lineBufferPtr,"DEPARTURE",strlen("DEPARTURE") ) == 0)
 						{
 							ptrFlightData->FlightDirection[aircraftIndex] = DEPARTURE;
 							Serial_printf("Aircraft %d set to DEPARTURE.\n",aircraftIndex);
 						}
-						else if(strncmp(lineBufferPtr,"ARRIVAL",strlen("ARRIVAL") ) == 0)
+						else if (strncmp(lineBufferPtr,"ARRIVAL",strlen("ARRIVAL") ) == 0)
 						{
 							ptrFlightData->FlightDirection[aircraftIndex] = ARRIVAL;
 							Serial_printf("Aircraft %d set to ARRIVAL.\n",aircraftIndex);
@@ -168,7 +168,7 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 					break;
 					
 					case PARKING_INDEX:
-						if(ptrFlightData->FlightDirection[aircraftIndex] == DEPARTURE)
+						if (ptrFlightData->FlightDirection[aircraftIndex] == DEPARTURE)
 						{
 							ptrFlightData->Parking[aircraftIndex] = atoi(lineBufferPtr);
 						}
@@ -180,7 +180,7 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 					break;
 					
 					case HOURS_MINUTES_INDEX:
-						if(	strlen(lineBufferPtr) != strlen("HH:MM") )
+						if (	strlen(lineBufferPtr) != strlen("HH:MM") )
 						{
 							Serial_printf("Hour minute format is not correct!\n");
 							break;
@@ -234,7 +234,7 @@ void PltParserResetBuffers(TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	uint8_t i;
 	
-	for(i = 0; i < GAME_MAX_AIRCRAFT ; i++)
+	for (i = 0; i < GAME_MAX_AIRCRAFT ; i++)
 	{
 		memset(ptrFlightData->strFlightNumber[i],'\0',GAME_MAX_CHARACTERS);
 	}
@@ -327,7 +327,7 @@ uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)
 
 	snprintf(auxBuffer, 32, "%d:%d\n", InitialHour, InitialMinutes);
 
-	for(i = 0; auxBuffer[i] != '\0'; i++)
+	for (i = 0; auxBuffer[i] != '\0'; i++)
 	{
 		// Transfer contents generated from snprintf to main buffer.
 		PltBuffer[i] = auxBuffer[i];
@@ -339,11 +339,11 @@ uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)
 	DEBUG_PRINT_VAR(minAircraftTime);
 	DEBUG_PRINT_VAR(maxAircraftTime);
 
-	for(j = 0; j < nAircraft; j++)
+	for (j = 0; j < nAircraft; j++)
 	{
 		uint8_t dep_arr_rand = SystemRand(0,100);
 		
-		if(dep_arr_rand < 50)
+		if (dep_arr_rand < 50)
 		{
 			// Set departure flight
 

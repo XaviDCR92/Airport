@@ -14,7 +14,7 @@ DEFINE +=  -DNO_INTRO
 
 # Compiler flags
 LIBS= -lfixmath
-CC_FLAGS = -Wall -Werror -c -Os -Wfatal-errors
+CC_FLAGS = -Wall -Werror -c -Os -Wfatal-errors -g
 
 # Path definitions
 PSXSDK_PATH = /usr/local/psxsdk
@@ -22,7 +22,7 @@ PATH := $(PATH):$(PSXSDK_PATH)/bin/
 PROJECT_DIR = ~/$(PROJECT)
 
 #Uncomment this DEFINE below to use Airport together with OpenSend + QPSXSerial toolchain.
-DEFINE +=  -DSERIAL_INTERFACE
+#DEFINE +=  -DSERIAL_INTERFACE
 
 # PSXSDK tools definitions
 # ELF2EXE:
@@ -137,6 +137,7 @@ tiles:
 	bmp2tim ../Sprites/DepArr.bmp		../cdimg/DATA/SPRITES/DEPARR.TIM 16 -org=552,240 -mpink
 	bmp2tim ../Sprites/PageUpDn.bmp		../cdimg/DATA/SPRITES/PAGEUPDN.TIM 16 -org=504,240 -mpink
 	bmp2tim ../Sprites/Bldngs1.bmp		../cdimg/DATA/SPRITES/BLDNGS1.TIM 16 -org=640,128 -mpink
+	bmp2tim ../Sprites/Arrow.bmp		../cdimg/DATA/SPRITES/ARROW.TIM 16 -org=604,240 -mpink
 
 $(SOUNDS_FOLDER)/%.VAG: $(SOURCE_SOUNDS_FOLDER)/%.wav
 	wav2vag $^	$@

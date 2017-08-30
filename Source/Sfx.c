@@ -30,7 +30,7 @@ static uint16_t SfxCddaVolumeReduction;
 
 void SfxPlaySound(SsVag * sound)
 {
-    if(sound->data_size != 0)
+    if (sound->data_size != 0)
     {
         SsPlayVag(sound, sound->cur_voice, MAX_VOLUME - SfxGlobalVolumeReduction, MAX_VOLUME - SfxGlobalVolumeReduction);
     }
@@ -40,12 +40,12 @@ bool SfxUploadSound(char* file_path, SsVag * vag)
 {
     static size_t SPUBytesUsed;
 
-	if(SystemLoadFile(file_path) == false)
+	if (SystemLoadFile(file_path) == false)
 	{
 		return false;
 	}
 	 
-	if(voiceIndex < NUMBER_OF_VOICES)
+	if (voiceIndex < NUMBER_OF_VOICES)
 	{
 		SsReadVag(vag,SystemGetBufferAddress());
 		
@@ -59,7 +59,7 @@ bool SfxUploadSound(char* file_path, SsVag * vag)
 
         SPUBytesUsed += vag->data_size;
 
-        if(SPUBytesUsed != 0)
+        if (SPUBytesUsed != 0)
         {
             enum
             {
@@ -102,7 +102,7 @@ void SfxStopMusic(void)
 		CDVol>>=1;
 		SsCdVol(CDVol,CDVol);
 		
-		while(SystemGetGlobalTimer() < (timer + time_step) );
+		while (SystemGetGlobalTimer() < (timer + time_step) );
 		
 		timer = SystemGetGlobalTimer();
 	}

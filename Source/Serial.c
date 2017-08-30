@@ -43,7 +43,7 @@ void SerialInit(void)
 
 bool SerialRead(uint8_t* ptrArray, size_t nBytes)
 {
-    if(nBytes == 0)
+    if (nBytes == 0)
     {
         dprintf("SerialRead: invalid size %d\n", nBytes);
         return false;
@@ -53,10 +53,10 @@ bool SerialRead(uint8_t* ptrArray, size_t nBytes)
     {
         //uint16_t timeout = SERIAL_TX_RX_TIMEOUT;
         
-        while( (SIOCheckInBuffer() == SERIAL_RX_FIFO_EMPTY)); // Wait for RX FIFO not empty
+        while ( (SIOCheckInBuffer() == SERIAL_RX_FIFO_EMPTY)); // Wait for RX FIFO not empty
 
         *(ptrArray++) = SIOReadByte();
-    }while(--nBytes);
+    }while (--nBytes);
 
     return true;
 }
@@ -65,7 +65,7 @@ bool SerialWrite(void* ptrArray, size_t nBytes)
 {
     serial_busy = true;
 
-    if(nBytes == 0)
+    if (nBytes == 0)
     {
         dprintf("SerialWrite: invalid size %d\n", nBytes);
         return false;
@@ -75,11 +75,11 @@ bool SerialWrite(void* ptrArray, size_t nBytes)
     {
         //uint16_t timeout = SERIAL_TX_RX_TIMEOUT;
 
-        while( (SIOCheckOutBuffer() == SERIAL_TX_NOT_READY)); // Wait for TX FIFO empty.
+        while ( (SIOCheckOutBuffer() == SERIAL_TX_NOT_READY)); // Wait for TX FIFO empty.
 
         SIOSendByte(*(uint8_t*)ptrArray++);
 
-    }while(--nBytes);
+    }while (--nBytes);
 
     serial_busy = false;
 
@@ -108,4 +108,3 @@ void Serial_printf(const char* str, ...)
     SerialWrite(internal_buffer, result);
 }
 #endif // SERIAL_INTERFACE
-

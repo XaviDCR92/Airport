@@ -121,7 +121,7 @@ void LoadMenuInit(void)
 	int i;
 	static bool first_load = false;
 	
-	if(first_load == false)
+	if (first_load == false)
 	{
 		first_load = true;
 		LoadMenuLoadFileList(	LoadMenuFiles,
@@ -172,7 +172,7 @@ void LoadMenuInit(void)
 	loadMenuBg.y[3] = Y_SCREEN_RESOLUTION;
 	
 	// Colour components adjustment (default to zero)
-	for(i = 0; i < 4 ; i++)
+	for (i = 0; i < 4 ; i++)
 	{
 		loadMenuBg.r[i] = 0;
 		loadMenuBg.g[i] = 0;
@@ -211,7 +211,7 @@ void LoadMenuInit(void)
 	LoadMenuBarLines[3].y[0] = LOADING_BAR_Y;
 	LoadMenuBarLines[3].y[1] = LOADING_BAR_Y + LOADING_BAR_HEIGHT;
 	
-	for(i = 0; i < LOADING_BAR_N_LINES ; i++)
+	for (i = 0; i < LOADING_BAR_N_LINES ; i++)
 	{
 		LoadMenuBarLines[i].r = 0;
 		LoadMenuBarLines[i].g = 0;
@@ -249,7 +249,7 @@ void LoadMenuEnd(void)
 	end_flag = true;
 	load_menu_running = false;
 	
-	while(LoadMenuISRHasEnded() == false);
+	while (LoadMenuISRHasEnded() == false);
 	Serial_printf("Set default VBlank handler.\n");
 	SetVBlankHandler(&ISR_SystemDefaultVBlank);
 	
@@ -262,40 +262,40 @@ void ISR_LoadMenuVBlank(void)
 
     SystemIncreaseGlobalTimer();
 
-    if(SystemIsBusy() == true)
+    if (SystemIsBusy() == true)
     {
         dprintf("SystemIsBusy...\n");
         return;
     }
 
-    if((GfxIsGPUBusy() == true))
+    if ((GfxIsGPUBusy() == true))
     {
         dprintf("(GfxIsGPUBusy() == true)\n");
         return;
     }
 
-    if(SerialIsBusy() == true)
+    if (SerialIsBusy() == true)
     {
         dprintf("Serialisbusy\n");
         return;
     }
 	
-	/*if( (SystemIsBusy() == true) || (GfxIsGPUBusy() == true) || (SerialIsBusy() == true) )
+	/*if ( (SystemIsBusy() == true) || (GfxIsGPUBusy() == true) || (SerialIsBusy() == true) )
 	{
 		return;
 	}*/
 	
-	if(startup_flag == true)
+	if (startup_flag == true)
 	{
 		// "Loading..." text
-		if(LoadMenuTitleSpr.r < LOADING_TITLE_LUMINANCE_TARGET)
+		if (LoadMenuTitleSpr.r < LOADING_TITLE_LUMINANCE_TARGET)
 		{
 			LoadMenuTitleSpr.r += LOADING_TITLE_LUMINANCE_STEP;
 			LoadMenuTitleSpr.g += LOADING_TITLE_LUMINANCE_STEP;
 			LoadMenuTitleSpr.b += LOADING_TITLE_LUMINANCE_STEP;
 		}
 		
-		if(loadMenuBg.g[0] < BG_WHITE_TARGET_VALUE)
+		if (loadMenuBg.g[0] < BG_WHITE_TARGET_VALUE)
 		{
 			loadMenuBg.r[0] += BG_INCREASE_STEP;
 			loadMenuBg.r[1] += BG_INCREASE_STEP;
@@ -307,13 +307,13 @@ void ISR_LoadMenuVBlank(void)
 			loadMenuBg.b[1] += BG_INCREASE_STEP;
 		}
 		// Blue background
-		if(loadMenuBg.b[2] < BG_BLUE_TARGET_VALUE)
+		if (loadMenuBg.b[2] < BG_BLUE_TARGET_VALUE)
 		{
 			loadMenuBg.b[2] += BG_INCREASE_STEP;
 			loadMenuBg.b[3] += BG_INCREASE_STEP;
 		}
 		
-		if(LoadMenuBarRect.r < LOADING_BAR_LUMINANCE_TARGET)
+		if (LoadMenuBarRect.r < LOADING_BAR_LUMINANCE_TARGET)
 		{
 			LoadMenuBarRect.r += LOADING_BAR_LUMINANCE_STEP;
 			LoadMenuBarRect.g += LOADING_BAR_LUMINANCE_STEP;
@@ -325,9 +325,9 @@ void ISR_LoadMenuVBlank(void)
 			isr_started = true;
 		}
 		
-		for(i = 0;i < LOADING_BAR_N_LINES ; i++)
+		for (i = 0;i < LOADING_BAR_N_LINES ; i++)
 		{
-			if(LoadMenuBarLines[i].r < LOADING_BAR_LUMINANCE_TARGET)
+			if (LoadMenuBarLines[i].r < LOADING_BAR_LUMINANCE_TARGET)
 			{
 				LoadMenuBarLines[i].r += LOADING_BAR_LUMINANCE_STEP;
 				LoadMenuBarLines[i].g += LOADING_BAR_LUMINANCE_STEP;
@@ -335,7 +335,7 @@ void ISR_LoadMenuVBlank(void)
 			}
 		}
 		
-		if(LoadMenuPlaneSpr.r < PLANE_LUMINANCE_TARGET_VALUE)
+		if (LoadMenuPlaneSpr.r < PLANE_LUMINANCE_TARGET_VALUE)
 		{
 			LoadMenuPlaneSpr.r += PLANE_LUMINANCE_STEP;
 			LoadMenuPlaneSpr.g += PLANE_LUMINANCE_STEP;
@@ -343,13 +343,13 @@ void ISR_LoadMenuVBlank(void)
 		}
 		
 	}
-	else if(end_flag == true)
+	else if (end_flag == true)
 	{
 		LoadMenuTitleSpr.r -= LOADING_TITLE_LUMINANCE_STEP;
 		LoadMenuTitleSpr.g -= LOADING_TITLE_LUMINANCE_STEP;
 		LoadMenuTitleSpr.b -= LOADING_TITLE_LUMINANCE_STEP;
 		
-		if(loadMenuBg.g[0] > 0)
+		if (loadMenuBg.g[0] > 0)
 		{
 			loadMenuBg.r[0] -= BG_INCREASE_STEP;
 			loadMenuBg.r[1] -= BG_INCREASE_STEP;
@@ -361,19 +361,19 @@ void ISR_LoadMenuVBlank(void)
 			loadMenuBg.b[1] -= BG_INCREASE_STEP;
 		}
 		
-		if(loadMenuBg.b[2] > 0)
+		if (loadMenuBg.b[2] > 0)
 		{
 			loadMenuBg.b[2] -= BG_INCREASE_STEP;
 			loadMenuBg.b[3] -= BG_INCREASE_STEP;
 		}
 		
-		if(loadMenuBg.b[2] == 0)
+		if (loadMenuBg.b[2] == 0)
 		{
 			end_flag = false;
 			isr_ended = true;
 		}
 			
-		if(LoadMenuPlaneSpr.r > 0)
+		if (LoadMenuPlaneSpr.r > 0)
 		{
 			LoadMenuPlaneSpr.r -= PLANE_LUMINANCE_STEP;
 			LoadMenuPlaneSpr.g -= PLANE_LUMINANCE_STEP;
@@ -385,16 +385,16 @@ void ISR_LoadMenuVBlank(void)
 		
 		LoadMenuBarRect.w = LOADING_BAR_WIDTH;
 		
-		if(LoadMenuBarRect.r > 0)
+		if (LoadMenuBarRect.r > 0)
 		{
 			LoadMenuBarRect.r -= LOADING_BAR_LUMINANCE_STEP;
 			LoadMenuBarRect.g -= LOADING_BAR_LUMINANCE_STEP;
 			LoadMenuBarRect.b -= LOADING_BAR_LUMINANCE_STEP;
 		}
 		
-		for(i = 0;i < LOADING_BAR_N_LINES ; i++)
+		for (i = 0;i < LOADING_BAR_N_LINES ; i++)
 		{
-			if(LoadMenuBarLines[i].r > 0)
+			if (LoadMenuBarLines[i].r > 0)
 			{
 				LoadMenuBarLines[i].r -= LOADING_BAR_LUMINANCE_STEP;
 				LoadMenuBarLines[i].g -= LOADING_BAR_LUMINANCE_STEP;
@@ -407,7 +407,7 @@ void ISR_LoadMenuVBlank(void)
 	
 	GsSortRectangle(&LoadMenuBarRect);
 	
-	for(i = 0 ; i < LOADING_BAR_N_LINES ; i++)
+	for (i = 0 ; i < LOADING_BAR_N_LINES ; i++)
 	{
 		GsSortLine(&LoadMenuBarLines[i]);
 	}
@@ -446,11 +446,11 @@ void LoadMenu(	char*	fileList[],
 				uint8_t szFileList	, uint8_t szDestList)
 {
 	
-	if(load_menu_running == false)
+	if (load_menu_running == false)
 	{
 		LoadMenuInit();
 	
-		while(LoadMenuISRHasStarted() == false);
+		while (LoadMenuISRHasStarted() == false);
 	}
 	
 	LoadMenuLoadFileList(fileList,dest,szFileList,szDestList);
@@ -465,18 +465,18 @@ void LoadMenuLoadFileList(	char* fileList[], 	void* dest[],
 	short x_increment;
 	uint8_t fileLoadedCount;
 	
-	if(szFileList != szDestList)
+	if (szFileList != szDestList)
 	{
 		Serial_printf("File list size different from dest list size! %d vs %d\n",
 				szFileList, szDestList);
 		return;
 	}
 	
-	for(fileLoadedCount = 0; fileLoadedCount < szFileList ; fileLoadedCount++)
+	for (fileLoadedCount = 0; fileLoadedCount < szFileList ; fileLoadedCount++)
 	{
         strCurrentFile = fileList[fileLoadedCount];
         
-		if(strCurrentFile == NULL)
+		if (strCurrentFile == NULL)
 		{
 			continue;
 		}
@@ -502,42 +502,42 @@ void LoadMenuLoadFileList(	char* fileList[], 	void* dest[],
 		//Restore original file path in order to load file
 		strncpy(strCurrentFile, aux_file_name, 100);
 		
-		if(strncmp(extension,"TIM",3) == 0)
+		if (strncmp(extension,"TIM",3) == 0)
 		{
-			if(GfxSpriteFromFile(strCurrentFile, dest[fileLoadedCount]) == false)
+			if (GfxSpriteFromFile(strCurrentFile, dest[fileLoadedCount]) == false)
 			{
 				Serial_printf("Could not load image file \"%s\"!\n", strCurrentFile);
 			}
 		}
-		else if(strncmp(extension,"CLT",3) == 0)
+		else if (strncmp(extension,"CLT",3) == 0)
 		{
-			if(dest[fileLoadedCount] != NULL)
+			if (dest[fileLoadedCount] != NULL)
 			{
 				Serial_printf("WARNING: File %s linked to non-NULL destination pointer!\n", dest[fileLoadedCount]);
 			}
 			
-			if(GfxCLUTFromFile(strCurrentFile) == false)
+			if (GfxCLUTFromFile(strCurrentFile) == false)
 			{
 				Serial_printf("Could not load CLUT file \"%s\"!\n", strCurrentFile);
 			}
 		}
-		else if(strncmp(extension,"VAG",3) == 0)
+		else if (strncmp(extension,"VAG",3) == 0)
 		{
-			if(SfxUploadSound(strCurrentFile, dest[fileLoadedCount]) == false)
+			if (SfxUploadSound(strCurrentFile, dest[fileLoadedCount]) == false)
 			{
 				Serial_printf("Could not load sound file \"%s\"!\n", strCurrentFile);
 			}
 		}
-		else if(strncmp(extension,"FNT",3) == 0)
+		else if (strncmp(extension,"FNT",3) == 0)
 		{
-			if(FontLoadImage(strCurrentFile, dest[fileLoadedCount]) == false)
+			if (FontLoadImage(strCurrentFile, dest[fileLoadedCount]) == false)
 			{
 				Serial_printf("Could not load font file \"%s\"!\n", strCurrentFile);
 			}
 		}
-		else if(strncmp(extension,"PLT",3) == 0)
+		else if (strncmp(extension,"PLT",3) == 0)
 		{
-			if(PltParserLoadFile(strCurrentFile, dest[fileLoadedCount]) == false)
+			if (PltParserLoadFile(strCurrentFile, dest[fileLoadedCount]) == false)
 			{
 				Serial_printf("Could not load pilots file \"%s\"!\n", strCurrentFile);
 			}

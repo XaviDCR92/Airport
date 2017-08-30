@@ -34,7 +34,7 @@ void GfxSetPrimitiveList(void);
 // Renders new scene. Use this function unless you know what you are doing!
 void GfxDrawScene(void);
 
-// Blocking version. Calls GfxDrawScene() and then adds a while(GfxIsBusy() )
+// Blocking version. Calls GfxDrawScene() and then adds a while (GfxIsBusy() )
 // after it.
 void GfxDrawScene_Slow(void);
 

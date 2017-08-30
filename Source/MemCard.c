@@ -161,9 +161,9 @@ void MemCardInit(void)
 	uint8_t i;
 	uint8_t j;
 	
-	for(j = SLOT_ONE; j <= SLOT_TWO; j++)
+	for (j = SLOT_ONE; j <= SLOT_TWO; j++)
 	{	
-		for(i = BLOCK_1; i <= BLOCK_15; i++)
+		for (i = BLOCK_1; i <= BLOCK_15; i++)
 		{
 			ptrBlockData = &MemCardData[i - BLOCK_1][j];
 			
@@ -181,7 +181,7 @@ void ISR_MemCardDataHandling(void)
 	
 	uint8_t i;
 	
-	if(	(GfxIsGPUBusy() == true) || (SystemIsBusy() == true) )
+	if (	(GfxIsGPUBusy() == true) || (SystemIsBusy() == true) )
 	{
 		return;
 	}
@@ -250,7 +250,7 @@ void ISR_MemCardDataHandling(void)
 	MemCardProgressBarLines[3].y[0] = MEMCARD_PROGRESS_BAR_Y;
 	MemCardProgressBarLines[3].y[1] = MEMCARD_PROGRESS_BAR_Y + MEMCARD_PROGRESS_BAR_H;
 	
-	for(i = 0; i < MEMCARD_PROGRESS_BAR_N_LINES; i++)
+	for (i = 0; i < MEMCARD_PROGRESS_BAR_N_LINES; i++)
 	{
 		MemCardProgressBarLines[i].r = NORMAL_LUMINANCE;
 		MemCardProgressBarLines[i].g = NORMAL_LUMINANCE;
@@ -273,7 +273,7 @@ void ISR_MemCardDataHandling(void)
 	GsSortGPoly4(&MemCardRect);
 	GsSortRectangle(&MemCardProgressBar);
 	
-	for(i = 0; i < MEMCARD_PROGRESS_BAR_N_LINES; i++)
+	for (i = 0; i < MEMCARD_PROGRESS_BAR_N_LINES; i++)
 	{
 		GsSortLine(&MemCardProgressBarLines[i]);
 	}
@@ -308,12 +308,12 @@ bool MemCardGetBlockInfo(	TYPE_BLOCK_DATA * ptrBlockData,
 	
 	Serial_printf("MemCardGetBlockStateFileName...\n");
 	
-	if(MemCardGetBlockStateFileName(ptrBlockData) == false)
+	if (MemCardGetBlockStateFileName(ptrBlockData) == false)
 	{
 		return false;
 	}
 	
-	if(ptrBlockData->BlockCount == EMPTY_BLOCK)
+	if (ptrBlockData->BlockCount == EMPTY_BLOCK)
 	{
 		// Stop looking for any other data.
 		return true;
@@ -321,14 +321,14 @@ bool MemCardGetBlockInfo(	TYPE_BLOCK_DATA * ptrBlockData,
 	
 	Serial_printf("MemCardGetInitialFrameInfo...\n");
 	
-	if(MemCardGetInitialFrameInfo(ptrBlockData) == false)
+	if (MemCardGetInitialFrameInfo(ptrBlockData) == false)
 	{
 		return false;
 	}
 	
 	Serial_printf("MemCardGetIconFrameInfo...\n");
 	
-	if(MemCardGetIconFrameInfo(ptrBlockData) == false)
+	if (MemCardGetIconFrameInfo(ptrBlockData) == false)
 	{
 		return false;
 	}
@@ -338,7 +338,7 @@ bool MemCardGetBlockInfo(	TYPE_BLOCK_DATA * ptrBlockData,
 	
 	Serial_printf("MemCardUploadToGPU...\n");
 	
-	if(MemCardUploadToGPU(ptrBlockData) == false)
+	if (MemCardUploadToGPU(ptrBlockData) == false)
 	{
 		return false;
 	}
@@ -356,7 +356,7 @@ bool MemCardGetBlockStateFileName(TYPE_BLOCK_DATA * ptrBlockData)
 	
 	memset(DataBuffer, 0, MEMCARD_SECTOR_SIZE);
 	
-	if(MemCardReadSector(ptrBlockData, sector) == false)
+	if (MemCardReadSector(ptrBlockData, sector) == false)
 	{
 		return false;
 	}
@@ -405,7 +405,7 @@ bool MemCardGetBlockStateFileName(TYPE_BLOCK_DATA * ptrBlockData)
 	// 0Ah-1Eh Filename in ASCII, terminated by 00h (max 20 chars, plus ending 00h)
 	// File name is only defined on first block of group (allocation state == 0x51)
 	
-	if(ptrBlockData->BlockCount == FIRST_OR_ONLY_BLOCK)
+	if (ptrBlockData->BlockCount == FIRST_OR_ONLY_BLOCK)
 	{
 		memset(ptrBlockData->FileName, 0 , MEMCARD_FILENAME_SIZE);
 		
@@ -426,7 +426,7 @@ bool MemCardGetInitialFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 	MemCardErrors.Slot = ptrBlockData->Slot;
 	MemCardErrors.Process = MEMCARD_PROCESS_GET_FILENAME;
 	
-	if(ptrBlockData->BlockCount != FIRST_OR_ONLY_BLOCK)
+	if (ptrBlockData->BlockCount != FIRST_OR_ONLY_BLOCK)
 	{
 		// Icon data is only stored on first block (if game takes more
 		// than one block. Skip this step otherwise.
@@ -443,14 +443,14 @@ bool MemCardGetInitialFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 	
 	memset(DataBuffer, 0, MEMCARD_SECTOR_SIZE);
 	
-	if(MemCardReadSector(ptrBlockData, sector) == false)
+	if (MemCardReadSector(ptrBlockData, sector) == false)
 	{
 		return false;
 	}
 	
 	Serial_printf("Magic number: '%c' '%c'\n",DataBuffer[0], DataBuffer[1]);
 	
-	if(DataBuffer[0] != 'S' || DataBuffer[1] != 'C')
+	if (DataBuffer[0] != 'S' || DataBuffer[1] != 'C')
 	{
 		// Invalid magic number.
 		Serial_printf("Invalid magic number extracted from slot %d, block %d.\n",
@@ -490,7 +490,7 @@ bool MemCardGetInitialFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 	
 	// 60h-7Fh  Icon 16 Color Palette Data (each entry is 16bit CLUT)
 	
-	for(i = 0; i < ptrBlockData->IconNumber; i++)
+	for (i = 0; i < ptrBlockData->IconNumber; i++)
 	{
 		memcpy(ptrBlockData->CLUT[i],&DataBuffer[0x60], MEMCARD_CLUT_SIZE);
 	}
@@ -516,7 +516,7 @@ bool MemCardGetIconFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 		case INTERMEDIATE_BLOCK:
 		case LAST_BLOCK:
 		
-			if(ptrReferenceBlock == NULL)
+			if (ptrReferenceBlock == NULL)
 			{
 				Serial_printf("No reference memory card block found yet!\n");
 				return false;
@@ -524,13 +524,13 @@ bool MemCardGetIconFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 			
 			ptrBlockData->IconNumber = ptrReferenceBlock->IconNumber;
 			
-			for(i = 0; i < MEMCARD_NUMBER_OF_ICONS; i++)
+			for (i = 0; i < MEMCARD_NUMBER_OF_ICONS; i++)
 			{
 				memcpy(ptrBlockData->CLUT[i], ptrReferenceBlock->CLUT[i], MEMCARD_CLUT_SIZE);
 				memcpy(ptrBlockData->Icons[i], ptrReferenceBlock->Icons[i], MEMCARD_ICON_SIZE);
 			}
 			
-			if(ptrBlockData->BlockCount == LAST_BLOCK)
+			if (ptrBlockData->BlockCount == LAST_BLOCK)
 			{
 				// Dereference pointer
 				ptrReferenceBlock = NULL;
@@ -540,14 +540,14 @@ bool MemCardGetIconFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 		case FIRST_OR_ONLY_BLOCK:
 		
 			// Icon Frame(s) (Block 1..15, Frame 1..3) (in first block of file only)
-			for(i = ICON_FRAME_1; i <= ptrBlockData->IconNumber; i++)
+			for (i = ICON_FRAME_1; i <= ptrBlockData->IconNumber; i++)
 			{
 				Serial_printf("\tIcon %d out of %d\n",i, ptrBlockData->IconNumber);
 				buffer_contents = 0;
 				sector = initial_sector + i;
 				memset(DataBuffer, 0, MEMCARD_SECTOR_SIZE * sizeof(uint8_t) );
 				
-				if(MemCardReadSector(ptrBlockData, sector) == false)
+				if (MemCardReadSector(ptrBlockData, sector) == false)
 				{
 					Serial_printf("Could not read memory sector!\n");
 					return false;
@@ -555,12 +555,12 @@ bool MemCardGetIconFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 				
 				memcpy(ptrBlockData->Icons[i - 1 /* ICON_FRAME_# - 1 */], DataBuffer, MEMCARD_SECTOR_SIZE);
 				
-				for(j = 0; j < MEMCARD_SECTOR_SIZE; j++)
+				for (j = 0; j < MEMCARD_SECTOR_SIZE; j++)
 				{
 					buffer_contents |= ptrBlockData->Icons[i - 1][j];
 				}
 				
-				if(buffer_contents == 0)
+				if (buffer_contents == 0)
 				{
 					// Icon buffer is empty!
 					Serial_printf("Invalid icon buffer for slot %d, block %d.\n",
@@ -590,7 +590,7 @@ bool MemCardUploadToGPU(TYPE_BLOCK_DATA * ptrBlockData)
 	short x_block_offset;
 	GsImage gs;
 	
-	if(	(ptrBlockData->IconNumber < 1)
+	if (	(ptrBlockData->IconNumber < 1)
 					||
 		(ptrBlockData->IconNumber > MEMCARD_NUMBER_OF_ICONS) )
 	{
@@ -598,7 +598,7 @@ bool MemCardUploadToGPU(TYPE_BLOCK_DATA * ptrBlockData)
 		return false;
 	}
 	
-	for(i = 0; i < ptrBlockData->IconNumber; i++)
+	for (i = 0; i < ptrBlockData->IconNumber; i++)
 	{
 		gs.pmode = COLORMODE_4BPP;
 		gs.has_clut = 1;
@@ -635,7 +635,7 @@ bool MemCardUploadToGPU(TYPE_BLOCK_DATA * ptrBlockData)
 		
 		GsUploadImage(&gs);
 		
-		if(i == 0)
+		if (i == 0)
 		{
 			ptrBlockData->IconTPoly.attribute = COLORMODE(COLORMODE_4BPP);
 			ptrBlockData->IconTPoly.tpage = (gs.x / 64) + ((gs.y/256)*16);
@@ -690,7 +690,7 @@ bool MemCardReadSector(TYPE_BLOCK_DATA * ptrBlockData, int sector)
 	MemCardErrors.Block = ptrBlockData->Block;
 	MemCardErrors.Slot = ptrBlockData->Slot;
 	
-	if(	(ptrBlockData->Slot != 0)
+	if (	(ptrBlockData->Slot != 0)
 				&&
 		(ptrBlockData->Slot != 1)	)
 	{
@@ -703,7 +703,7 @@ bool MemCardReadSector(TYPE_BLOCK_DATA * ptrBlockData, int sector)
 		return false;
 	}
 	
-	if((sector < 0) || (sector > MEMCARD_MAXIMUM_SECTOR))
+	if ((sector < 0) || (sector > MEMCARD_MAXIMUM_SECTOR))
 	{
 		MemCardErrors.ErrorByte = 'T';
 		
@@ -712,7 +712,7 @@ bool MemCardReadSector(TYPE_BLOCK_DATA * ptrBlockData, int sector)
 		return false;
 	}
 
-	while(GfxIsGPUBusy() == true);
+	while (GfxIsGPUBusy() == true);
 	
 	result = McReadSector(ptrBlockData->Slot, sector, DataBuffer);
 	
@@ -774,23 +774,23 @@ bool MemCardGetAllData(void)
 	
 	SetVBlankHandler(&ISR_MemCardDataHandling);
 	
-	for(j = SLOT_ONE; j <= SLOT_TWO; j++)
+	for (j = SLOT_ONE; j <= SLOT_TWO; j++)
 	{
 		MemCardStatus[j] = McGetStatus(j);
 		
-		if(MemCardStatus[j] == MEMCARD_STATUS_UNKNOWN)
+		if (MemCardStatus[j] == MEMCARD_STATUS_UNKNOWN)
 		{
 			// Memcard not connected and/or formatted.
 			continue;
 		}
 	
-		for(i = BLOCK_1; i <= BLOCK_15; i++)
+		for (i = BLOCK_1; i <= BLOCK_15; i++)
 		{
 			ProgressBarXOffset = (short)(CurrentReadBlock * 
 								(MEMCARD_PROGRESS_BAR_W /
 								(MEMCARD_BLOCKS_PER_CARD * MEMCARD_NUMBER_OF_SLOTS) ) );
 			
-			if(MemCardGetBlockInfo(&MemCardData[i - BLOCK_1][j], j, i) == false)
+			if (MemCardGetBlockInfo(&MemCardData[i - BLOCK_1][j], j, i) == false)
 			{
 				// Return to normal behaviour if anything fails
 				SetVBlankHandler(&ISR_SystemDefaultVBlank);
@@ -817,13 +817,13 @@ void MemCardIconIndexHandler(void)
 {
 	static uint8_t iconTimer = 0;
 	
-	if(System100msTick() == true)
+	if (System100msTick() == true)
 	{
-		if(++iconTimer >= MEMCARD_ICON_INDEX_TIME)
+		if (++iconTimer >= MEMCARD_ICON_INDEX_TIME)
 		{
 			iconTimer = 0;
 			
-			if(++IconIndex >= MEMCARD_NUMBER_OF_ICONS)
+			if (++IconIndex >= MEMCARD_NUMBER_OF_ICONS)
 			{
 				IconIndex = 0;
 			}
@@ -839,7 +839,7 @@ void MemCardDrawIcon(TYPE_BLOCK_DATA * ptrBlockData, short x, short y)
 	short orig_clut_x;
 	static bool first_access = true;
 	
-	if(ptrBlockData->BlockCount == EMPTY_BLOCK)
+	if (ptrBlockData->BlockCount == EMPTY_BLOCK)
 	{
 		return;
 	}
@@ -854,14 +854,14 @@ void MemCardDrawIcon(TYPE_BLOCK_DATA * ptrBlockData, short x, short y)
 	ptrBlockData->IconTPoly.y[2] = y + MEMCARD_BLOCK_IMAGE_H;
 	ptrBlockData->IconTPoly.y[3] = ptrBlockData->IconTPoly.y[2];
 
-	for(i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 	{
 		orig_u[i] = ptrBlockData->IconTPoly.u[i];
 	}
 	
 	orig_clut_x = ptrBlockData->IconTPoly.cx;
 	
-	if(ptrBlockData->IconNumber > IconIndex)
+	if (ptrBlockData->IconNumber > IconIndex)
 	{
 		ptrBlockData->IconTPoly.u[0] += MEMCARD_BLOCK_IMAGE_W * IconIndex;
 		ptrBlockData->IconTPoly.u[1] = ptrBlockData->IconTPoly.u[0] + MEMCARD_BLOCK_IMAGE_W;
@@ -872,9 +872,9 @@ void MemCardDrawIcon(TYPE_BLOCK_DATA * ptrBlockData, short x, short y)
 	}
 
 	
-	if(first_access == true)
+	if (first_access == true)
 	{
-		if(IconIndex == 0)
+		if (IconIndex == 0)
 		{
 			first_access = false;
 			
@@ -918,7 +918,7 @@ void MemCardDrawIcon(TYPE_BLOCK_DATA * ptrBlockData, short x, short y)
 	
 	GsSortTPoly4(&ptrBlockData->IconTPoly);
 	
-	for(i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 	{
 		ptrBlockData->IconTPoly.u[i] = orig_u[i]; // Restore data
 	}
@@ -941,7 +941,7 @@ TYPE_BLOCK_DATA * MemCardShowMap(void)
 	unsigned char orig_b;
 	GsRectangle MemCardMapDialog;
 	
-	if(MemCardGetAllData() == false)
+	if (MemCardGetAllData() == false)
 	{
 		return false;
 	}
@@ -964,40 +964,40 @@ TYPE_BLOCK_DATA * MemCardShowMap(void)
 	
 	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
 	
-	while(1)
+	while (1)
 	{	
-		if(PadOneKeyReleased(PAD_TRIANGLE) == true)
+		if (PadOneKeyReleased(PAD_TRIANGLE) == true)
 		{
 			break;
 		}
-		else if(PadOneKeyReleased(PAD_CROSS) == true)
+		else if (PadOneKeyReleased(PAD_CROSS) == true)
 		{
 			return &MemCardData[selectedBlock - BLOCK_1][selectedSlot];
 		}
-		else if(PadOneKeyReleased(PAD_LEFT) == true)
+		else if (PadOneKeyReleased(PAD_LEFT) == true)
 		{
-			if(selectedSlot == SLOT_TWO)
+			if (selectedSlot == SLOT_TWO)
 			{
 				selectedSlot = SLOT_ONE;
 			}
 		}
-		else if(PadOneKeyReleased(PAD_RIGHT) == true)
+		else if (PadOneKeyReleased(PAD_RIGHT) == true)
 		{
-			if(selectedSlot == SLOT_ONE)
+			if (selectedSlot == SLOT_ONE)
 			{
 				selectedSlot = SLOT_TWO;
 			}
 		}
-		else if(PadOneKeyReleased(PAD_UP) == true)
+		else if (PadOneKeyReleased(PAD_UP) == true)
 		{
-			if(selectedBlock > BLOCK_1)
+			if (selectedBlock > BLOCK_1)
 			{
 				selectedBlock--;
 			}
 		}
-		else if(PadOneKeyReleased(PAD_DOWN) == true)
+		else if (PadOneKeyReleased(PAD_DOWN) == true)
 		{
-			if(selectedBlock < BLOCK_15)
+			if (selectedBlock < BLOCK_15)
 			{
 				selectedBlock++;
 			}
@@ -1012,9 +1012,9 @@ TYPE_BLOCK_DATA * MemCardShowMap(void)
 		
 		GsSortRectangle(&MemCardMapDialog);
 		
-		for(j = SLOT_ONE; j <= SLOT_TWO; j++)
+		for (j = SLOT_ONE; j <= SLOT_TWO; j++)
 		{
-			if(MemCardStatus[j] == MEMCARD_STATUS_UNKNOWN)
+			if (MemCardStatus[j] == MEMCARD_STATUS_UNKNOWN)
 			{
 				FontSetFlags(&SmallFont, FONT_NOFLAGS);
 				
@@ -1034,7 +1034,7 @@ TYPE_BLOCK_DATA * MemCardShowMap(void)
 				continue;
 			}
 			
-			for(i = BLOCK_1; i <= BLOCK_15; i++)
+			for (i = BLOCK_1; i <= BLOCK_15; i++)
 			{				
 				ptrBlockData = &MemCardData[i - BLOCK_1][j];
 				
@@ -1047,14 +1047,14 @@ TYPE_BLOCK_DATA * MemCardShowMap(void)
 				y += (short)(MEMCARD_DIALOG_GAP_X * ((i - BLOCK_1) / 3));
 				y += MEMCARD_DIALOG_GAP_X;
 				
-				if(ptrBlockData->BlockCount == EMPTY_BLOCK)
+				if (ptrBlockData->BlockCount == EMPTY_BLOCK)
 				{
 					emptyBlockRect.x = x;
 					emptyBlockRect.y = y;
 					emptyBlockRect.w = MEMCARD_BLOCK_IMAGE_W;
 					emptyBlockRect.h = MEMCARD_BLOCK_IMAGE_H;
 					
-					if(	(i == selectedBlock) && (j == selectedSlot) )
+					if (	(i == selectedBlock) && (j == selectedSlot) )
 					{
 						emptyBlockRect.r = FULL_LUMINANCE;
 						emptyBlockRect.g = FULL_LUMINANCE;
@@ -1083,27 +1083,27 @@ TYPE_BLOCK_DATA * MemCardShowMap(void)
 				orig_g = ptrBlockData->IconTPoly.g;
 				orig_b = ptrBlockData->IconTPoly.b;
 				
-				if(	(i == selectedBlock) && (j == selectedSlot) )
+				if (	(i == selectedBlock) && (j == selectedSlot) )
 				{
 					ptrBlockData->IconTPoly.r = FULL_LUMINANCE;
 					ptrBlockData->IconTPoly.g = FULL_LUMINANCE;
 					ptrBlockData->IconTPoly.b = FULL_LUMINANCE;
 					
-					if(ptrBlockData->BlockCount == FIRST_OR_ONLY_BLOCK)
+					if (ptrBlockData->BlockCount == FIRST_OR_ONLY_BLOCK)
 					{
 						FontPrintText(	&SmallFont,
 										MEMCARD_LOAD_DATA_TEXT_X,
 										MEMCARD_LOAD_DATA_TEXT_Y,
 										(char*)ptrBlockData->FileName	);	
 					}
-					else if(ptrBlockData->BlockCount == INTERMEDIATE_BLOCK)
+					else if (ptrBlockData->BlockCount == INTERMEDIATE_BLOCK)
 					{
 						FontPrintText(	&SmallFont,
 										MEMCARD_LOAD_DATA_TEXT_X,
 										MEMCARD_LOAD_DATA_TEXT_Y,
 										"Intermediate block"	);	
 					}
-					else if(ptrBlockData->BlockCount == LAST_BLOCK)
+					else if (ptrBlockData->BlockCount == LAST_BLOCK)
 					{
 						FontPrintText(	&SmallFont,
 										MEMCARD_LOAD_DATA_TEXT_X,
@@ -1140,26 +1140,26 @@ bool MemCardSaveData(TYPE_BLOCK_DATA * ptrBlockData)
 	
 	// Always check whether current block is empty or not
 	
-	if(ptrBlockData->BlockCount != EMPTY_BLOCK)
+	if (ptrBlockData->BlockCount != EMPTY_BLOCK)
 	{
-		if(strncmp((char*)ptrBlockData->FileName, MEMCARD_GAME_FILENAME, MEMCARD_FILENAME_SIZE) != 0)
+		if (strncmp((char*)ptrBlockData->FileName, MEMCARD_GAME_FILENAME, MEMCARD_FILENAME_SIZE) != 0)
 		{
 			// Only our own blocks can be overwritten. NEVER overwrite other game blocks!
 			Serial_printf("I cannot erase blocks from other games!\n");
 			return false;
 		}
 	}
-	else if(ptrBlockData->BlockCount != FIRST_OR_ONLY_BLOCK)
+	else if (ptrBlockData->BlockCount != FIRST_OR_ONLY_BLOCK)
 	{
 		Serial_printf("Please select first block of block array.\n");
 		return false;
 	}
-	else if(ptrBlockData->Data == NULL)
+	else if (ptrBlockData->Data == NULL)
 	{
 		Serial_printf("No data on current block!\n");
 		return false;
 	}
-	else if(ptrBlockData->Block == DIRECTORY_BLOCK)
+	else if (ptrBlockData->Block == DIRECTORY_BLOCK)
 	{
 		Serial_printf("Invalid block selected!\n");
 		return false;
@@ -1169,7 +1169,7 @@ bool MemCardSaveData(TYPE_BLOCK_DATA * ptrBlockData)
 	
 	sz = MEMCARD_FIRST_OR_LAST_DATA_SIZE;
 	
-	for(i = 0; i < sz; i++)
+	for (i = 0; i < sz; i++)
 	{
 		McWriteSector(ptrBlockData->Slot, sector + i, &ptrBlockData->Data[i << 7 /* 128 */]);
 	}

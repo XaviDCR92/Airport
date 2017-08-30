@@ -131,7 +131,7 @@ bool PadOneConnected(void)
 {
 	psx_pad_state PadOne = PadOneGetState();
 
-	if( (PadOne.status != PAD_STATUS_OK)
+	if ( (PadOne.status != PAD_STATUS_OK)
                     &&
         (PadOneGetID() == PAD_FLOATING_ID)  )
 	{
@@ -145,7 +145,7 @@ bool PadTwoConnected(void)
 {
 	psx_pad_state PadTwo = PadTwoGetState();
 	
-	if( (PadTwo.status != PAD_STATUS_OK)
+	if ( (PadTwo.status != PAD_STATUS_OK)
                     &&
         (PadTwoGetID() == PAD_FLOATING_ID)  )
 	{
@@ -243,14 +243,14 @@ bool PadOneKeyRepeat(unsigned short key, uint8_t time)
 {
 	uint8_t key_index = PadGetKeyIndex(key);
 	
-	if(key_index == NUMBER_OF_KEYS)
+	if (key_index == NUMBER_OF_KEYS)
 	{
 		return false;
 	}
 	
 	pad1_keys_repeat[key_index]++;
 	
-	if(pad1_keys_repeat[key_index] >= time)
+	if (pad1_keys_repeat[key_index] >= time)
 	{
 		pad1_keys_repeat[key_index] = 0;
 		return true;
@@ -263,14 +263,14 @@ bool PadTwoKeyRepeat(unsigned short key, uint8_t time)
 {
 	uint8_t key_index = PadGetKeyIndex(key);
 	
-	if(key_index == NUMBER_OF_KEYS)
+	if (key_index == NUMBER_OF_KEYS)
 	{
 		return false;
 	}
 	
 	pad2_keys_repeat[key_index]++;
 	
-	if(pad2_keys_repeat[key_index] >= time)
+	if (pad2_keys_repeat[key_index] >= time)
 	{
 		pad2_keys_repeat[key_index] = 0;
 		return true;
@@ -281,7 +281,7 @@ bool PadTwoKeyRepeat(unsigned short key, uint8_t time)
 
 void PadOneVibrationHandler(void)
 {
-	if(PadOneIsVibrationEnabled() == true)
+	if (PadOneIsVibrationEnabled() == true)
 	{
 		pad_enable_vibration(PAD_ONE);
 		pad_set_vibration(PAD_ONE,pad1_small_vibration_force,pad1_big_vibration_force);
@@ -291,7 +291,7 @@ void PadOneVibrationHandler(void)
 
 void PadTwoVibrationHandler(void)
 {
-	if(PadTwoIsVibrationEnabled() == true)
+	if (PadTwoIsVibrationEnabled() == true)
 	{
 		pad_enable_vibration(PAD_TWO);
 		pad_set_vibration(PAD_TWO,pad2_small_vibration_force,pad2_big_vibration_force);
@@ -327,11 +327,11 @@ bool UpdatePads(void)
 	previous_pad1 = pad1;
 	previous_pad2 = pad2;
 
-    if(PadOneGetType() == PADTYPE_MOUSE)
+    if (PadOneGetType() == PADTYPE_MOUSE)
     {
         PSX_ReadMouse(&pad1, &adc_mouse);
 
-        if(old_adc_mouse != adc_mouse)
+        if (old_adc_mouse != adc_mouse)
         {
             Serial_printf("0%04X\n", adc_mouse);
         }
@@ -343,17 +343,17 @@ bool UpdatePads(void)
         PSX_ReadPad(&pad1,&pad2);
     }
     
-	if(PadOneConnected() == false)
+	if (PadOneConnected() == false)
 	{
 		both_pads_connected = false;
 	}
 
-    if(PadTwoConnected() == false)
+    if (PadTwoConnected() == false)
     {
         both_pads_connected = false;
     }
 
-	if(!(previous_pad1 & pad1) )
+	if (!(previous_pad1 & pad1) )
 	{
 		pad1_last_key_single_pressed = pad1;
 	}
@@ -362,7 +362,7 @@ bool UpdatePads(void)
 		pad1_last_key_single_pressed = 0;
 	}
 
-	if(!(previous_pad2 & pad2) )
+	if (!(previous_pad2 & pad2) )
 	{
 		pad2_last_key_single_pressed = pad2;
 	}
@@ -501,15 +501,15 @@ void PadCheatHandler(uint8_t n_pad)
 		return;
 	}
 	
-	for(i = 0; i < PAD_MAX_CHEATS; i++)
+	for (i = 0; i < PAD_MAX_CHEATS; i++)
 	{
-		if(cheatsArray[i] != NULL)
+		if (cheatsArray[i] != NULL)
 		{
-			if(SystemArrayCompare(cheat_array, cheatsArray[i]->Combination, CHEAT_ARRAY_SIZE) == true)
+			if (SystemArrayCompare(cheat_array, cheatsArray[i]->Combination, CHEAT_ARRAY_SIZE) == true)
 			{
-				if(cheatsArray[i]->Callback != NULL)
+				if (cheatsArray[i]->Callback != NULL)
 				{
-					if(clean_callback != NULL)
+					if (clean_callback != NULL)
 					{
 						clean_callback();
 					}
@@ -522,9 +522,9 @@ void PadCheatHandler(uint8_t n_pad)
 		}
 	}
 	
-	for(i = 0; i < sizeof(available_keys) / sizeof(unsigned short); i++)
+	for (i = 0; i < sizeof(available_keys) / sizeof(unsigned short); i++)
 	{
-		if(pressed_callback(available_keys[i]) == true)
+		if (pressed_callback(available_keys[i]) == true)
 		{
 			TimerRestart(timer);
 			key = available_keys[i];
@@ -532,25 +532,25 @@ void PadCheatHandler(uint8_t n_pad)
 		}
 	}
 	
-	if(keys_released != 1)
+	if (keys_released != 1)
 	{
 		return;
 	}
 	
 	// Check for full array (return success = true if an empty array
 	// element was found.
-	for(j = 0; j < CHEAT_ARRAY_SIZE; j++)
+	for (j = 0; j < CHEAT_ARRAY_SIZE; j++)
 	{
-		if(cheat_array[j] == 0)
+		if (cheat_array[j] == 0)
 		{
 			success = true;
 			break;
 		}
 	}
 		
-	if(success == false)
+	if (success == false)
 	{
-		if(clean_callback != NULL)
+		if (clean_callback != NULL)
 		{
 			// Overrun
 			clean_callback();
@@ -564,7 +564,7 @@ bool PadAddCheat(TYPE_CHEAT * cheat)
 {
 	static uint8_t idx = 0;
 	
-	if(idx >= PAD_MAX_CHEATS)
+	if (idx >= PAD_MAX_CHEATS)
 	{
 		Serial_printf("Maximum number of cheats exceeded!\n");
 		return false;

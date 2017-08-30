@@ -59,7 +59,7 @@ void EndAnimation(void)
 	
 	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
 	
-	if(SystemIsRandSeedSet() == false)
+	if (SystemIsRandSeedSet() == false)
 	{
 		// Set default end animation
 		EndAnimationFadeOut();
@@ -94,9 +94,9 @@ void EndAnimationFadeOut(void)
 {
 	uint8_t i;
 	
-	while(1)
+	while (1)
 	{
-		if( GfxGetGlobalLuminance() > 0)
+		if ( GfxGetGlobalLuminance() > 0)
 		{
 			GfxSetGlobalLuminance(GfxGetGlobalLuminance() - END_ANIMATION_FADEOUT_STEP);
 			
@@ -107,7 +107,7 @@ void EndAnimationFadeOut(void)
 		{
 			GsSortCls(0,0,0);
 			
-			for(i = 0 ; i < 2 ; i++)
+			for (i = 0 ; i < 2 ; i++)
 			{
 				// Draw two frames to ensure black display
 				GfxDrawScene_Slow();
@@ -148,7 +148,7 @@ void EndAnimationLine(void)
 		
 		rectIndex += END_ANIMATION_LINE_STEP;
 		
-	}while(rectIndex <= (X_SCREEN_RESOLUTION >> 1) );
+	}while (rectIndex <= (X_SCREEN_RESOLUTION >> 1) );
 	
 }
 
@@ -169,7 +169,7 @@ void EndAnimationSquares(void)
 	
 	memset(sqPos, false , END_ANIMATION_SQUARES_TOTAL);
 	
-	for(i = 0; i < END_ANIMATION_SQUARES_TOTAL ; i++)
+	for (i = 0; i < END_ANIMATION_SQUARES_TOTAL ; i++)
 	{
 		
 		do
@@ -179,12 +179,12 @@ void EndAnimationSquares(void)
 			/*Serial_printf("randInd = %d\t",randInd);
 			Serial_printf("sqPos[randInd] = %d\n", sqPos[randInd]);*/
 		
-			if(sqPos[randInd] == false)
+			if (sqPos[randInd] == false)
 			{
 				sqPos[randInd] = true;
 				sqCounter--;
 				
-				while(sqPos[maxIndex] == true)
+				while (sqPos[maxIndex] == true)
 				{
 					// Lower maximum value for rand() so that it's
 					// easier to spot new empty index on next iteration.
@@ -195,21 +195,21 @@ void EndAnimationSquares(void)
 			}
 			else
 			{
-				if(sqCounter == 0)
+				if (sqCounter == 0)
 				{
 					break;
 				}
 			}
 						
-		}while(1);
+		}while (1);
 		
 		GfxSortSprite(&EndAnimationDisplay);
 		
-		if(sqCounter != 0)
+		if (sqCounter != 0)
 		{
-			for(j = 0; j < END_ANIMATION_SQUARES_TOTAL ; j++)
+			for (j = 0; j < END_ANIMATION_SQUARES_TOTAL ; j++)
 			{
-				if(sqPos[j] == true)
+				if (sqPos[j] == true)
 				{
 					EndAnimationRect.x = ((j) << END_ANIMATION_SQUARES_SIZE_BITSHIFT) -
 												(short)( (j / END_ANIMATION_SQUARES_PER_ROW) *
@@ -225,7 +225,7 @@ void EndAnimationSquares(void)
 		else
 		{
 			// Quick fix: draw a full black rectangle instead of multiple squares
-			for(k = 0 ; k < 2 ; k++)
+			for (k = 0 ; k < 2 ; k++)
 			{
 				// Draw two frames to ensure black display
 				GsSortCls(0,0,0);

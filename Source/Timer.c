@@ -46,15 +46,15 @@ TYPE_TIMER* TimerCreate(uint32_t t, bool rf, void (*timer_callback)(void) )
 	bool success = false;
 	uint8_t i;
 	
-	if(t == 0)
+	if (t == 0)
 	{
 		Serial_printf("Cannot create timer with time == 0!\n");
 		return NULL;
 	}
 	
-	for(i = 0; i < MAX_TIMERS; i++)
+	for (i = 0; i < MAX_TIMERS; i++)
 	{
-		if(timer_array[i].busy == false)
+		if (timer_array[i].busy == false)
 		{
 			timer_array[i].Timeout_Callback = timer_callback;
 			timer_array[i].time = t;
@@ -66,7 +66,7 @@ TYPE_TIMER* TimerCreate(uint32_t t, bool rf, void (*timer_callback)(void) )
 		}
 	}
 	
-	if(success == false)
+	if (success == false)
 	{
 		Serial_printf("Could not find any free timer!\n");
 		return NULL;
@@ -89,7 +89,7 @@ void TimerReset(void)
 {
 	uint8_t i;
 	
-	for(i = 0; i < MAX_TIMERS; i++)
+	for (i = 0; i < MAX_TIMERS; i++)
 	{
 		TimerRemove(&timer_array[i]);
 	}
@@ -111,19 +111,19 @@ void TimerHandler(void)
 {
 	uint8_t i;
 	
-	for(i = 0; i < MAX_TIMERS; i++)
+	for (i = 0; i < MAX_TIMERS; i++)
 	{
-		if(timer_array[i].busy == true)
+		if (timer_array[i].busy == true)
 		{
-			if(System100msTick() == true)
+			if (System100msTick() == true)
 			{
 				timer_array[i].time--;
 				
-				if(timer_array[i].time == 0)
+				if (timer_array[i].time == 0)
 				{
 					timer_array[i].Timeout_Callback();
 					
-					if(timer_array[i].repeat_flag == true)
+					if (timer_array[i].repeat_flag == true)
 					{
 						timer_array[i].time = timer_array[i].orig_time;
 					}

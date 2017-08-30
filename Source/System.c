@@ -158,7 +158,7 @@ void ISR_RootCounter2(void)
 
 void SystemSetRandSeed(void)
 {
-	if(rand_seed == false)
+	if (rand_seed == false)
 	{
 		rand_seed = true;
 		//Set random seed using global timer as reference
@@ -225,7 +225,7 @@ bool SystemRefreshNeeded(void)
 
 void ISR_SystemDefaultVBlank(void)
 {
-    if(System1SecondTick() == true)
+    if (System1SecondTick() == true)
     {
         fps = temp_fps;
         temp_fps = 0;
@@ -277,9 +277,9 @@ void SystemCalculateSine(void)
 
 	static bool sine_decrease = false;    
 
-    if(sine_decrease == false)
+    if (sine_decrease == false)
     {
-        if(sine_counter < SINE_EFFECT_MAX)
+        if (sine_counter < SINE_EFFECT_MAX)
         {
             sine_counter += SINE_EFFECT_STEP;
         }
@@ -290,7 +290,7 @@ void SystemCalculateSine(void)
     }
     else
     {
-        if(sine_counter > SINE_EFFECT_STEP)
+        if (sine_counter > SINE_EFFECT_STEP)
         {
             sine_counter -= SINE_EFFECT_STEP;
         }
@@ -456,12 +456,12 @@ void SystemRunTimers(void)
  
 void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
 {
-	if(*timer == true)
+	if (*timer == true)
 	{
 		*timer = false;
 	}
 
-	if(global_timer >= (*last_timer + step) )
+	if (global_timer >= (*last_timer + step) )
 	{
 		*timer = true;
 		*last_timer = global_timer;
@@ -492,9 +492,9 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 	int32_t size = 0;
 	
 	// Wait for possible previous operation from the GPU before entering this section.
-	while( (SystemIsBusy() == true) || (GfxIsGPUBusy() == true) );
+	while ( (SystemIsBusy() == true) || (GfxIsGPUBusy() == true) );
 	
-	if(fname == NULL)
+	if (fname == NULL)
 	{
 		Serial_printf("SystemLoadFile: NULL fname!\n");
 		return false;
@@ -507,20 +507,20 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 
     SerialRead(fileSizeBuffer, sizeof(uint32_t) );
 
-    for(i = 0; i < sizeof(uint32_t); i++)
+    for (i = 0; i < sizeof(uint32_t); i++)
     {
         size |= fileSizeBuffer[i] << (i << 3); // (i << 3) == (i * 8)
     }
 
     SerialWrite(ACK_BYTE_STRING, 1);
 
-    for(i = 0; i < size; i += SERIAL_DATA_PACKET_SIZE)
+    for (i = 0; i < size; i += SERIAL_DATA_PACKET_SIZE)
     {
         uint32_t bytes_to_read;
 
         // Read actual EXE data into proper RAM address.
 
-        if( (i + SERIAL_DATA_PACKET_SIZE) >= size)
+        if ( (i + SERIAL_DATA_PACKET_SIZE) >= size)
         {
             bytes_to_read = size - i;
         }
@@ -541,7 +541,7 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 
     f = fopen(fname, "r");
 	
-	if(f == NULL)
+	if (f == NULL)
 	{
 		Serial_printf("SystemLoadFile: file could not be found!\n");
 		//File couldn't be found
@@ -552,7 +552,7 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 
 	size = ftell(f);
 	
-	if(size > szBuffer)
+	if (size > szBuffer)
 	{
 		Serial_printf("SystemLoadFile: Exceeds file buffer size (%d bytes)\n",size);
 		//Bigger than 128 kB (buffer's max size)
@@ -637,7 +637,7 @@ void SystemWaitCycles(uint32_t cycles)
 {
 	uint64_t currentTime = global_timer;
 	
-	while(global_timer < (currentTime + cycles) );
+	while (global_timer < (currentTime + cycles) );
 }
 
 /* ******************************************************************
@@ -655,7 +655,7 @@ void SystemWaitCycles(uint32_t cycles)
 
 uint32_t SystemRand(uint32_t min, uint32_t max)
 {
-    if(rand_seed == false)
+    if (rand_seed == false)
     {
         Serial_printf("Warning: calling rand() before srand()\n");
     }
@@ -726,9 +726,9 @@ bool SystemContains_u8(uint8_t value, uint8_t* buffer, size_t sz)
 {
 	size_t i = 0;
 	
-	for(i = 0; i < sz; i++)
+	for (i = 0; i < sz; i++)
 	{
-		if(buffer[i] == value)
+		if (buffer[i] == value)
 		{
 			return true;
 		}
@@ -754,9 +754,9 @@ bool SystemContains_u16(uint16_t value, uint16_t* buffer, size_t sz)
 {
 	size_t i = 0;
 	
-	for(i = 0; i < sz; i++)
+	for (i = 0; i < sz; i++)
 	{
-		if(buffer[i] == value)
+		if (buffer[i] == value)
 		{
 			return true;
 		}
@@ -781,9 +781,9 @@ bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz)
 {
 	size_t i;
 	
-	for(i = 0; i < sz; i++)
+	for (i = 0; i < sz; i++)
 	{
-		if(arr1[i] != arr2[i])
+		if (arr1[i] != arr2[i])
 		{
 			return false;
 		}
@@ -844,11 +844,11 @@ void SystemCheckStack(void)
 	ptrStack -= STACK_SIZE;
 	data = (*ptrStack);
 	
-	if(data != END_STACK_PATTERN)
+	if (data != END_STACK_PATTERN)
 	{
 		Serial_printf("Stack overflow?\n");
 		
-		while(1);
+		while (1);
 	}
 }
 
@@ -889,11 +889,11 @@ int32_t SystemIndexOfStringArray(char* str, char** array)
 {
 	int32_t i;
 	
-	for(i = 0; array[i] != NULL; i++)
+	for (i = 0; array[i] != NULL; i++)
 	{
 		Serial_printf("String to find: %s\nEntry: %s\n", str, array[i]);
 		
-		if(strcmp(str, array[i]) == 0)
+		if (strcmp(str, array[i]) == 0)
 		{
 			Serial_printf("Match! Returning index %d...\n", i);
 			return i;
@@ -919,9 +919,9 @@ int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz)
 {
 	int32_t i;
 	
-	for(i = 0; i < sz; i++)
+	for (i = 0; i < sz; i++)
 	{
-		if(value == array[i])
+		if (value == array[i])
 		{
 			return i;
 		}
@@ -948,9 +948,9 @@ int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t 
 {
 	int32_t i;
 	
-	for(i = from; i < sz; i++)
+	for (i = from; i < sz; i++)
 	{
-		if(value == array[i])
+		if (value == array[i])
 		{
 			return i;
 		}
@@ -1163,7 +1163,7 @@ void SystemDevMenu(void)
         DEVMENU_ROOTCNT2_TEXT_Y = DEVMENU_PAD2_RAW_DATA_TEXT_Y + DEVMENU_TEXT_GAP,
     };
 
-    if(devmenu_flag == true)
+    if (devmenu_flag == true)
     {
         GsRectangle devMenuBg = {   .x = DEVMENU_BG_X,
                                     .y = DEVMENU_BG_Y,

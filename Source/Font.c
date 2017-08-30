@@ -28,7 +28,7 @@ static unsigned char _blend_effect_lum;
 
 bool FontLoadImage(char* strPath, TYPE_FONT * ptrFont)
 {
-	if(GfxSpriteFromFile(strPath, &ptrFont->spr) == false)
+	if (GfxSpriteFromFile(strPath, &ptrFont->spr) == false)
 	{
 		return false;
 	}
@@ -107,16 +107,16 @@ void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 	
 	va_list ap;
 	
-	if(ptrFont->flags & FONT_1HZ_FLASH)
+	if (ptrFont->flags & FONT_1HZ_FLASH)
 	{
-		if(Gfx1HzFlash() == false)
+		if (Gfx1HzFlash() == false)
 		{
 			return;
 		}
 	}
-	else if(ptrFont->flags & FONT_2HZ_FLASH)
+	else if (ptrFont->flags & FONT_2HZ_FLASH)
 	{
-		if(Gfx2HzFlash() == false)
+		if (Gfx2HzFlash() == false)
 		{
 			return;
 		}
@@ -129,11 +129,11 @@ void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 						str,
 						ap	);
 	
-	for(i = 0; i < result ; i++)
+	for (i = 0; i < result ; i++)
 	{
 		char _ch = _internal_text[i];
 		
-		if(_ch == '\0')
+		if (_ch == '\0')
 		{
 			// End of string
 			break;
@@ -149,9 +149,9 @@ void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 				y += ptrFont->char_h;
 			break;
 			default:
-				if(	(ptrFont->flags & FONT_WRAP_LINE) && (ptrFont->max_ch_wrap != 0) )
+				if (	(ptrFont->flags & FONT_WRAP_LINE) && (ptrFont->max_ch_wrap != 0) )
 				{
-					if(++line_count >= ptrFont->max_ch_wrap)
+					if (++line_count >= ptrFont->max_ch_wrap)
 					{
 						line_count = 0;
 						x = orig_x;
@@ -168,7 +168,7 @@ void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 				ptrFont->spr.v = (short)( (_ch - ptrFont->init_ch) / ptrFont->char_per_row) * ptrFont->char_h;
 				ptrFont->spr.v += ptrFont->spr_v; // Add original offset for image
 				
-				if(ptrFont->flags & FONT_BLEND_EFFECT)
+				if (ptrFont->flags & FONT_BLEND_EFFECT)
 				{
 					ptrFont->spr.r += 8;
 					ptrFont->spr.g += 8;
@@ -195,7 +195,7 @@ void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 		}
 	}
 	
-	if(ptrFont->flags & FONT_BLEND_EFFECT)
+	if (ptrFont->flags & FONT_BLEND_EFFECT)
 	{
 		ptrFont->spr.r = _blend_effect_lum;
 		ptrFont->spr.g = _blend_effect_lum;

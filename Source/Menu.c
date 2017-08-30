@@ -304,11 +304,11 @@ void MainMenu(void)
 
 	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
 	
-	while(1)
+	while (1)
 	{	
 		MainMenuButtonHandler();
 
-		while(GfxIsGPUBusy() == true);
+		while (GfxIsGPUBusy() == true);
 		
 		switch(menuLevel)
 		{
@@ -318,7 +318,7 @@ void MainMenu(void)
 				MainMenuDrawButton(&MainMenuBtn[PLAY_BUTTON_INDEX]);
 				MainMenuDrawButton(&MainMenuBtn[OPTIONS_BUTTON_INDEX]);
 				
-				for(cheat_array = PadGetPlayerOneCheatArray(), i = 0; *cheat_array != 0; cheat_array++, i += 16)
+				for (cheat_array = PadGetPlayerOneCheatArray(), i = 0; *cheat_array != 0; cheat_array++, i += 16)
 				{
 					GfxDrawButton(i, 220, *cheat_array);
 				}
@@ -332,7 +332,7 @@ void MainMenu(void)
 				MainMenuDrawButton(&MainMenuBtn[ONE_PLAYER_BUTTON_INDEX]);
 				MainMenuDrawButton(&MainMenuBtn[TWO_PLAYER_BUTTON_INDEX]);
 				
-				for(cheat_array = PadGetPlayerOneCheatArray(), i = 0; *cheat_array != 0; cheat_array++, i += 16)
+				for (cheat_array = PadGetPlayerOneCheatArray(), i = 0; *cheat_array != 0; cheat_array++, i += 16)
 				{
 					GfxDrawButton(i, 220, *cheat_array);
 				}
@@ -379,15 +379,15 @@ void MainMenuButtonHandler(void)
 	static uint8_t previous_btn_selected = 0;
 	uint8_t max_buttons;
 	
-	if(PadOneAnyKeyPressed() == true)
+	if (PadOneAnyKeyPressed() == true)
 	{
-		if(SystemIsRandSeedSet() == false)
+		if (SystemIsRandSeedSet() == false)
 		{
 			SystemSetRandSeed();
 		}
 	}
 	
-	if(	(PadOneKeySinglePress(PAD_CROSS) == true)
+	if (	(PadOneKeySinglePress(PAD_CROSS) == true)
 				||
 		(PadOneKeySinglePress(PAD_TRIANGLE) == true)	)
 	{
@@ -402,7 +402,7 @@ void MainMenuButtonHandler(void)
 		
 		case ONE_TWO_PLAYERS_LEVEL:
 
-            if( (btn_selected == TWO_PLAYER_BUTTON_INDEX)
+            if ( (btn_selected == TWO_PLAYER_BUTTON_INDEX)
                             &&
                 (PadTwoConnected() == false)                )
             {
@@ -413,7 +413,7 @@ void MainMenuButtonHandler(void)
                 max_buttons = MAIN_MENU_ONE_TWO_PLAYERS_LEVEL_BUTTONS;
             }
 
-			if(PadOneKeySinglePress(PAD_TRIANGLE) == true)
+			if (PadOneKeySinglePress(PAD_TRIANGLE) == true)
 			{
 				menuLevel = PLAY_OPTIONS_LEVEL;
 				MainMenuMinimumBtn = PLAY_BUTTON_INDEX;
@@ -432,14 +432,14 @@ void MainMenuButtonHandler(void)
 	MainMenuBtn[previous_btn_selected].was_selected = MainMenuBtn[previous_btn_selected].selected;
 	MainMenuBtn[btn_selected].was_selected = MainMenuBtn[btn_selected].selected;
 	
-	if(PadOneKeySinglePress(PAD_LEFT)	&& (btn_selected > 0) )
+	if (PadOneKeySinglePress(PAD_LEFT)	&& (btn_selected > 0) )
 	{
 		MainMenuBtn[btn_selected].selected = false;
 		previous_btn_selected = btn_selected;
 		btn_selected--;
 		SfxPlaySound(&BellSnd);
 	}
-	else if(PadOneKeySinglePress(PAD_RIGHT) 
+	else if (PadOneKeySinglePress(PAD_RIGHT) 
 				&&
 			(btn_selected < (max_buttons - 1 + MainMenuMinimumBtn) ) )
 	{
@@ -449,20 +449,20 @@ void MainMenuButtonHandler(void)
 		SfxPlaySound(&BellSnd);
 	}
 	
-	if(btn_selected < MainMenuMinimumBtn)
+	if (btn_selected < MainMenuMinimumBtn)
 	{
 		btn_selected = MainMenuMinimumBtn;
 	}
 	
-	if(btn_selected > (max_buttons - 1 + MainMenuMinimumBtn) )
+	if (btn_selected > (max_buttons - 1 + MainMenuMinimumBtn) )
 	{
 		// Avoid overflow when going back in menu navigation
 		btn_selected = (max_buttons - 1 + MainMenuMinimumBtn);
 	}
 	
-	if(PadOneKeySinglePress(PAD_CROSS) )
+	if (PadOneKeySinglePress(PAD_CROSS) )
 	{
-		if(menuLevel == ONE_TWO_PLAYERS_LEVEL)
+		if (menuLevel == ONE_TWO_PLAYERS_LEVEL)
 		{
             // Start gameplay!
             MainMenuBtn[btn_selected].f();
@@ -477,7 +477,7 @@ void MainMenuButtonHandler(void)
 		
 		
 		
-		if(menuLevel == ONE_TWO_PLAYERS_LEVEL)
+		if (menuLevel == ONE_TWO_PLAYERS_LEVEL)
 		{
 			btn_selected = PLAY_BUTTON_INDEX;
 		}
@@ -494,14 +494,14 @@ void MainMenuDrawButton(TYPE_MMBtn * btn)
 	MenuSpr.w = BUTTON_SIZE;
 	MenuSpr.h = BUTTON_SIZE;
 	
-	if(btn->timer < MainMenuBtnAni_sz)
+	if (btn->timer < MainMenuBtnAni_sz)
 	{
 		btn->timer++;
 	}
 	
-	if(btn->selected == true)
+	if (btn->selected == true)
 	{
-		if(btn->was_selected == false)
+		if (btn->was_selected == false)
 		{
 			btn->timer = 0;
 		}
@@ -557,7 +557,7 @@ void MainMenuDrawButton(TYPE_MMBtn * btn)
 
             // Exception: turn option dimmer if second player pad isn't connected
 
-            if(PadTwoConnected() == false)
+            if (PadTwoConnected() == false)
             {
                 MenuSpr.r = NORMAL_LUMINANCE >> 1;
                 MenuSpr.g = NORMAL_LUMINANCE >> 1;
@@ -575,7 +575,7 @@ void MainMenuDrawButton(TYPE_MMBtn * btn)
 
 void MenuTestCheat(void)
 {
-	if(MemCardShowMap() == false)
+	if (MemCardShowMap() == false)
 	{
 		Serial_printf("MemCardShowMap() failed!\n");
 		return;

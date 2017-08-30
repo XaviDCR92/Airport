@@ -108,13 +108,13 @@ void GfxSwapBuffers(void)
 	// Consistency check
 #if PSXSDK_DEBUG
 
-	if(GsListPos() >= PRIMITIVE_LIST_SIZE)
+	if (GsListPos() >= PRIMITIVE_LIST_SIZE)
 	{
 		Serial_printf("Linked list iterator overflow!\n");
-		while(1);
+		while (1);
 	}
 	
-	if( (DrawEnv.h != Y_SCREEN_RESOLUTION)
+	if ( (DrawEnv.h != Y_SCREEN_RESOLUTION)
 					||
 		( (DrawEnv.w != X_SCREEN_RESOLUTION)
 						&&
@@ -130,18 +130,18 @@ void GfxSwapBuffers(void)
 		DEBUG_PRINT_VAR(DrawEnv.x);
 		DEBUG_PRINT_VAR(DrawEnv.y);
 
-		while(1);
+		while (1);
 	}
 #endif // PSXSDK_DEBUG
 
-	if(DrawEnv.h == Y_SCREEN_RESOLUTION)
+	if (DrawEnv.h == Y_SCREEN_RESOLUTION)
 	{
-		if(DispEnv.y == 0)
+		if (DispEnv.y == 0)
 		{
 			DispEnv.y = DOUBLE_BUFFERING_SWAP_Y;
 			DrawEnv.y = 0;
 		}
-		else if(DispEnv.y == DOUBLE_BUFFERING_SWAP_Y)
+		else if (DispEnv.y == DOUBLE_BUFFERING_SWAP_Y)
 		{
 			DispEnv.y = 0;
 			DrawEnv.y = DOUBLE_BUFFERING_SWAP_Y;
@@ -191,12 +191,12 @@ void GfxDrawScene_Fast(void)
 
     FontPrintText(&SmallFont, FPS_INFO_X, FPS_INFO_Y, "%d/%d", SystemGetFPS(), REFRESH_FREQUENCY);
 
-	if(System1SecondTick() == true)
+	if (System1SecondTick() == true)
 	{
 		one_second_show = one_second_show? false:true;
 	}
 
-	if(System500msTick() == true)
+	if (System500msTick() == true)
 	{
 		five_hundred_ms_show = five_hundred_ms_show? false:true;
 	}
@@ -213,7 +213,7 @@ bool GfxReadyForDMATransfer(void)
 
 void GfxDrawScene(void)
 {
-	while(	(SystemRefreshNeeded() == false) 
+	while (	(SystemRefreshNeeded() == false) 
 				||
 			(GfxIsGPUBusy() == true)		);
 			
@@ -225,7 +225,7 @@ void GfxDrawScene(void)
 void GfxDrawScene_Slow(void)
 {
 	GfxDrawScene();
-	while(GfxIsGPUBusy() == true);
+	while (GfxIsGPUBusy() == true);
 }
 
 void GfxSortSprite(GsSprite * spr)
@@ -239,28 +239,28 @@ void GfxSortSprite(GsSprite * spr)
 	bool has_1hz_flash = spr->attribute & GFX_1HZ_FLASH;
 	bool has_2hz_flash = spr->attribute & GFX_2HZ_FLASH;
 	
-	if(	(spr->w <= 0) || (spr->h <= 0) )
+	if (	(spr->w <= 0) || (spr->h <= 0) )
 	{
 		// Invalid width or heigth
 		return;
 	}
 	
-	if(GfxIsSpriteInsideScreenArea(spr) == false)
+	if (GfxIsSpriteInsideScreenArea(spr) == false)
 	{
 		return;
 	}
-	else if(has_2hz_flash && Gfx2HzFlash() == false)
+	else if (has_2hz_flash && Gfx2HzFlash() == false)
 	{
 		return;
 	}
-	else if(has_1hz_flash && Gfx1HzFlash() == false)
+	else if (has_1hz_flash && Gfx1HzFlash() == false)
 	{
 		return;
 	}
 	
-	if(global_lum != NORMAL_LUMINANCE)
+	if (global_lum != NORMAL_LUMINANCE)
 	{
-		if(spr->r < NORMAL_LUMINANCE - global_lum)
+		if (spr->r < NORMAL_LUMINANCE - global_lum)
 		{
 			spr->r = 0;
 		}
@@ -269,7 +269,7 @@ void GfxSortSprite(GsSprite * spr)
 			spr->r -= NORMAL_LUMINANCE - global_lum;
 		}
 		
-		if(spr->g < NORMAL_LUMINANCE - global_lum)
+		if (spr->g < NORMAL_LUMINANCE - global_lum)
 		{
 			spr->g = 0;
 		}
@@ -278,7 +278,7 @@ void GfxSortSprite(GsSprite * spr)
 			spr->g -= NORMAL_LUMINANCE - global_lum;
 		}
 		
-		if(spr->b < NORMAL_LUMINANCE - global_lum)
+		if (spr->b < NORMAL_LUMINANCE - global_lum)
 		{
 			spr->b = 0;
 		}
@@ -288,12 +288,12 @@ void GfxSortSprite(GsSprite * spr)
 		}
 	}
 	
-	if(has_1hz_flash == true)
+	if (has_1hz_flash == true)
 	{
 		spr->attribute &= ~(GFX_1HZ_FLASH);
 	}
 	
-	if(spr->w > MAX_SIZE_FOR_GSSPRITE)
+	if (spr->w > MAX_SIZE_FOR_GSSPRITE)
 	{
 		// GsSprites can't be bigger than 256x256, so since display
 		// resolution is 384x240, it must be split into two primitives.
@@ -316,7 +316,7 @@ void GfxSortSprite(GsSprite * spr)
 		GsSortSprite(spr);
 	}
 	
-	if(has_1hz_flash == true)
+	if (has_1hz_flash == true)
 	{
 		spr->attribute |= GFX_1HZ_FLASH;
 	}
@@ -338,7 +338,7 @@ void GfxSetGlobalLuminance(uint8_t value)
 
 void GfxIncreaseGlobalLuminance(int8_t step)
 {	
-	if( (	(global_lum + step) < MAX_LUMINANCE )
+	if ( (	(global_lum + step) < MAX_LUMINANCE )
 			&&
 		(	(global_lum + step) > 0	)			)
 	{
@@ -364,12 +364,12 @@ bool GfxSpriteFromFile(char* fname, GsSprite * spr)
 {
 	GsImage gsi;
 	
-	if(SystemLoadFile(fname) == false)
+	if (SystemLoadFile(fname) == false)
 	{
 		return false;
 	}
 	
-	while(GfxIsGPUBusy() == true);
+	while (GfxIsGPUBusy() == true);
 	
 	gfx_busy = true;
 		
@@ -392,12 +392,12 @@ bool GfxCLUTFromFile(char* fname)
 {
 	GsImage gsi;
 
-	if(SystemLoadFile(fname) == false)
+	if (SystemLoadFile(fname) == false)
 	{
 		return false;
 	}
 	
-	while(GfxIsGPUBusy() == true);
+	while (GfxIsGPUBusy() == true);
 	
 	gfx_busy = true;
 		
@@ -412,7 +412,7 @@ bool GfxCLUTFromFile(char* fname)
 
 bool GfxIsInsideScreenArea(short x, short y, short w, short h)
 {
-	if( ( (x + w) >= 0) 
+	if ( ( (x + w) >= 0) 
 			&&
 		(x < DrawEnv.w)
 			&&
@@ -453,7 +453,7 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 	static short orig_u;
 	static short orig_v;
 	
-	if(first_entered == true)
+	if (first_entered == true)
 	{
 		first_entered = false;
 		orig_u = PSXButtons.u;
@@ -582,7 +582,7 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 
 void GfxSaveDisplayData(GsSprite *spr)
 {
-	while(GfxIsGPUBusy() == true);
+	while (GfxIsGPUBusy() == true);
 	
 	MoveImage(	DispEnv.x,
 				DispEnv.y,
@@ -603,7 +603,7 @@ void GfxSaveDisplayData(GsSprite *spr)
 	spr->g = NORMAL_LUMINANCE;
 	spr->b = NORMAL_LUMINANCE;
 
-	while(GfxIsGPUBusy() == true);
+	while (GfxIsGPUBusy() == true);
 }
 
 bool Gfx1HzFlash(void)
@@ -618,7 +618,7 @@ bool Gfx2HzFlash(void)
 
 bool GfxTPageOffsetFromVRAMPosition(GsSprite * spr, short x, short y)
 {
-	if(	(x >= VRAM_W) || (x < 0) || (y >= VRAM_H) || (y < 0) )
+	if (	(x >= VRAM_W) || (x < 0) || (y >= VRAM_H) || (y < 0) )
 	{
 		return false;
 	}
@@ -628,7 +628,7 @@ bool GfxTPageOffsetFromVRAMPosition(GsSprite * spr, short x, short y)
 	
 	spr->u = (x % GFX_TPAGE_WIDTH);
 	
-	if(spr->attribute & COLORMODE(COLORMODE_8BPP))
+	if (spr->attribute & COLORMODE(COLORMODE_8BPP))
 	{
 		// On 8bpp images, it looks like U offset needs to be multiplied by 2.
 		spr->u <<= 1;
