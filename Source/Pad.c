@@ -22,27 +22,27 @@
 
 enum
 {
-	
+
 	PAD_CROSS_INDEX = 0,
 	PAD_SQUARE_INDEX,
 	PAD_TRIANGLE_INDEX,
 	PAD_CIRCLE_INDEX,
-	
+
 	PAD_DOWN_INDEX,
 	PAD_LEFT_INDEX,
 	PAD_UP_INDEX,
 	PAD_RIGHT_INDEX,
-	
+
 	PAD_L1_INDEX,
 	PAD_L2_INDEX,
-	
+
 	PAD_R1_INDEX,
 	PAD_R2_INDEX,
-	
+
 	NUMBER_OF_KEYS
-	
+
 };
-	
+
 
 /* *************************************
  * 	Local Prototypes
@@ -102,9 +102,9 @@ static TYPE_CHEAT * cheatsArray[PAD_MAX_CHEATS];
 psx_pad_state PadOneGetState(void)
 {
 	psx_pad_state PadOne;
-	
+
 	PSX_PollPad_Fast(PAD_ONE, &PadOne);
-	
+
 	return PadOne;
 }
 
@@ -116,9 +116,9 @@ unsigned char PadOneGetType(void)
 psx_pad_state PadTwoGetState(void)
 {
 	psx_pad_state PadTwo;
-	
+
 	PSX_PollPad_Fast(PAD_TWO, &PadTwo);
-	
+
 	return PadTwo;
 }
 
@@ -137,21 +137,21 @@ bool PadOneConnected(void)
 	{
 		return false;
 	}
-	
+
 	return true;
 }
 
 bool PadTwoConnected(void)
 {
 	psx_pad_state PadTwo = PadTwoGetState();
-	
+
 	if ( (PadTwo.status != PAD_STATUS_OK)
                     &&
         (PadTwoGetID() == PAD_FLOATING_ID)  )
 	{
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -230,26 +230,26 @@ bool PadTwoKeyPressed(unsigned short key)
 }
 
 bool PadOneKeySinglePress(unsigned short key)
-{	
+{
 	return (bool)( !(previous_pad1 & key) && (pad1 & key) );
 }
 
 bool PadTwoKeySinglePress(unsigned short key)
-{	
+{
 	return (bool)( !(previous_pad2 & key) && (pad2 & key) );
 }
 
 bool PadOneKeyRepeat(unsigned short key, uint8_t time)
 {
 	uint8_t key_index = PadGetKeyIndex(key);
-	
+
 	if (key_index == NUMBER_OF_KEYS)
 	{
 		return false;
 	}
-	
+
 	pad1_keys_repeat[key_index]++;
-	
+
 	if (pad1_keys_repeat[key_index] >= time)
 	{
 		pad1_keys_repeat[key_index] = 0;
@@ -262,20 +262,20 @@ bool PadOneKeyRepeat(unsigned short key, uint8_t time)
 bool PadTwoKeyRepeat(unsigned short key, uint8_t time)
 {
 	uint8_t key_index = PadGetKeyIndex(key);
-	
+
 	if (key_index == NUMBER_OF_KEYS)
 	{
 		return false;
 	}
-	
+
 	pad2_keys_repeat[key_index]++;
-	
+
 	if (pad2_keys_repeat[key_index] >= time)
 	{
 		pad2_keys_repeat[key_index] = 0;
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -296,7 +296,7 @@ void PadTwoVibrationHandler(void)
 		pad_enable_vibration(PAD_TWO);
 		pad_set_vibration(PAD_TWO,pad2_small_vibration_force,pad2_big_vibration_force);
 		pad2_vibration_timer--;
-	}	
+	}
 }
 
 bool PadOneIsVibrationEnabled(void)
@@ -314,15 +314,15 @@ bool UpdatePads(void)
     unsigned short adc_mouse;
     static unsigned short old_adc_mouse;
     bool both_pads_connected = true;
-    
+
     PadOneVibrationHandler();
-	
+
 	PadTwoVibrationHandler();
-	
+
 	PadCheatHandler(PAD_ONE);
-	
+
 	PadCheatHandler(PAD_TWO);
-	
+
 	// Get now-old pad data
 	previous_pad1 = pad1;
 	previous_pad2 = pad2;
@@ -342,7 +342,7 @@ bool UpdatePads(void)
     {
         PSX_ReadPad(&pad1,&pad2);
     }
-    
+
 	if (PadOneConnected() == false)
 	{
 		both_pads_connected = false;
@@ -370,7 +370,7 @@ bool UpdatePads(void)
 	{
 		pad2_last_key_single_pressed = 0;
 	}
-	
+
 	return both_pads_connected;
 }
 
@@ -391,51 +391,51 @@ uint8_t PadGetKeyIndex(unsigned short key)
 		case PAD_CROSS:
 			return PAD_CROSS_INDEX;
 		break;
-		
+
 		case PAD_SQUARE:
 			return PAD_SQUARE_INDEX;
 		break;
-		
+
 		case PAD_TRIANGLE:
 			return PAD_TRIANGLE_INDEX;
 		break;
-		
+
 		case PAD_CIRCLE:
 			return PAD_CIRCLE_INDEX;
 		break;
-		
+
 		case PAD_DOWN:
 			return PAD_DOWN_INDEX;
 		break;
-		
+
 		case PAD_LEFT:
 			return PAD_LEFT_INDEX;
 		break;
-		
+
 		case PAD_UP:
 			return PAD_UP_INDEX;
 		break;
-		
+
 		case PAD_RIGHT:
 			return PAD_RIGHT_INDEX;
 		break;
-		
+
 		case PAD_L1:
 			return PAD_L1_INDEX;
 		break;
-		
+
 		case PAD_R1:
 			return PAD_R1_INDEX;
 		break;
-		
+
 		case PAD_L2:
 			return PAD_L2_INDEX;
 		break;
-		
+
 		case PAD_R2:
 			return PAD_R2_INDEX;
 		break;
-		
+
 		default:
 			return NUMBER_OF_KEYS;
 		break;
@@ -451,7 +451,7 @@ void PadClearData(void)
 {
 	pad1 = 0;
 	pad2 = 0;
-	
+
 	previous_pad1 = 0;
 	previous_pad2 = 0;
 }
@@ -460,16 +460,16 @@ void PadInit(void)
 {
 	pad1_cheat_timer = TimerCreate(PAD_CHEAT_TIMEOUT,true /* Repeat flag */,&PadOneCleanCheatArray);
 	pad2_cheat_timer = TimerCreate(PAD_CHEAT_TIMEOUT,true /* Repeat flag */,&PadTwoCleanCheatArray);
-	
+
 	memset(cheatsArray,0, sizeof(cheatsArray));
 }
 
 void PadCheatHandler(uint8_t n_pad)
 {
-	unsigned short available_keys[12] = { 	PAD_LEFT, PAD_RIGHT, PAD_UP, PAD_DOWN,	
+	unsigned short available_keys[12] = { 	PAD_LEFT, PAD_RIGHT, PAD_UP, PAD_DOWN,
 											PAD_L2, PAD_R2, PAD_L1, PAD_R1,
 											PAD_TRIANGLE, PAD_CIRCLE, PAD_CROSS, PAD_SQUARE };
-										
+
 	uint8_t i;
 	uint8_t keys_released = 0;
 	unsigned short key;
@@ -479,7 +479,7 @@ void PadCheatHandler(uint8_t n_pad)
 	bool success = false;
 	unsigned short* cheat_array;
 	TYPE_TIMER* timer;
-	
+
 	switch(n_pad)
 	{
 		case PAD_ONE:
@@ -488,19 +488,19 @@ void PadCheatHandler(uint8_t n_pad)
 			clean_callback = &PadOneCleanCheatArray;
 			timer = pad1_cheat_timer;
 		break;
-		
+
 		case PAD_TWO:
 			pressed_callback = &PadTwoKeySinglePress;
 			cheat_array = pad2_cheat_array;
 			clean_callback = &PadTwoCleanCheatArray;
 			timer = pad2_cheat_timer;
 		break;
-		
+
 		default:
 			Serial_printf("Invalid pad called for PadCheatHandler()!\n");
 		return;
 	}
-	
+
 	for (i = 0; i < PAD_MAX_CHEATS; i++)
 	{
 		if (cheatsArray[i] != NULL)
@@ -513,15 +513,15 @@ void PadCheatHandler(uint8_t n_pad)
 					{
 						clean_callback();
 					}
-					
+
 					cheatsArray[i]->Callback();
-					
+
 					return;
 				}
 			}
 		}
 	}
-	
+
 	for (i = 0; i < sizeof(available_keys) / sizeof(unsigned short); i++)
 	{
 		if (pressed_callback(available_keys[i]) == true)
@@ -531,12 +531,12 @@ void PadCheatHandler(uint8_t n_pad)
 			keys_released++;
 		}
 	}
-	
+
 	if (keys_released != 1)
 	{
 		return;
 	}
-	
+
 	// Check for full array (return success = true if an empty array
 	// element was found.
 	for (j = 0; j < CHEAT_ARRAY_SIZE; j++)
@@ -547,7 +547,7 @@ void PadCheatHandler(uint8_t n_pad)
 			break;
 		}
 	}
-		
+
 	if (success == false)
 	{
 		if (clean_callback != NULL)
@@ -556,22 +556,22 @@ void PadCheatHandler(uint8_t n_pad)
 			clean_callback();
 		}
 	}
-	
+
 	cheat_array[j] = key;
 }
 
 bool PadAddCheat(TYPE_CHEAT * cheat)
 {
 	static uint8_t idx = 0;
-	
+
 	if (idx >= PAD_MAX_CHEATS)
 	{
 		Serial_printf("Maximum number of cheats exceeded!\n");
 		return false;
 	}
-	
+
 	cheatsArray[idx++] = cheat;
-	
+
 	return true;
 }
 
@@ -581,7 +581,7 @@ void PadOneCleanCheatArray(void)
 }
 
 void PadTwoCleanCheatArray(void)
-{	
+{
 	memset(pad2_cheat_array,0,sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
 }
 

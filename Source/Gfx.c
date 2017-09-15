@@ -27,22 +27,22 @@
 enum
 {
 	BUTTON_SIZE = 16,
-	
+
 	BUTTON_CROSS_U = 48,
 	BUTTON_CROSS_V = 0,
-	
+
 	BUTTON_SQUARE_U = 0,
 	BUTTON_SQUARE_V = 0,
-	
+
 	BUTTON_TRIANGLE_U = 32,
 	BUTTON_TRIANGLE_V = 0,
-	
+
 	BUTTON_CIRCLE_U = 16,
 	BUTTON_CIRCLE_V = 0,
 
 	BUTTON_DIRECTION_U = 64,
 	BUTTON_DIRECTION_V = 0,
-	
+
 	BUTTON_LR_U = 80,
 	BUTTON_LR_V = 0,
 	BUTTON_LR_SIZE = 24,
@@ -63,7 +63,7 @@ enum
 
 	LETTER_OFFSET_INSIDE_BUTTON_LR_X = 8,
 	LETTER_OFFSET_INSIDE_BUTTON_LR_Y = 6
-	
+
 };
 
 enum
@@ -113,7 +113,7 @@ void GfxSwapBuffers(void)
 		Serial_printf("Linked list iterator overflow!\n");
 		while (1);
 	}
-	
+
 	if ( (DrawEnv.h != Y_SCREEN_RESOLUTION)
 					||
 		( (DrawEnv.w != X_SCREEN_RESOLUTION)
@@ -146,7 +146,7 @@ void GfxSwapBuffers(void)
 			DispEnv.y = 0;
 			DrawEnv.y = DOUBLE_BUFFERING_SWAP_Y;
 		}
-			
+
 		GsSetDispEnv(&DispEnv);
 		GsSetDrawEnv(&DrawEnv);
 	}
@@ -160,7 +160,7 @@ void GfxInitDrawEnv(void)
 	DrawEnv.draw_on_display = false;
 	DrawEnv.w = X_SCREEN_RESOLUTION;
 	DrawEnv.h = Y_SCREEN_RESOLUTION;
-	
+
 	GsSetDrawEnv(&DrawEnv);
 }
 
@@ -168,7 +168,7 @@ void GfxInitDispEnv(void)
 {
 	DispEnv.x = 0;
 	DispEnv.y = 0;
-	
+
 	GsSetDispEnv(&DispEnv);
 }
 
@@ -200,7 +200,7 @@ void GfxDrawScene_Fast(void)
 	{
 		five_hundred_ms_show = five_hundred_ms_show? false:true;
 	}
-	
+
 	GfxSwapBuffers();
 	FontCyclic();
 	GsDrawList();
@@ -213,12 +213,12 @@ bool GfxReadyForDMATransfer(void)
 
 void GfxDrawScene(void)
 {
-	while (	(SystemRefreshNeeded() == false) 
+	while (	(SystemRefreshNeeded() == false)
 				||
 			(GfxIsGPUBusy() == true)		);
-			
+
 	GfxDrawScene_Fast();
-	
+
 	SystemCyclicHandler();
 }
 
@@ -238,13 +238,13 @@ void GfxSortSprite(GsSprite * spr)
 	short aux_x = spr->x;
 	bool has_1hz_flash = spr->attribute & GFX_1HZ_FLASH;
 	bool has_2hz_flash = spr->attribute & GFX_2HZ_FLASH;
-	
+
 	if (	(spr->w <= 0) || (spr->h <= 0) )
 	{
 		// Invalid width or heigth
 		return;
 	}
-	
+
 	if (GfxIsSpriteInsideScreenArea(spr) == false)
 	{
 		return;
@@ -257,7 +257,7 @@ void GfxSortSprite(GsSprite * spr)
 	{
 		return;
 	}
-	
+
 	if (global_lum != NORMAL_LUMINANCE)
 	{
 		if (spr->r < NORMAL_LUMINANCE - global_lum)
@@ -268,7 +268,7 @@ void GfxSortSprite(GsSprite * spr)
 		{
 			spr->r -= NORMAL_LUMINANCE - global_lum;
 		}
-		
+
 		if (spr->g < NORMAL_LUMINANCE - global_lum)
 		{
 			spr->g = 0;
@@ -277,7 +277,7 @@ void GfxSortSprite(GsSprite * spr)
 		{
 			spr->g -= NORMAL_LUMINANCE - global_lum;
 		}
-		
+
 		if (spr->b < NORMAL_LUMINANCE - global_lum)
 		{
 			spr->b = 0;
@@ -287,17 +287,17 @@ void GfxSortSprite(GsSprite * spr)
 			spr->b -= NORMAL_LUMINANCE - global_lum;
 		}
 	}
-	
+
 	if (has_1hz_flash == true)
 	{
 		spr->attribute &= ~(GFX_1HZ_FLASH);
 	}
-	
+
 	if (spr->w > MAX_SIZE_FOR_GSSPRITE)
 	{
 		// GsSprites can't be bigger than 256x256, so since display
 		// resolution is 384x240, it must be split into two primitives.
-		
+
 		spr->w = MAX_SIZE_FOR_GSSPRITE;
 		GsSortSprite(spr);
 
@@ -305,22 +305,22 @@ void GfxSortSprite(GsSprite * spr)
 		spr->w = X_SCREEN_RESOLUTION - MAX_SIZE_FOR_GSSPRITE;
 		spr->tpage += MAX_SIZE_FOR_GSSPRITE / GFX_TPAGE_WIDTH;
 		GsSortSprite(spr);
-		
+
 		// Restore original values after sorting
 		spr->w = aux_w;
 		spr->tpage = aux_tpage;
 		spr->x = aux_x;
 	}
 	else
-	{        
+	{
 		GsSortSprite(spr);
 	}
-	
+
 	if (has_1hz_flash == true)
 	{
 		spr->attribute |= GFX_1HZ_FLASH;
 	}
-	
+
 	spr->r = aux_r;
 	spr->g = aux_g;
 	spr->b = aux_b;
@@ -337,7 +337,7 @@ void GfxSetGlobalLuminance(uint8_t value)
 }
 
 void GfxIncreaseGlobalLuminance(int8_t step)
-{	
+{
 	if ( (	(global_lum + step) < MAX_LUMINANCE )
 			&&
 		(	(global_lum + step) > 0	)			)
@@ -363,18 +363,18 @@ bool GfxIsGPUBusy(void)
 bool GfxSpriteFromFile(char* fname, GsSprite * spr)
 {
 	GsImage gsi;
-	
+
 	if (SystemLoadFile(fname) == false)
 	{
 		return false;
 	}
-	
+
 	while (GfxIsGPUBusy() == true);
-	
+
 	gfx_busy = true;
-		
+
 	GsImageFromTim(&gsi, SystemGetBufferAddress() );
-	
+
 	GsSpriteFromImage(spr, &gsi, UPLOAD_IMAGE_FLAG);
 
 	gfx_busy = false;
@@ -384,7 +384,7 @@ bool GfxSpriteFromFile(char* fname, GsSprite * spr)
     DEBUG_PRINT_VAR(spr->v);
     DEBUG_PRINT_VAR(spr->w);
     DEBUG_PRINT_VAR(spr->h);
-	
+
 	return true;
 }
 
@@ -396,23 +396,23 @@ bool GfxCLUTFromFile(char* fname)
 	{
 		return false;
 	}
-	
+
 	while (GfxIsGPUBusy() == true);
-	
+
 	gfx_busy = true;
-		
+
 	GsImageFromTim(&gsi,SystemGetBufferAddress() );
-	
+
 	GsUploadCLUT(&gsi);
-	
+
 	gfx_busy = false;
-	
+
 	return true;
 }
 
 bool GfxIsInsideScreenArea(short x, short y, short w, short h)
 {
-	if ( ( (x + w) >= 0) 
+	if ( ( (x + w) >= 0)
 			&&
 		(x < DrawEnv.w)
 			&&
@@ -422,7 +422,7 @@ bool GfxIsInsideScreenArea(short x, short y, short w, short h)
 	{
 		return true;
 	}
-		
+
 	return false;
 }
 
@@ -452,43 +452,43 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 	static bool first_entered = true;
 	static short orig_u;
 	static short orig_v;
-	
+
 	if (first_entered == true)
 	{
 		first_entered = false;
 		orig_u = PSXButtons.u;
 		orig_v = PSXButtons.v;
 	}
-	
+
 	PSXButtons.w = BUTTON_SIZE;
 	PSXButtons.h = BUTTON_SIZE;
-	
+
 	PSXButtons.r = NORMAL_LUMINANCE;
 	PSXButtons.g = NORMAL_LUMINANCE;
 	PSXButtons.b = NORMAL_LUMINANCE;
-	
+
 	PSXButtons.x = x;
 	PSXButtons.y = y;
 	PSXButtons.mx = PSXButtons.w >> 1;
 	PSXButtons.my = PSXButtons.h >> 1;
-	
+
 	switch(btn)
 	{
 		case PAD_CROSS:
 			PSXButtons.u = BUTTON_CROSS_U;
 			PSXButtons.v = BUTTON_CROSS_V;
 		break;
-		
+
 		case PAD_SQUARE:
 			PSXButtons.u = BUTTON_SQUARE_U;
 			PSXButtons.v = BUTTON_SQUARE_V;
 		break;
-		
+
 		case PAD_TRIANGLE:
 			PSXButtons.u = BUTTON_TRIANGLE_U;
 			PSXButtons.v = BUTTON_TRIANGLE_V;
 		break;
-		
+
 		case PAD_CIRCLE:
 			PSXButtons.u = BUTTON_CIRCLE_U;
 			PSXButtons.v = BUTTON_CIRCLE_V;
@@ -498,13 +498,13 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 			PSXButtons.u = BUTTON_DIRECTION_U;
 			PSXButtons.v = BUTTON_DIRECTION_V;
 		break;
-		
+
 		case PAD_UP:
 			PSXButtons.u = BUTTON_DIRECTION_U;
 			PSXButtons.v = BUTTON_DIRECTION_V;
 			PSXButtons.rotate = 90 << ROTATE_BIT_SHIFT;
 		break;
-		
+
 		case PAD_DOWN:
 			PSXButtons.u = BUTTON_DIRECTION_U;
 			PSXButtons.v = BUTTON_DIRECTION_V;
@@ -516,7 +516,7 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 			PSXButtons.v = BUTTON_DIRECTION_V;
 			PSXButtons.attribute |= H_FLIP;
 		break;
-		
+
 		case PAD_L1:
 			// Fall through
 		case PAD_L2:
@@ -539,10 +539,10 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 			PSXButtons.h = 0;
 		break;
 	}
-	
+
 	PSXButtons.u += orig_u;
 	PSXButtons.v += orig_v;
-	
+
 	GfxSortSprite(&PSXButtons);
 
     switch(btn)
@@ -583,14 +583,14 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 void GfxSaveDisplayData(GsSprite *spr)
 {
 	while (GfxIsGPUBusy() == true);
-	
+
 	MoveImage(	DispEnv.x,
 				DispEnv.y,
 				GFX_SECOND_DISPLAY_X,
 				GFX_SECOND_DISPLAY_Y,
 				X_SCREEN_RESOLUTION,
 				Y_SCREEN_RESOLUTION);
-				
+
 	spr->x = 0;
 	spr->y = 0;
 	spr->tpage = GFX_SECOND_DISPLAY_TPAGE;
@@ -622,36 +622,36 @@ bool GfxTPageOffsetFromVRAMPosition(GsSprite * spr, short x, short y)
 	{
 		return false;
 	}
-	
+
 	spr->tpage = x / GFX_TPAGE_WIDTH;
 	spr->tpage += (short)(VRAM_W / GFX_TPAGE_WIDTH) * (short)(y / GFX_TPAGE_HEIGHT);
-	
+
 	spr->u = (x % GFX_TPAGE_WIDTH);
-	
+
 	if (spr->attribute & COLORMODE(COLORMODE_8BPP))
 	{
 		// On 8bpp images, it looks like U offset needs to be multiplied by 2.
 		spr->u <<= 1;
 	}
-	
+
 	spr->v = (y % GFX_TPAGE_HEIGHT);
-	
+
 	//Serial_printf("Sprite:\n\tTPAGE: %d\n\tU=%d\n\tV=%d\n",spr->tpage,spr->u, spr->v);
-	
+
 	return false;
 }
 
 TYPE_CARTESIAN_POS GfxIsometricToCartesian(TYPE_ISOMETRIC_POS* ptrIsoPos)
 {
 	TYPE_CARTESIAN_POS retCartPos;
-	
+
 	retCartPos.x = ptrIsoPos->x - (ptrIsoPos->x >> 1);
 	retCartPos.x -= ptrIsoPos->y >> 1;
-	
+
 	retCartPos.y = ptrIsoPos->y >> 2;
 	retCartPos.y += ptrIsoPos->x >> 2;
 	retCartPos.y -= ptrIsoPos->z;
-	
+
 	return retCartPos;
 }
 
@@ -663,26 +663,26 @@ void GfxDrawScene_NoSwap(void)
 TYPE_CARTESIAN_POS GfxIsometricFix16ToCartesian(TYPE_ISOMETRIC_FIX16_POS * ptrIso16Pos)
 {
 	TYPE_ISOMETRIC_POS IsoPos;
-	
+
 	IsoPos.x = (short)fix16_to_int(ptrIso16Pos->x);
 	IsoPos.y = (short)fix16_to_int(ptrIso16Pos->y);
 	IsoPos.z = (short)fix16_to_int(ptrIso16Pos->z);
-	
+
 	return GfxIsometricToCartesian(&IsoPos);
 }
 
 TYPE_ISOMETRIC_POS GfxCartesianToIsometric(TYPE_CARTESIAN_POS * ptrCartPos)
 {
 	TYPE_ISOMETRIC_POS IsoPos;
-	
+
 	/*isoX = cartX - cartY;
 	isoY = (cartX + cartY) / 2;*/
 	IsoPos.x = ptrCartPos->x + (ptrCartPos->y << 1);
 	IsoPos.y = (ptrCartPos->y << 1) - ptrCartPos->x;
-	
+
 	// Explicitly suppose z = 0
 	IsoPos.z = 0;
-	
+
 	return IsoPos;
 }
 
@@ -694,16 +694,16 @@ void GfxSetSplitScreen(uint8_t playerIndex)
 			DrawEnv.x = 0;
 			DrawEnv.w = X_SCREEN_RESOLUTION >> 1;
 		break;
-		
+
 		case PLAYER_TWO:
 			DrawEnv.x = X_SCREEN_RESOLUTION >> 1;
 			DrawEnv.w = X_SCREEN_RESOLUTION >> 1;
 		break;
-		
+
 		default:
 		break;
 	}
-	
+
 	GsSetDrawEnv_DMA(&DrawEnv);
 }
 
@@ -711,6 +711,6 @@ void GfxDisableSplitScreen(void)
 {
 	DrawEnv.x = 0;
 	DrawEnv.w = X_SCREEN_RESOLUTION;
-	
+
 	GsSetDrawEnv_DMA(&DrawEnv);
 }

@@ -2,7 +2,7 @@
 #define __TIMER_HEADER__
 
 /* **************************************
- * 	Includes							*							
+ * 	Includes							*
  * **************************************/
 
 #include "Global_Inc.h"

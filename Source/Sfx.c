@@ -44,15 +44,15 @@ bool SfxUploadSound(char* file_path, SsVag * vag)
 	{
 		return false;
 	}
-	 
+
 	if (voiceIndex < NUMBER_OF_VOICES)
 	{
 		SsReadVag(vag,SystemGetBufferAddress());
-		
+
 		SsUploadVag(vag);
-		
+
 		vag->cur_voice = voiceIndex;
-        
+
 		voiceIndex++;
 
         Serial_printf("SPU voices used = %d\n", voiceIndex);
@@ -76,7 +76,7 @@ bool SfxUploadSound(char* file_path, SsVag * vag)
 		Serial_printf("Maximum number of SPU voices exceeded!\n");
 		return false; //Maximum voices exceeded
 	}
-	
+
 	return true;
 }
 
@@ -96,17 +96,17 @@ void SfxStopMusic(void)
 	uint64_t timer = SystemGetGlobalTimer();
 	uint16_t CDVol = 0x7FFF;
 	uint8_t time_step = 5;
-		
+
 	while (CDVol > 0x3F)
 	{
 		CDVol>>=1;
 		SsCdVol(CDVol,CDVol);
-		
+
 		while (SystemGetGlobalTimer() < (timer + time_step) );
-		
+
 		timer = SystemGetGlobalTimer();
 	}
-	
+
 	CdSendCommand(CdlMute,0);
 #endif
 }

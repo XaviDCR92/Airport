@@ -52,7 +52,7 @@ bool SerialRead(uint8_t* ptrArray, size_t nBytes)
     do
     {
         //uint16_t timeout = SERIAL_TX_RX_TIMEOUT;
-        
+
         while ( (SIOCheckInBuffer() == SERIAL_RX_FIFO_EMPTY)); // Wait for RX FIFO not empty
 
         *(ptrArray++) = SIOReadByte();

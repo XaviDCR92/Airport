@@ -9,7 +9,7 @@
 /* *************************************
  * 	Defines
  * *************************************/
- 
+
 #define LINE_MAX_CHARACTERS 100
 
 /* **************************************
@@ -63,15 +63,15 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 	}
 
 	strPltBuffer = SystemGetBufferAddress();
-	
+
 	PltParserResetBuffers(ptrFlightData);
-	
+
 	// Now, buffer shall be read from line to line
-	
+
 	buffer = strtok_r((char*)strPltBuffer,"\n",&pltBufferSavePtr);
-	
+
 	aircraftIndex = 0;
-	
+
 	while (buffer != NULL)
 	{
 		if (buffer[0] == '#')
@@ -80,28 +80,28 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 			buffer = strtok_r(NULL,"\n",&pltBufferSavePtr);
 			continue;
 		}
-		
+
 		if (first_line_read == false)
 		{
 			// First (non-comment) line should indicate level time
 			// i.e.: 10:30, or 22:45
 			first_line_read = true;
-			
+
 			if (strlen(buffer) != PLT_FIRST_LINE_CHARACTERS)
 			{
 				// Format should always be HH:MM (5 characters)
 				// Treat any other combination as possible error
 				return false;
 			}
-			
+
 			if (buffer[PLT_COLON_POSITION] != ':')
 			{
 				// Check whether time format is HH:MM
 				return false;
 			}
-			
+
 			j = 0;
-			
+
 			for (i = 0; i < PLT_FIRST_LINE_CHARACTERS ; i++)
 			{
 				if (i == PLT_COLON_POSITION)
@@ -127,19 +127,19 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 		{
 			// File header (initial game time) has already been read
 			strncpy(lineBuffer, buffer, LINE_MAX_CHARACTERS);
-			
+
 			lineBufferPtr = strtok(lineBuffer,";");
-			
+
 			i = 0;
-			
+
 			Serial_printf("New line read: %s\n",buffer);
-			
+
 			while (lineBufferPtr != NULL)
 			{
 				switch(i)
 				{
 					case DEPARTURE_ARRIVAL_INDEX:
-					
+
 						if (strncmp(lineBufferPtr,"DEPARTURE",strlen("DEPARTURE") ) == 0)
 						{
 							ptrFlightData->FlightDirection[aircraftIndex] = DEPARTURE;
@@ -155,18 +155,18 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 							Serial_printf("Flight direction is not correct!\n");
 						}
 					break;
-					
+
 					case FLIGHT_NUMBER_INDEX:
 						strncpy(ptrFlightData->strFlightNumber[aircraftIndex],lineBufferPtr,GAME_MAX_CHARACTERS);
 						ptrFlightData->strFlightNumber[aircraftIndex][GAME_MAX_CHARACTERS - 1] = '\0';
 						Serial_printf("Aircraft %d flight number set to %s.\n",aircraftIndex,ptrFlightData->strFlightNumber[aircraftIndex]);
 					break;
-					
+
 					case PASSENGERS_INDEX:
 						ptrFlightData->Passengers[aircraftIndex] = atoi(lineBufferPtr);
 						Serial_printf("Aircraft %d passengers set to %d.\n",aircraftIndex,ptrFlightData->Passengers[aircraftIndex]);
 					break;
-					
+
 					case PARKING_INDEX:
 						if (ptrFlightData->FlightDirection[aircraftIndex] == DEPARTURE)
 						{
@@ -178,24 +178,24 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 						}
 						Serial_printf("Aircraft %d parking set to %d.\n",aircraftIndex,ptrFlightData->Parking[aircraftIndex]);
 					break;
-					
+
 					case HOURS_MINUTES_INDEX:
 						if (	strlen(lineBufferPtr) != strlen("HH:MM") )
 						{
 							Serial_printf("Hour minute format is not correct!\n");
 							break;
 						}
-						
+
 						// Copy hour
 						strHour[0] = lineBufferPtr[0];
 						strHour[1] = lineBufferPtr[1];
 						// Copy minutes
 						strMinutes[0] = lineBufferPtr[3];
 						strMinutes[1] = lineBufferPtr[4];
-						
+
 						ptrFlightData->Hours[aircraftIndex] = (uint8_t)atoi(strHour);
 						ptrFlightData->Minutes[aircraftIndex] = (uint8_t)atoi(strMinutes);
-						
+
 						Serial_printf("Aircraft %d time set to %.2d:%.2d.\n",	aircraftIndex,
 																		ptrFlightData->Hours[aircraftIndex],
 																		ptrFlightData->Minutes[aircraftIndex]	);
@@ -205,40 +205,40 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 						ptrFlightData->RemainingTime[aircraftIndex] = (uint16_t)atoi(lineBufferPtr);
 						Serial_printf("ptrFlightData->RemainingTime[%d] = %d\n", aircraftIndex, ptrFlightData->RemainingTime[aircraftIndex]);
 					break;
-					
-					
+
+
 					default:
 					break;
 				}
-				
+
 				lineBufferPtr = strtok(NULL,";");
 				i++;
 			}
-			
+
 			ptrFlightData->State[aircraftIndex] = STATE_IDLE;
 			aircraftIndex++;
 		}
-		
+
 		buffer = strtok_r(NULL,"\n",&pltBufferSavePtr);
 	}
-	
+
 	ptrFlightData->nAircraft = aircraftIndex;	//Set total number of aircraft used
 	ptrFlightData->ActiveAircraft = 0;
-	
+
 	Serial_printf("Number of aircraft parsed: %d\n",ptrFlightData->nAircraft);
-	
+
 	return true;
 }
 
 void PltParserResetBuffers(TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	uint8_t i;
-	
+
 	for (i = 0; i < GAME_MAX_AIRCRAFT ; i++)
 	{
 		memset(ptrFlightData->strFlightNumber[i],'\0',GAME_MAX_CHARACTERS);
 	}
-	
+
 	memset(ptrFlightData->FlightDirection,DEPARTURE,GAME_MAX_AIRCRAFT);
 	memset(ptrFlightData->Passengers,0,GAME_MAX_AIRCRAFT);
 	memset(ptrFlightData->Hours,0,GAME_MAX_AIRCRAFT);
@@ -342,7 +342,7 @@ uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)
 	for (j = 0; j < nAircraft; j++)
 	{
 		uint8_t dep_arr_rand = SystemRand(0,100);
-		
+
 		if (dep_arr_rand < 50)
 		{
 			// Set departure flight

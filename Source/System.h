@@ -2,7 +2,7 @@
 #define __SYSTEM_HEADER__
 
 /* **************************************
- * 	Includes							*							
+ * 	Includes							*
  * **************************************/
 
 #include "Global_Inc.h"
@@ -134,7 +134,7 @@ void SystemCalculateSine(void);
 unsigned char SystemGetSineValue(void);
 
 /* **************************************
- * 	Global Variables					*	
+ * 	Global Variables					*
  * **************************************/
 
 #endif //__SYSTEM_HEADER__

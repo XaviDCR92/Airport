@@ -10,10 +10,10 @@
 /* *************************************
  * 	Defines
  * *************************************/
- 
-/*	The memory is split into 16 blocks (of 8 Kbytes each), and each block 
+
+/*	The memory is split into 16 blocks (of 8 Kbytes each), and each block
  *	is split into 64 sectors (of 128 bytes each). The first block is used
- *	as Directory, the remaining 15 blocks are containing Files, each 
+ *	as Directory, the remaining 15 blocks are containing Files, each
  *	file can occupy one or more blocks.	*/
 
 #define MEMCARD_BLOCKS_PER_CARD 15
@@ -30,7 +30,7 @@
 /* *************************************
  * 	Structs and enums
  * *************************************/
- 
+
 typedef enum t_CardBlock
 {
 	SLOT_ONE = 0,
@@ -72,25 +72,25 @@ typedef struct t_MemCard
 	uint8_t IconNumber; // Possible values : 1 ... 3
 	uint8_t FileName[MEMCARD_FILENAME_SIZE];
 	MEMCARD_BLOCK_COUNT BlockCount; // Look at MEMCARD_BLOCK_COUNT enum
-	
+
 	/*
 	*	The first some letters of the filename should indicate the game
 	*	to which the file belongs, in case of commercial games this is
 	*	conventionally done like so: Two character region code:
-	*	"BI"=Japan, "BE"=Europe, "BA"=America						
+	*	"BI"=Japan, "BE"=Europe, "BA"=America
 	* 	followed by 10 character game code,
 	*	in "AAAA-NNNNN" form
-	* 
+	*
 	* 	Where the "AAAA" part does imply the region too;
 	* 	(SLPS/SCPS=Japan, SLUS/SCUS=America, SLES/SCES=Europe)
 	* 	(SCxS=Made by Sony, SLxS=Licensed by Sony),
 	* 	followed by up to 8 characters, "abcdefgh"
-	* 
+	*
 	*	(which may identify the file if the game uses multiple files;
 	* 	this part often contains a random string which seems to be
 	* 	allowed to contain any chars in range of 20h..7Fh, of course it
 	* 	shouldn't contain "?" and "*" wildcards).*/
-	
+
 	uint8_t Icons[MEMCARD_NUMBER_OF_ICONS][MEMCARD_ICON_SIZE];
 	uint8_t CLUT[MEMCARD_NUMBER_OF_ICONS][MEMCARD_CLUT_SIZE];
 	uint8_t* Data; // Buffer pointed to by "Data" must be 128 KB or higher!
@@ -101,9 +101,9 @@ typedef struct t_MemCard
  * 	Global prototypes
  * *************************************/
 
-// Inits default values for memory card blocks 
+// Inits default values for memory card blocks
 void MemCardInit(void);
- 
+
 // Sets null values to structure pointed to by ptrBlockData.
 void MemCardResetBlockData(TYPE_BLOCK_DATA * ptrBlockData);
 
@@ -141,7 +141,7 @@ bool MemCardSaveData(TYPE_BLOCK_DATA * ptrBlockData);
 /* *************************************
  * 	Global variables
  * *************************************/
- 
+
 extern TYPE_BLOCK_DATA MemCardData[MEMCARD_BLOCKS_PER_CARD][MEMCARD_NUMBER_OF_SLOTS];
 
 #endif //__MEMCARD_HEADER__

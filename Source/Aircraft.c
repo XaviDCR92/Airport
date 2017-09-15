@@ -58,7 +58,7 @@ static char* AircraftLiveryNamesTable[] = {"PHX", NULL};
 static AIRCRAFT_LIVERY AircraftLiveryTable[] = {AIRCRAFT_LIVERY_0, AIRCRAFT_LIVERY_UNKNOWN};
 
 static char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\ARROW.TIM;1"    };
-									
+
 static void* GameFileDest[] = { (GsSprite*)&ArrowSpr                    };
 
 // Used to quickly link FlightData indexes against AircraftData indexes.
@@ -239,7 +239,7 @@ void AircraftHandler(void)
 		{
 			continue;
 		}
-		
+
 		AircraftDirection(ptrAircraft);
 		AircraftAttitude(ptrAircraft);
 		AircraftSpeed(ptrAircraft);
@@ -249,7 +249,7 @@ void AircraftHandler(void)
 		for (j = 0; j < GAME_MAX_AIRCRAFT; j++)
 		{
 			TYPE_AIRCRAFT_DATA* ptrOtherAircraft = &AircraftData[j];
-			
+
 			if (i == j)
 			{
 				continue;
@@ -331,7 +331,7 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx)
     shadowIsoPos.x = ptrAircraft->IsoPos.x;
     shadowIsoPos.y = ptrAircraft->IsoPos.y;
     shadowIsoPos.z = 0;
-    
+
     if (ptrAircraft->State == STATE_IDLE)
     {
         return;
@@ -376,7 +376,7 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx)
     {
         static uint8_t aircraft_sine;
         static bool aircraft_sine_decrease;
-        
+
         if (aircraft_sine_decrease == false)
 		{
 			if (aircraft_sine < 240)
@@ -434,10 +434,10 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx)
             {
                 ArrowSpr.y = AircraftSpr.y;
             }
-            
+
             GfxSortSprite(&ArrowSpr);
         }
-        
+
     }
     else
     {
@@ -533,7 +533,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 		{
 			ptrAircraft->IsoPos.x = targetPos.x;
 			ptrAircraft->IsoPos.y = targetPos.y;
-			
+
 			if (ptrAircraft->Target[++ptrAircraft->TargetIdx] == 0)
 			{
 				Serial_printf("All targets reached!\n");
@@ -718,21 +718,21 @@ AIRCRAFT_DIRECTION AircraftGetDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 uint16_t* AircraftGetTargets(uint8_t index)
 {
 	TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(index);
-	
+
 	return ptrAircraft->Target;
 }
 
 uint8_t AircraftGetTargetIdx(uint8_t index)
 {
 	TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(index);
-	
+
 	return ptrAircraft->TargetIdx;
 }
 
 bool AircraftMoving(uint8_t index)
 {
 	TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(index);
-	
+
 	return (bool)ptrAircraft->Speed;
 }
 

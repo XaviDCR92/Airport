@@ -11,7 +11,7 @@
 /* *************************************
  * 	Global prototypes
  * *************************************/
- 
+
 void AircraftInit(void);
 void AircraftHandler(void);
 void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx);

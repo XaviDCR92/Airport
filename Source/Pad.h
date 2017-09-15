@@ -17,7 +17,7 @@
 /* *************************************
  * 	Global prototypes
  * *************************************/
- 
+
 void PadInit(void);
 void PadClearData(void);
 

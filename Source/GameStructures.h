@@ -157,7 +157,7 @@ typedef struct
 		bool LockTarget;
 		// Player is unboarding passengers
 		bool Unboarding;
-	
+
 	// Stores indexes for player-specific active aircraft
 	// Used to relate SelectedAircraft agains FlightData index
 	uint8_t	ActiveAircraftList[GAME_MAX_AIRCRAFT];
@@ -171,7 +171,7 @@ typedef struct
 	uint8_t	SelectedAircraft;
 	// Aircraft being followed by camera
 	uint8_t LockedAircraft;
-	// Index for GameRwy buffer on "Select runway" mode 
+	// Index for GameRwy buffer on "Select runway" mode
 	uint16_t SelectedRunway;
 	// Tile pointed to by cursor
 	uint16_t SelectedTile;
@@ -191,7 +191,7 @@ typedef struct
 	uint8_t UnboardingSequenceIdx;
 	// Show passengers left
 	uint8_t PassengersLeftSelectedAircraft;
-	
+
 	bool	(*PadKeyPressed_Callback)(unsigned short);
 	bool	(*PadKeyReleased_Callback)(unsigned short);
 	bool	(*PadKeySinglePress_Callback)(unsigned short);
