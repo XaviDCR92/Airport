@@ -20,7 +20,6 @@
  * 	Defines								*	
  * *************************************/
 
-#define MAIN_MENU_FILES 1
 #define BUTTON_SIZE 64
 #define SELECTED_BUTTON_LUMINANCE 0xC0
 
@@ -133,10 +132,10 @@ static TYPE_CHEAT SerialCheat;
 static char* MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
 									"cdrom:\\DATA\\SOUNDS\\BELL.VAG;1"		,
 									"cdrom:\\DATA\\SOUNDS\\ACCEPT.VAG;1"	,
-									"cdrom:\\DATA\\SPRITES\\PSXDISK.TIM;1"	,
-									"cdrom:\\DATA\\SPRITES\\INTROFNT.TIM;1"	,
 									"cdrom:\\DATA\\SPRITES\\BUTTONS.TIM;1"	,
 #ifndef NO_INTRO
+                                    "cdrom:\\DATA\\SPRITES\\PSXDISK.TIM;1"	,
+                                    "cdrom:\\DATA\\SPRITES\\INTROFNT.TIM;1"	,
 									"cdrom:\\DATA\\SPRITES\\GPL.TIM;1"		,
 									"cdrom:\\DATA\\SPRITES\\OPENSRC.TIM;1"	,
 									"cdrom:\\DATA\\SOUNDS\\TRAYCL.VAG;1"	,
@@ -144,13 +143,13 @@ static char* MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
 #endif // NO_INTRO
 									};
 									
-static void* MainMenuDest[] = {	(GsSprite*)&MenuSpr			,
+static void* MainMenuDest[] = {     (GsSprite*)&MenuSpr			,
 									(SsVag*)&BellSnd			,
 									(SsVag*)&AcceptSnd			,
-									(GsSprite*)&PsxDisk			,
-									(GsSprite*)&PSXSDKIntroFont	,
 									(GsSprite*)&PSXButtons		,
 #ifndef NO_INTRO
+                                    (GsSprite*)&PsxDisk			,
+                                    (GsSprite*)&PSXSDKIntroFont	,
 									(GsSprite*)&GPL_Logo		,
 									(GsSprite*)&OpenSource_Logo	,
 									(SsVag*)&TrayClSnd			,
