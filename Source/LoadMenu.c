@@ -426,8 +426,6 @@ void ISR_LoadMenuVBlank(void)
 					LOADING_BAR_Y + LOADING_BAR_HEIGHT + 8,
 					strCurrentFile	);
 
-	//FontSetFlags(&SmallFont, FONT_NOFLAGS);
-
 	GfxDrawScene_Fast();
 }
 

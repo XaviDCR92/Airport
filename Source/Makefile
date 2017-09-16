@@ -17,7 +17,7 @@ DEFINE +=  -DNO_INTRO
 
 # Compiler flags
 LIBS= -lfixmath
-CC_FLAGS = -Wall -Werror -c -Os -Wfatal-errors -g
+CC_FLAGS = -Wall -Werror -c -Os -Wfatal-errors
 
 # Path definitions
 PSXSDK_PATH = /usr/local/psxsdk

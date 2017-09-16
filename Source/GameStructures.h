@@ -46,7 +46,8 @@ typedef enum t_flstate
 	STATE_CLIMBING,
 	STATE_APPROACH,
 	STATE_FINAL,
-	STATE_STOPPED,
+	STATE_USER_STOPPED,
+    STATE_AUTO_STOPPED,
 	STATE_LANDED
 }FL_STATE;
 
@@ -203,12 +204,12 @@ typedef struct
 
 typedef enum t_fontflags
 {
-	FONT_NOFLAGS		= 0,
-	FONT_CENTERED		= 0x01,
-	FONT_WRAP_LINE		= 0x02,
-	FONT_BLEND_EFFECT	= 0x04,
-	FONT_1HZ_FLASH		= 0x08,
-	FONT_2HZ_FLASH		= 0x10
+	FONT_NOFLAGS		= 1 << 0,
+	FONT_CENTERED		= 1 << 1,
+	FONT_WRAP_LINE		= 1 << 2,
+	FONT_BLEND_EFFECT	= 1 << 3,
+	FONT_1HZ_FLASH		= 1 << 4,
+	FONT_2HZ_FLASH		= 1 << 5
 }FONT_FLAGS;
 
 typedef struct t_Font
@@ -220,7 +221,7 @@ typedef struct t_Font
 	char init_ch;
 	uint8_t char_per_row;
 	uint8_t max_ch_wrap;
-	FONT_FLAGS flags;
+	volatile FONT_FLAGS flags;
 	short spr_w;
 	short spr_h;
 	short spr_u;

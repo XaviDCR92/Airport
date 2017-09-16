@@ -24,7 +24,7 @@
  * *************************************/
 
 static char _internal_text[FONT_INTERNAL_TEXT_BUFFER_MAX_SIZE];
-static unsigned char _blend_effect_lum;
+static volatile unsigned char _blend_effect_lum;
 
 bool FontLoadImage(char* strPath, TYPE_FONT * ptrFont)
 {
@@ -107,6 +107,8 @@ void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 
 	va_list ap;
 
+    // Do not print anything if either 1Hz or 2Hz flags are configured
+    // and 1/2Hz signal has not been yet emitted by Gfx.
 	if (ptrFont->flags & FONT_1HZ_FLASH)
 	{
 		if (Gfx1HzFlash() == false)
@@ -149,7 +151,7 @@ void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 				y += ptrFont->char_h;
 			break;
 			default:
-				if (	(ptrFont->flags & FONT_WRAP_LINE) && (ptrFont->max_ch_wrap != 0) )
+				if ( (ptrFont->flags & FONT_WRAP_LINE) && (ptrFont->max_ch_wrap != 0) )
 				{
 					if (++line_count >= ptrFont->max_ch_wrap)
 					{

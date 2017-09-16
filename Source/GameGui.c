@@ -602,7 +602,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 				FontPrintText(&SmallFont, AIRCRAFT_LOCK_TARGET_TEXT_X, AIRCRAFT_LOCK_TARGET_TEXT_Y, "Lock target");
 			}
 
-            if (ptrFlightData->State[ptrPlayer->FlightDataSelectedAircraft] == STATE_STOPPED)
+            if (ptrFlightData->State[ptrPlayer->FlightDataSelectedAircraft] == STATE_USER_STOPPED)
             {
                 GfxDrawButton(AIRCRAFT_STOP_X, AIRCRAFT_STOP_Y, PAD_L1);
                 FontPrintText(&SmallFont, AIRCRAFT_STOP_TEXT_X, AIRCRAFT_STOP_TEXT_Y, "Resume taxiing");
@@ -863,7 +863,9 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlight
 								"Holding"	);
 			break;
 
-            case STATE_STOPPED:
+            case STATE_USER_STOPPED:
+                // Fall through
+            case STATE_AUTO_STOPPED:
 				FontPrintText(	&SmallFont,
 								AircraftDataDirection_X + AircraftDataState_X_Offset,
 								AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),

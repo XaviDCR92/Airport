@@ -179,17 +179,9 @@ void GfxSetPrimitiveList(void)
 
 void GfxDrawScene_Fast(void)
 {
-    enum
-    {
-        FPS_INFO_X = 16,
-        FPS_INFO_Y = 16
-    };
-
     SystemDevMenu();
 
     FontSetFlags(&SmallFont, FONT_NOFLAGS);
-
-    FontPrintText(&SmallFont, FPS_INFO_X, FPS_INFO_Y, "%d/%d", SystemGetFPS(), REFRESH_FREQUENCY);
 
 	if (System1SecondTick() == true)
 	{
@@ -213,9 +205,17 @@ bool GfxReadyForDMATransfer(void)
 
 void GfxDrawScene(void)
 {
+    enum
+    {
+        FPS_INFO_X = 16,
+        FPS_INFO_Y = 16
+    };
+
 	while (	(SystemRefreshNeeded() == false)
 				||
 			(GfxIsGPUBusy() == true)		);
+
+    FontPrintText(&SmallFont, FPS_INFO_X, FPS_INFO_Y, "%d/%d", SystemGetFPS(), REFRESH_FREQUENCY);
 
 	GfxDrawScene_Fast();
 

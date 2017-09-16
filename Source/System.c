@@ -18,7 +18,7 @@
 
 #define END_STACK_PATTERN (uint32_t) 0x18022015
 #define BEGIN_STACK_ADDRESS (uint32_t*) 0x801FFF00
-#define STACK_SIZE 0x1000
+#define STACK_SIZE (4 << 10)    // 4 KB
 #define I_MASK (*(volatile unsigned int*)0x1F801074)
 
 /* *************************************

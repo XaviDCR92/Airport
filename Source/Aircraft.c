@@ -80,6 +80,7 @@ static void AircraftAttitude(TYPE_AIRCRAFT_DATA* ptrAircraft);
 static void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* ptrAircraft);
 static void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft);
 static bool AircraftCheckCollision(TYPE_AIRCRAFT_DATA* ptrRefAircraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft);
+static bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* ptrAicraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft);
 
 void AircraftInit(void)
 {
@@ -234,6 +235,7 @@ void AircraftHandler(void)
 	{
 		TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[i];
 		uint8_t j;
+        bool collision_warning = false;
 
 		if (ptrAircraft->State == STATE_IDLE)
 		{
@@ -250,40 +252,102 @@ void AircraftHandler(void)
 		{
 			TYPE_AIRCRAFT_DATA* ptrOtherAircraft = &AircraftData[j];
 
+            if (ptrOtherAircraft->State == STATE_IDLE)
+			{
+				continue;
+			}
+
 			if (i == j)
 			{
 				continue;
 			}
-            else if (j < i)
+            else
             {
-                // Collision already calculated.
-                continue;
+                // Check whether aircraft should stop in order to avoid collision against
+                // other aircraft.
+                // WARNING: only STATE_TAXIING can be used to automatically stop an aircraft
+                // when calling GameStopFlight() or GameResumeFlightFromAutoStop().
+                collision_warning = AircraftCheckPath(ptrAircraft, ptrOtherAircraft);
             }
 
-			if (AircraftData[j].State == STATE_IDLE)
-			{
-				continue;
-			}
+            if (j > i)
+            {
+                if (AircraftCheckCollision(ptrAircraft, ptrOtherAircraft) == true)
+                {
+                    GameAircraftCollision(ptrAircraft->FlightDataIdx);
+                    break;
+                }
+            }
+            else
+            {
+                // Collision already calculated.
+            }
 
-			if (AircraftCheckCollision(ptrAircraft, ptrOtherAircraft) == true)
-			{
-				GameAircraftCollision(ptrAircraft->FlightDataIdx);
-				break;
-			}
 		}
+
+        if (collision_warning == true)
+        {
+            GameStopFlight(ptrAircraft->FlightDataIdx);
+        }
+        else
+        {
+            GameResumeFlightFromAutoStop(ptrAircraft->FlightDataIdx);
+        }
+        
 
 		ptrAircraft->State = GameGetFlightDataStateFromIdx(ptrAircraft->FlightDataIdx);
 	}
+}
+
+bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* ptrAircraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft)
+{
+    uint16_t currentTile = AircraftGetTileFromFlightDataIndex(ptrAircraft->FlightDataIdx);
+    uint16_t nextTile = 0; // Keep compiler happy
+    uint16_t otherAircraft_currentTile = AircraftGetTileFromFlightDataIndex(ptrOtherAircraft->FlightDataIdx);
+
+    switch (ptrAircraft->Direction)
+    {
+        case AIRCRAFT_DIR_EAST:
+            nextTile = currentTile + 1;
+        break;
+
+        case AIRCRAFT_DIR_WEST:
+            nextTile = currentTile - 1;
+        break;
+
+        case AIRCRAFT_DIR_NORTH:
+            nextTile = currentTile - GameGetLevelColumns();
+        break;
+
+        case AIRCRAFT_DIR_SOUTH:
+            nextTile = currentTile - GameGetLevelColumns();
+        break;
+
+        case AIRCRAFT_DIR_NO_DIRECTION:
+            // Fall through
+        default:
+            Serial_printf("AircraftCheckPath: Undefined direction\n");
+        return false;
+    }
+
+    if (    (otherAircraft_currentTile == nextTile)
+                        ||
+            (otherAircraft_currentTile == currentTile)  )
+    {
+        if (ptrOtherAircraft->Speed == 0)
+        {
+            // Make ptrAircraft stop if ptrOtherAircraft is nearby and not moving!
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft)
 {
 	switch(ptrAircraft->State)
 	{
-        case STATE_STOPPED:
-            ptrAircraft->Speed = 0;
-        break;
-
 		case STATE_FINAL:
 			ptrAircraft->Speed = AircraftSpeedsTable[AIRCRAFT_SPEED_FINAL];
 		break;
@@ -300,6 +364,10 @@ void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft)
 			ptrAircraft->Speed = AircraftSpeedsTable[AIRCRAFT_SPEED_GROUND];
 		break;
 
+        case STATE_USER_STOPPED:
+            // Fall through
+        case STATE_AUTO_STOPPED:
+            // Fall through
 		case STATE_READY_FOR_TAKEOFF:
 			// Fall through
 		case STATE_UNBOARDING:
@@ -688,21 +756,6 @@ TYPE_AIRCRAFT_DATA* AircraftFromFlightDataIndex(uint8_t index)
     }
 
     return &AircraftData[idx];
-
-	/*uint8_t i;
-	TYPE_AIRCRAFT_DATA* ptrAircraft;
-
-	for (i = 0; i < GAME_MAX_AIRCRAFT; i++)
-	{
-		ptrAircraft = &AircraftData[i];
-
-		if (ptrAircraft->FlightDataIdx == index)
-		{
-			return ptrAircraft;
-		}
-	}
-
-	return NULL;*/
 }
 
 void AircraftFromFlightDataIndexAddTargets(uint8_t index, uint16_t* targets)

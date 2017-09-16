@@ -46,4 +46,6 @@ bool		GameInsideLevelFromIsoPos(TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos);
 void		GameRemoveFlight(uint8_t idx, bool successful);
 void		GameCalculateRemainingAircraft(void);
 void		GameAircraftCollision(uint8_t AircraftIdx);
+void        GameStopFlight(uint8_t AicraftIdx);
+void        GameResumeFlightFromAutoStop(uint8_t AircraftIdx);
 #endif //__GAME_HEADER__

@@ -2344,21 +2344,20 @@ void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 					break;
 				}
 			}
-
-			Serial_printf("aircraftState = %d\n", aircraftState);
-			Serial_printf("AircraftIdx = %d\n", AircraftIdx);
 		}
         else if (ptrPlayer->PadKeySinglePress_Callback(PAD_L1) == true)
         {
-            FL_STATE* AircraftState = &FlightData.State[ptrPlayer->FlightDataSelectedAircraft];
+            FL_STATE* ptrAircraftState = &FlightData.State[ptrPlayer->FlightDataSelectedAircraft];
 
-            if (*AircraftState == STATE_TAXIING)
+            if (*ptrAircraftState == STATE_TAXIING)
             {
-                *AircraftState = STATE_STOPPED;
+                *ptrAircraftState = STATE_USER_STOPPED;
             }
-            else if (*AircraftState == STATE_STOPPED)
+            else if (   (*ptrAircraftState == STATE_USER_STOPPED)
+                                            ||
+                        (*ptrAircraftState == STATE_AUTO_STOPPED)   )
             {
-                *AircraftState = STATE_TAXIING;
+                *ptrAircraftState = STATE_TAXIING;
             }
         }
 	}
@@ -3947,4 +3946,60 @@ void GameAircraftCollision(uint8_t AircraftIdx)
 {
 	GameAircraftCollisionFlag = true;
 	GameAircraftCollisionIdx = AircraftIdx;
+}
+
+/* *******************************************************************************************
+ *
+ * @name: void GameAircraftCollision(uint8_t AircraftIdx)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ *
+ *  uint8_t AircraftIdx:
+ *      Index from FlightData.
+ *
+ * @brief:
+ *  Event triggered by Aircraft when aircraft A is getting close to non-moving aircraft B
+ *  and a security stop must be done in order to avoid collision.
+ *
+ * *******************************************************************************************/
+
+void GameStopFlight(uint8_t AircraftIdx)
+{
+    FL_STATE* ptrState = &FlightData.State[AircraftIdx];
+    
+    if (*ptrState == STATE_TAXIING)
+    {
+        // Only allow auto stop under taxi
+        *ptrState = STATE_AUTO_STOPPED;
+    }
+}
+
+/* *******************************************************************************************
+ *
+ * @name: void GameAircraftCollision(uint8_t AircraftIdx)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @param:
+ *
+ *  uint8_t AircraftIdx:
+ *      Index from FlightData.
+ *
+ * @brief:
+ *  Event triggered by Aircraft when aircraft A is no longer getting close to aircraft B, so
+ *  that taxiing can be resumed.
+ *
+ * *******************************************************************************************/
+ 
+void GameResumeFlightFromAutoStop(uint8_t AircraftIdx)
+{
+    FL_STATE* ptrState = &FlightData.State[AircraftIdx];
+
+    if (*ptrState == STATE_AUTO_STOPPED)
+    {
+        // Only recovery to STATE_TAXIING is allowed.
+        *ptrState = STATE_TAXIING;
+    }
 }
