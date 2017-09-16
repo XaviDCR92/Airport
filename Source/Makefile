@@ -22,7 +22,7 @@ CC_FLAGS = -Wall -Werror -c -Os -Wfatal-errors
 # Path definitions
 PSXSDK_PATH = /usr/local/psxsdk
 PATH := $(PATH):$(PSXSDK_PATH)/bin/
-PROJECT_DIR = ~/$(PROJECT)
+PROJECT_DIR = ~/Airport
 CDROM_ROOT=$(PROJECT_DIR)/cdimg
 BIN_TARGET_PATH = $(PROJECT_DIR)/Bin
 
@@ -127,6 +127,9 @@ clean:
 	rm -f $(OBJ_LEVELS_DIR)/*.PLT
 	rm -f $(OBJ_SPRITES_PATH)/*.TIM
 	rm -f $(OBJ_FONTS_PATH)/*.TIM
+	
+$(OBJ_DIR)/%.d: $(SRC_DIR)/%.c
+	$(CC) $< $(DEFINE) $(CC_FLAGS) -MM > $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(OBJ_DIR)/%.d
 	$(CC) $< -o $@ $(DEFINE) $(CC_FLAGS) -MMD
