@@ -108,6 +108,7 @@ typedef struct
  * 	Local prototypes					*
  * **************************************/
 
+static void MenuCheatInit(void);
 static void MainMenuDrawButton(TYPE_MMBtn * btn);
 static void PlayMenu(void);
 static void OptionsMenu(void);
@@ -122,6 +123,7 @@ static void MenuTestCheat(void);
  * **************************************/
 
 static GsSprite MenuSpr;
+static GsSprite MenuStarSpr;
 static SsVag BellSnd;
 static SsVag AcceptSnd;
 static TYPE_CHEAT TestCheat;
@@ -133,6 +135,7 @@ static char* MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
 									"cdrom:\\DATA\\SOUNDS\\BELL.VAG;1"		,
 									"cdrom:\\DATA\\SOUNDS\\ACCEPT.VAG;1"	,
 									"cdrom:\\DATA\\SPRITES\\BUTTONS.TIM;1"	,
+									"cdrom:\\DATA\\SPRITES\\MENUSTAR.TIM;1"	,
 #ifndef NO_INTRO
                                     "cdrom:\\DATA\\SPRITES\\PSXDISK.TIM;1"	,
                                     "cdrom:\\DATA\\FONTS\\INTROFNT.TIM;1"	,
@@ -147,6 +150,7 @@ static void* MainMenuDest[] = {     (GsSprite*)&MenuSpr			,
 									(SsVag*)&BellSnd			,
 									(SsVag*)&AcceptSnd			,
 									(GsSprite*)&PSXButtons		,
+									(GsSprite*)&MenuStarSpr		,
 #ifndef NO_INTRO
                                     (GsSprite*)&PsxDisk			,
                                     (GsSprite*)&PSXSDKIntroFont	,
@@ -235,7 +239,14 @@ void MainMenuInit(void)
 
 	MainMenuMinimumBtn = PLAY_BUTTON_INDEX;
 
-	TestCheat.Callback = &MenuTestCheat;
+    MenuCheatInit();
+
+	LoadMenuEnd();
+}
+
+void MenuCheatInit(void)
+{
+    TestCheat.Callback = &MenuTestCheat;
 	memset(TestCheat.Combination,0,CHEAT_ARRAY_SIZE);
 	//memcpy(myarray, (int [5]){a,b,c,d,e}, 5*sizeof(int));
 
@@ -287,8 +298,6 @@ void MainMenuInit(void)
             sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
 
     PadAddCheat(&SerialCheat);
-
-	LoadMenuEnd();
 }
 
 void MainMenu(void)
@@ -303,9 +312,16 @@ void MainMenu(void)
 
 	while (1)
 	{
+        enum
+        {
+            MAIN_MENU_BG_R = 0,
+            MAIN_MENU_BG_G = 0,
+            MAIN_MENU_BG_B = 40
+        };
+
 		MainMenuButtonHandler();
 
-        GsSortCls(0,0,40);
+        GsSortCls(MAIN_MENU_BG_R, MAIN_MENU_BG_G, MAIN_MENU_BG_B);
 
 		switch(menuLevel)
 		{
@@ -464,12 +480,9 @@ void MainMenuButtonHandler(void)
 		{
 			btn_selected = PLAY_BUTTON_INDEX;
 		}
-
 	}
 
 	MainMenuBtn[btn_selected].selected = true;
-
-
 }
 
 void MainMenuDrawButton(TYPE_MMBtn * btn)
@@ -508,29 +521,21 @@ void MainMenuDrawButton(TYPE_MMBtn * btn)
 		case PLAY_BUTTON_INDEX:
 			MenuSpr.x = MAIN_MENU_PLAY_BUTTON_X;
 			MenuSpr.y = MAIN_MENU_PLAY_BUTTON_Y;
-			MenuSpr.u += btn->offset_u;
-			MenuSpr.v += btn->offset_v;
 		break;
 
 		case OPTIONS_BUTTON_INDEX:
 			MenuSpr.x = MAIN_MENU_OPTIONS_BUTTON_X;
 			MenuSpr.y = MAIN_MENU_OPTIONS_BUTTON_Y;
-			MenuSpr.u += btn->offset_u;
-			MenuSpr.v += btn->offset_v;
 		break;
 
 		case ONE_PLAYER_BUTTON_INDEX:
 			MenuSpr.x = MAIN_MENU_ONE_PLAYER_BUTTON_X;
 			MenuSpr.y = MAIN_MENU_ONE_PLAYER_BUTTON_Y;
-			MenuSpr.u += btn->offset_u;
-			MenuSpr.v += btn->offset_v;
 		break;
 
 		case TWO_PLAYER_BUTTON_INDEX:
 			MenuSpr.x = MAIN_MENU_TWO_PLAYER_BUTTON_X;
 			MenuSpr.y = MAIN_MENU_TWO_PLAYER_BUTTON_Y;
-			MenuSpr.u += btn->offset_u;
-			MenuSpr.v += btn->offset_v;
 
             // Exception: turn option dimmer if second player pad isn't connected
 
@@ -545,7 +550,9 @@ void MainMenuDrawButton(TYPE_MMBtn * btn)
 		default:
 		break;
 	}
-
+    
+    MenuSpr.u += btn->offset_u;
+    MenuSpr.v += btn->offset_v;
     MenuSpr.y -= MainMenuBtnAni[btn->timer];
     GsSortSprite(&MenuSpr);
 }
