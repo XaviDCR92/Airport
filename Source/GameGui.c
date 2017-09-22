@@ -206,10 +206,10 @@ static bool GameGuiClearPassengersLeft_Flag;
 static bool GameGuiBubbleShowFlag;
 static bool GameGuiBubbleVibrationFlag;
 
-static char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\BUBBLE.TIM;1"	,
-								"cdrom:\\DATA\\FONTS\\FONT_1.FNT;1"		,
-								"cdrom:\\DATA\\SPRITES\\DEPARR.TIM;1"	,
-								"cdrom:\\DATA\\SPRITES\\PAGEUPDN.TIM;1"	};
+static const char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\BUBBLE.TIM;1"	,
+                                        "cdrom:\\DATA\\FONTS\\FONT_1.FNT;1"		,
+                                        "cdrom:\\DATA\\SPRITES\\DEPARR.TIM;1"	,
+                                        "cdrom:\\DATA\\SPRITES\\PAGEUPDN.TIM;1"	};
 
 static void* GameFileDest[] = {(GsSprite*)&BubbleSpr		,
 								(TYPE_FONT*)&RadioFont		,

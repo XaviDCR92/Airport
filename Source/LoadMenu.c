@@ -78,7 +78,7 @@ static void LoadMenuInit(void);
 static void ISR_LoadMenuVBlank(void);
 static bool LoadMenuISRHasEnded(void);
 static bool LoadMenuISRHasStarted(void);
-static void LoadMenuLoadFileList(	char* fileList[], 	void* dest[],
+static void LoadMenuLoadFileList(	const char* fileList[], 	void* dest[],
 									uint8_t szFileList, uint8_t szDestList);
 
 /* *************************************
@@ -91,9 +91,9 @@ static GsSprite LoadMenuTitleSpr;
 static GsLine LoadMenuBarLines[LOADING_BAR_N_LINES];
 static GsRectangle LoadMenuBarRect;
 
-static char* LoadMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\PLANE.TIM;1",
-									"cdrom:\\DATA\\SPRITES\\LOADING.TIM;1",
-									"cdrom:\\DATA\\FONTS\\FONT_2.FNT;1"	};
+static const char* LoadMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\PLANE.TIM;1",
+                                        "cdrom:\\DATA\\SPRITES\\LOADING.TIM;1",
+                                        "cdrom:\\DATA\\FONTS\\FONT_2.FNT;1"	};
 
 static void* LoadMenuDest[] = { (GsSprite*)&LoadMenuPlaneSpr,
 								(GsSprite*)&LoadMenuTitleSpr,
@@ -439,7 +439,7 @@ bool LoadMenuISRHasStarted(void)
 	return isr_started;
 }
 
-void LoadMenu(	char*	fileList[],
+void LoadMenu(	const char*	fileList[],
 				void* dest[],
 				uint8_t szFileList	, uint8_t szDestList)
 {
@@ -451,11 +451,10 @@ void LoadMenu(	char*	fileList[],
 		while (LoadMenuISRHasStarted() == false);
 	}
 
-	LoadMenuLoadFileList(fileList,dest,szFileList,szDestList);
-
+	LoadMenuLoadFileList(fileList, dest, szFileList, szDestList);
 }
 
-void LoadMenuLoadFileList(	char* fileList[], 	void* dest[],
+void LoadMenuLoadFileList(	const char* fileList[], 	void* dest[],
 							uint8_t szFileList, uint8_t szDestList)
 {
 	char aux_file_name[100];
@@ -472,7 +471,7 @@ void LoadMenuLoadFileList(	char* fileList[], 	void* dest[],
 
 	for (fileLoadedCount = 0; fileLoadedCount < szFileList ; fileLoadedCount++)
 	{
-        strCurrentFile = fileList[fileLoadedCount];
+        strCurrentFile = (char*)fileList[fileLoadedCount];
 
 		if (strCurrentFile == NULL)
 		{

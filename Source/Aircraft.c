@@ -57,7 +57,7 @@ static TYPE_CARTESIAN_POS AircraftCenterPos;
 static char* AircraftLiveryNamesTable[] = {"PHX", NULL};
 static AIRCRAFT_LIVERY AircraftLiveryTable[] = {AIRCRAFT_LIVERY_0, AIRCRAFT_LIVERY_UNKNOWN};
 
-static char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\ARROW.TIM;1"    };
+static const char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\ARROW.TIM;1"    };
 
 static void* GameFileDest[] = { (GsSprite*)&ArrowSpr                    };
 
@@ -216,8 +216,6 @@ bool AircraftRemove(uint8_t aircraftIdx)
     {
         if (ptrAircraft->FlightDataIdx == aircraftIdx)
         {
-            DEBUG_PRINT_VAR(ptrAircraft->FlightDataIdx);
-            DEBUG_PRINT_VAR(aircraftIdx);
             ptrAircraft->State = STATE_IDLE;
             Serial_printf("Flight %d removed\n", ptrAircraft->FlightDataIdx);
             return true;
@@ -247,7 +245,6 @@ void AircraftHandler(void)
 		AircraftSpeed(ptrAircraft);
 
         // Check collision against all other aircraft.
-
 		for (j = 0; j < GAME_MAX_AIRCRAFT; j++)
 		{
 			TYPE_AIRCRAFT_DATA* ptrOtherAircraft = &AircraftData[j];
@@ -293,7 +290,6 @@ void AircraftHandler(void)
         {
             GameResumeFlightFromAutoStop(ptrAircraft->FlightDataIdx);
         }
-        
 
 		ptrAircraft->State = GameGetFlightDataStateFromIdx(ptrAircraft->FlightDataIdx);
 	}
@@ -320,7 +316,7 @@ bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* ptrAircraft, TYPE_AIRCRAFT_DATA* ptrO
         break;
 
         case AIRCRAFT_DIR_SOUTH:
-            nextTile = currentTile - GameGetLevelColumns();
+            nextTile = currentTile + GameGetLevelColumns();
         break;
 
         case AIRCRAFT_DIR_NO_DIRECTION:
@@ -639,9 +635,12 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 
 		ptrAircraft->IsoPos.z += AircraftSpeedsTable[AIRCRAFT_SPEED_FINAL_Z];
 
-		if (GameInsideLevelFromIsoPos(&ptrAircraft->IsoPos) == true)
+		if (GameInsideLevelFromIsoPos(&ptrAircraft->IsoPos) == false)
 		{
 			GameRemoveFlight(ptrAircraft->FlightDataIdx, true);
+
+            // Deactivate TYPE_AIRCRAFT instance.
+            ptrAircraft->State = STATE_IDLE;
 		}
 	}
 }

@@ -131,20 +131,20 @@ static TYPE_CHEAT StackCheckCheat;
 static TYPE_CHEAT DevMenuCheat;
 static TYPE_CHEAT SerialCheat;
 
-static char* MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
-									"cdrom:\\DATA\\SOUNDS\\BELL.VAG;1"		,
-									"cdrom:\\DATA\\SOUNDS\\ACCEPT.VAG;1"	,
-									"cdrom:\\DATA\\SPRITES\\BUTTONS.TIM;1"	,
-									"cdrom:\\DATA\\SPRITES\\MENUSTAR.TIM;1"	,
+static const char* MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
+                                        "cdrom:\\DATA\\SOUNDS\\BELL.VAG;1"		,
+                                        "cdrom:\\DATA\\SOUNDS\\ACCEPT.VAG;1"	,
+                                        "cdrom:\\DATA\\SPRITES\\BUTTONS.TIM;1"	,
+                                        "cdrom:\\DATA\\SPRITES\\MENUSTAR.TIM;1"	,
 #ifndef NO_INTRO
-                                    "cdrom:\\DATA\\SPRITES\\PSXDISK.TIM;1"	,
-                                    "cdrom:\\DATA\\FONTS\\INTROFNT.TIM;1"	,
-									"cdrom:\\DATA\\SPRITES\\GPL.TIM;1"		,
-									"cdrom:\\DATA\\SPRITES\\OPENSRC.TIM;1"	,
-									"cdrom:\\DATA\\SOUNDS\\TRAYCL.VAG;1"	,
-									"cdrom:\\DATA\\SOUNDS\\SPINDISK.VAG;1"
+                                        "cdrom:\\DATA\\SPRITES\\PSXDISK.TIM;1"	,
+                                        "cdrom:\\DATA\\FONTS\\INTROFNT.TIM;1"	,
+                                        "cdrom:\\DATA\\SPRITES\\GPL.TIM;1"		,
+                                        "cdrom:\\DATA\\SPRITES\\OPENSRC.TIM;1"	,
+                                        "cdrom:\\DATA\\SOUNDS\\TRAYCL.VAG;1"	,
+                                        "cdrom:\\DATA\\SOUNDS\\SPINDISK.VAG;1"
 #endif // NO_INTRO
-									};
+                                                                                };
 
 static void* MainMenuDest[] = {     (GsSprite*)&MenuSpr			,
 									(SsVag*)&BellSnd			,
@@ -207,7 +207,8 @@ void TwoPlayerMenu(void)
 
 void MainMenuInit(void)
 {
-	LoadMenu(	MainMenuFiles,MainMenuDest,
+	LoadMenu(	MainMenuFiles,
+                MainMenuDest,
 				sizeof(MainMenuFiles) / sizeof(char*) ,
 				sizeof(MainMenuDest) / sizeof(void*) );
 
@@ -550,7 +551,7 @@ void MainMenuDrawButton(TYPE_MMBtn * btn)
 		default:
 		break;
 	}
-    
+
     MenuSpr.u += btn->offset_u;
     MenuSpr.v += btn->offset_v;
     MenuSpr.y -= MainMenuBtnAni[btn->timer];

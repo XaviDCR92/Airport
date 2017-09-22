@@ -233,16 +233,16 @@ static SsVag BeepSnd;
 // Instances for player-specific data
 static TYPE_PLAYER PlayerData[MAX_PLAYERS];
 
-static char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\TILESET1.TIM;1"	,
-                                "cdrom:\\DATA\\SPRITES\\GAMEPLN.TIM;1"	,
-                                "cdrom:\\DATA\\SPRITES\\PLNBLUE.CLT;1"	,
-                                "cdrom:\\DATA\\SPRITES\\MOUSE.TIM;1"	,
-                                "cdrom:\\DATA\\SPRITES\\BLDNGS1.TIM;1"	,
-                                "cdrom:\\DATA\\SOUNDS\\RCPW1A1.VAG;1"   ,
-                                "cdrom:\\DATA\\SOUNDS\\RCPM1A1.VAG;1"   ,
-                                "cdrom:\\DATA\\SOUNDS\\RCTM1F1.VAG;1"   ,
-                                "cdrom:\\DATA\\SOUNDS\\TAKEOFF1.VAG;1"  ,
-                                "cdrom:\\DATA\\SOUNDS\\BEEP.VAG;1"      };
+static const char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\TILESET1.TIM;1"	,
+                                        "cdrom:\\DATA\\SPRITES\\GAMEPLN.TIM;1"	,
+                                        "cdrom:\\DATA\\SPRITES\\PLNBLUE.CLT;1"	,
+                                        "cdrom:\\DATA\\SPRITES\\MOUSE.TIM;1"	,
+                                        "cdrom:\\DATA\\SPRITES\\BLDNGS1.TIM;1"	,
+                                        "cdrom:\\DATA\\SOUNDS\\RCPW1A1.VAG;1"   ,
+                                        "cdrom:\\DATA\\SOUNDS\\RCPM1A1.VAG;1"   ,
+                                        "cdrom:\\DATA\\SOUNDS\\RCTM1F1.VAG;1"   ,
+                                        "cdrom:\\DATA\\SOUNDS\\TAKEOFF1.VAG;1"  ,
+                                        "cdrom:\\DATA\\SOUNDS\\BEEP.VAG;1"      };
 
 static void* GameFileDest[] = { (GsSprite*)&GameTilesetSpr		        ,
                                 (GsSprite*)&GamePlaneSpr		        ,
@@ -255,7 +255,7 @@ static void* GameFileDest[] = { (GsSprite*)&GameTilesetSpr		        ,
                                 (SsVag*)&TakeoffSnd                     ,
                                 (SsVag*)&BeepSnd                        };
 
-static char* GamePlt[] = { "cdrom:\\DATA\\LEVELS\\LEVEL1.PLT;1"	};
+static const char* GamePlt[] = { "cdrom:\\DATA\\LEVELS\\LEVEL1.PLT;1"	};
 static void* GamePltDest[] = {(TYPE_FLIGHT_DATA*)&FlightData	};
 
 static char* GameLevelList[] = {"cdrom:\\DATA\\LEVELS\\LEVEL1.LVL;1"};
@@ -914,23 +914,35 @@ void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 
     // Recalculate ptrPlayer->SelectedAircraft. In case new aircraft appear, we may be pointing
     // to a incorrect instance.
+    dprintf("GameActiveAircraftList\n");
     GameActiveAircraftList(ptrPlayer, ptrFlightData);
 
+    dprintf("GameAircraftCollisionFlag\n");
 	if (GameAircraftCollisionFlag == true)
 	{
 		TYPE_ISOMETRIC_POS IsoPos = AircraftGetIsoPos(GameAircraftCollisionIdx);
 		CameraMoveToIsoPos(ptrPlayer, IsoPos);
 	}
 
+    dprintf("GameStateUnboarding\n");
 	GameStateUnboarding(ptrPlayer, ptrFlightData);
+    dprintf("GameStateLockTarget\n");
 	GameStateLockTarget(ptrPlayer, ptrFlightData);
+    dprintf("GameStateSelectRunway\n");
 	GameStateSelectRunway(ptrPlayer, ptrFlightData);
+    dprintf("GameStateSelectTaxiwayRunway\n");
 	GameStateSelectTaxiwayRunway(ptrPlayer, ptrFlightData);
+    dprintf("GameStateSelectTaxiwayParking\n");
 	GameStateSelectTaxiwayParking(ptrPlayer, ptrFlightData);
+    dprintf("GameStateShowAircraft\n");
 	GameStateShowAircraft(ptrPlayer, ptrFlightData);
+    dprintf("CameraHandler\n");
 	CameraHandler(ptrPlayer);
+    dprintf("GameGuiActiveAircraftPage\n");
 	GameGuiActiveAircraftPage(ptrPlayer, ptrFlightData);
+    dprintf("GameSelectAircraftFromList\n");
 	GameSelectAircraftFromList(ptrPlayer, ptrFlightData);
+    dprintf("Finished GameHandler\n");
 }
 
 /* *******************************************************************
@@ -1465,6 +1477,7 @@ void GameAircraftState(uint8_t i)
         {
             // Player(s) lost a flight!
             GameRemoveFlight(i, false);
+            dprintf("Flight %d lost\n", i);
         }
     }
 }
@@ -2263,7 +2276,7 @@ void GameGetRunwayArray(void)
  *      information about all available flights.
  *
  * @brief:
- * 	Determines actions for aircraft on PAD_CROSS pressed.
+ * 	Actions for ptrPlayer->ShowAircraftData.
  *
  * @remarks:
  *
@@ -3344,6 +3357,7 @@ void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 					// Flight has finished. Remove aircraft and set finished flag
 					ptrPlayer->Unboarding = false;
 					GameRemoveFlight(ptrPlayer->FlightDataSelectedAircraft, true);
+                    dprintf("YO\n");
 				}
 
 				ptrPlayer->UnboardingSequenceIdx = 0;
@@ -3604,25 +3618,25 @@ bool GameInsideLevelFromIsoPos(TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos)
 
 	if (x < 0)
 	{
-		return true;
+		return false;
 	}
 
 	if (x > (GameLevelColumns << TILE_SIZE_BIT_SHIFT))
 	{
-		return true;
+		return false;
 	}
 
 	if (y < 0)
 	{
-		return true;
+		return false;
 	}
 
 	if (y > (GameLevelColumns << TILE_SIZE_BIT_SHIFT) )
 	{
-		return true;
+		return false;
 	}
 
-	return false;
+	return true;
 }
 
 /* *******************************************************************************************
@@ -3694,12 +3708,8 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 						}
                         else
                         {
-                            Serial_printf("1\n");
-
                             // GameRwyArray is filled with runway tiles.
                             GameGetSelectedRunwayArray(GameUsedRwy[k], rwyArray, GAME_MAX_RWY_LENGTH * sizeof(uint16_t) );
-
-                            Serial_printf("2\n");
 
                             if (SystemContains_u16(  AircraftGetTileFromFlightDataIndex(idx),
                                                     rwyArray,
@@ -3723,8 +3733,11 @@ void GameRemoveFlight(uint8_t idx, bool successful)
                         // STATE_APPROACH is the only state which is not linked to a TYPE_AIRCRAFT_DATA instance.
                     }
 
-					ptrPlayer->LockTarget = false;
-					ptrPlayer->LockedAircraft = FLIGHT_DATA_INVALID_IDX;
+                    if (ptrPlayer->LockedAircraft == idx)
+                    {
+                        ptrPlayer->LockTarget = false;
+                        ptrPlayer->LockedAircraft = FLIGHT_DATA_INVALID_IDX;
+                    }
 
 					if (successful == true)
 					{
@@ -3735,9 +3748,12 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 						GameScore = (GameScore < LOST_FLIGHT_PENALTY)? 0 : (GameScore - LOST_FLIGHT_PENALTY);
 					}
 
-					if (ptrPlayer->SelectedAircraft >= j)
+                    if (ptrPlayer->SelectedAircraft != 0)
 					{
-						ptrPlayer->SelectedAircraft--;
+                        if (ptrPlayer->SelectedAircraft >= j)
+                        {
+                            ptrPlayer->SelectedAircraft--;
+                        }
 					}
 
 					FlightData.Passengers[idx] = 0;
@@ -3968,7 +3984,7 @@ void GameAircraftCollision(uint8_t AircraftIdx)
 void GameStopFlight(uint8_t AircraftIdx)
 {
     FL_STATE* ptrState = &FlightData.State[AircraftIdx];
-    
+
     if (*ptrState == STATE_TAXIING)
     {
         // Only allow auto stop under taxi
@@ -3992,7 +4008,7 @@ void GameStopFlight(uint8_t AircraftIdx)
  *  that taxiing can be resumed.
  *
  * *******************************************************************************************/
- 
+
 void GameResumeFlightFromAutoStop(uint8_t AircraftIdx)
 {
     FL_STATE* ptrState = &FlightData.State[AircraftIdx];
