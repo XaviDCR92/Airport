@@ -172,9 +172,6 @@ $(OBJ_LEVELS_DIR)/%.PLT: $(SRC_LEVELS_DIR)/%.PLT
 
 music: clean_music music_objects
 
-clean_music:
-	rm -f ../Music/*.bin
-
 %.bin: %.mp3
 	rm -f ../Bin/$@1
 	$(FFMPEG) -i $< $(FFMPEG_FLAGS) $@
@@ -183,4 +180,4 @@ clean_music:
 # ----------------------------------------
 # Phony targets
 # ----------------------------------------
-.PHONY: sounds clean music
+.PHONY: clean music
