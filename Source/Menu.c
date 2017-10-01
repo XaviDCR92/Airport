@@ -207,6 +207,12 @@ void TwoPlayerMenu(void)
 
 void MainMenuInit(void)
 {
+    enum
+    {
+        MENU_STAR_X = 32,
+        MENU_STAR_Y = Y_SCREEN_RESOLUTION - 32,
+    };
+
 	LoadMenu(	MainMenuFiles,
                 MainMenuDest,
 				sizeof(MainMenuFiles) / sizeof(char*) ,
@@ -239,6 +245,10 @@ void MainMenuInit(void)
 	menuLevel = PLAY_OPTIONS_LEVEL;
 
 	MainMenuMinimumBtn = PLAY_BUTTON_INDEX;
+
+    MenuStarSpr.x = MENU_STAR_X;
+    MenuStarSpr.y = MENU_STAR_Y;
+    MenuStarSpr.rotate = 0;
 
     MenuCheatInit();
 
@@ -324,6 +334,10 @@ void MainMenu(void)
 
         GsSortCls(MAIN_MENU_BG_R, MAIN_MENU_BG_G, MAIN_MENU_BG_B);
 
+        MenuStarSpr.rotate += ROTATE_ONE;
+
+        GfxSortSprite(&MenuStarSpr);
+
 		switch(menuLevel)
 		{
 			case PLAY_OPTIONS_LEVEL:
@@ -332,8 +346,6 @@ void MainMenu(void)
 			break;
 
 			case ONE_TWO_PLAYERS_LEVEL:
-
-				GsSortCls(0,0,40);
 				MainMenuDrawButton(&MainMenuBtn[ONE_PLAYER_BUTTON_INDEX]);
 				MainMenuDrawButton(&MainMenuBtn[TWO_PLAYER_BUTTON_INDEX]);
 			break;

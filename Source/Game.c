@@ -914,35 +914,23 @@ void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 
     // Recalculate ptrPlayer->SelectedAircraft. In case new aircraft appear, we may be pointing
     // to a incorrect instance.
-    dprintf("GameActiveAircraftList\n");
     GameActiveAircraftList(ptrPlayer, ptrFlightData);
 
-    dprintf("GameAircraftCollisionFlag\n");
 	if (GameAircraftCollisionFlag == true)
 	{
 		TYPE_ISOMETRIC_POS IsoPos = AircraftGetIsoPos(GameAircraftCollisionIdx);
 		CameraMoveToIsoPos(ptrPlayer, IsoPos);
 	}
 
-    dprintf("GameStateUnboarding\n");
 	GameStateUnboarding(ptrPlayer, ptrFlightData);
-    dprintf("GameStateLockTarget\n");
 	GameStateLockTarget(ptrPlayer, ptrFlightData);
-    dprintf("GameStateSelectRunway\n");
 	GameStateSelectRunway(ptrPlayer, ptrFlightData);
-    dprintf("GameStateSelectTaxiwayRunway\n");
 	GameStateSelectTaxiwayRunway(ptrPlayer, ptrFlightData);
-    dprintf("GameStateSelectTaxiwayParking\n");
 	GameStateSelectTaxiwayParking(ptrPlayer, ptrFlightData);
-    dprintf("GameStateShowAircraft\n");
 	GameStateShowAircraft(ptrPlayer, ptrFlightData);
-    dprintf("CameraHandler\n");
 	CameraHandler(ptrPlayer);
-    dprintf("GameGuiActiveAircraftPage\n");
 	GameGuiActiveAircraftPage(ptrPlayer, ptrFlightData);
-    dprintf("GameSelectAircraftFromList\n");
 	GameSelectAircraftFromList(ptrPlayer, ptrFlightData);
-    dprintf("Finished GameHandler\n");
 }
 
 /* *******************************************************************
@@ -3357,7 +3345,6 @@ void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 					// Flight has finished. Remove aircraft and set finished flag
 					ptrPlayer->Unboarding = false;
 					GameRemoveFlight(ptrPlayer->FlightDataSelectedAircraft, true);
-                    dprintf("YO\n");
 				}
 
 				ptrPlayer->UnboardingSequenceIdx = 0;
@@ -3483,7 +3470,7 @@ void GameCreateTakeoffWaypoints(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 		(GameLevelBuffer[currentTile] != TILE_RWY_START_2);
 		currentTile -= rwyStep	)
 	{
-
+        // Calculate new currentTile value until conditions are invalid.
 	}
 
 	for (i = 0; i < GAME_MAX_RUNWAYS; i++)
