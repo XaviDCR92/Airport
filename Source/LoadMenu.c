@@ -262,30 +262,30 @@ void ISR_LoadMenuVBlank(void)
 
     SystemIncreaseGlobalTimer();
 
-    if (SystemIsBusy() == true)
+    if (SystemIsBusy() != false)
     {
         dprintf("SystemIsBusy...\n");
         return;
     }
 
-    if ((GfxIsGPUBusy() == true))
+    if ((GfxIsGPUBusy() != false))
     {
-        dprintf("(GfxIsGPUBusy() == true)\n");
+        dprintf("(GfxIsGPUBusy() != false)\n");
         return;
     }
 
-    if (SerialIsBusy() == true)
+    if (SerialIsBusy() != false)
     {
         dprintf("Serialisbusy\n");
         return;
     }
 
-	/*if ( (SystemIsBusy() == true) || (GfxIsGPUBusy() == true) || (SerialIsBusy() == true) )
+	/*if ( (SystemIsBusy() != false) || (GfxIsGPUBusy() != false) || (SerialIsBusy() != false) )
 	{
 		return;
 	}*/
 
-	if (startup_flag == true)
+	if (startup_flag != false)
 	{
 		// "Loading..." text
 		if (LoadMenuTitleSpr.r < LOADING_TITLE_LUMINANCE_TARGET)
@@ -343,7 +343,7 @@ void ISR_LoadMenuVBlank(void)
 		}
 
 	}
-	else if (end_flag == true)
+	else if (end_flag != false)
 	{
 		LoadMenuTitleSpr.r -= LOADING_TITLE_LUMINANCE_STEP;
 		LoadMenuTitleSpr.g -= LOADING_TITLE_LUMINANCE_STEP;

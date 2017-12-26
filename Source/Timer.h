@@ -1,5 +1,5 @@
-#ifndef __TIMER_HEADER__
-#define __TIMER_HEADER__
+#ifndef TIMER_HEADER__
+#define TIMER_HEADER__
 
 /* **************************************
  * 	Includes							*
@@ -27,10 +27,10 @@ void TimerReset(void);
 // To be called every cycle (i.e.: inside GfxDrawScene() ).
 void TimerHandler(void);
 
-// Sets timer remaining time to initial value.
+// Sets timer remaining time to its initial value.
 void TimerRestart(TYPE_TIMER* timer);
 
 // Flushes a timer pointed to by timer.
 void TimerRemove(TYPE_TIMER* timer);
 
-#endif // __TIMER_HEADER__
+#endif // TIMER_HEADER__

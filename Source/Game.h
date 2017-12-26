@@ -1,5 +1,5 @@
-#ifndef __GAME_HEADER__
-#define __GAME_HEADER__
+#ifndef GAME_HEADER__
+#define GAME_HEADER__
 
 /* *************************************
  * 	Includes
@@ -48,4 +48,4 @@ void		GameCalculateRemainingAircraft(void);
 void		GameAircraftCollision(uint8_t AircraftIdx);
 void        GameStopFlight(uint8_t AicraftIdx);
 void        GameResumeFlightFromAutoStop(uint8_t AircraftIdx);
-#endif //__GAME_HEADER__
+#endif //GAME_HEADER__

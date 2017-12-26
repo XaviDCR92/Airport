@@ -1,5 +1,5 @@
-#ifndef __GAME_GUI_HEADER__
-#define __GAME_GUI_HEADER__
+#ifndef GAME_GUI_HEADER__
+#define GAME_GUI_HEADER__
 
 /* *************************************
  * 	Includes
@@ -39,4 +39,4 @@ bool GameGuiFinishedDialog(TYPE_PLAYER* ptrPlayer);
 void GameGuiAircraftCollision(TYPE_PLAYER* ptrPlayer);
 void GameGuiBubbleShow(void);
 
-#endif //__GAME_GUI_HEADER__
+#endif //GAME_GUI_HEADER__

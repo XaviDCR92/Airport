@@ -1,5 +1,5 @@
-#ifndef __END_SCREEN_HEADER__
-#define __END_SCREEN_HEADER__
+#ifndef END_SCREEN_HEADER__
+#define END_SCREEN_HEADER__
 
 /* **************************************
  * 	Includes							*
@@ -19,4 +19,4 @@ void EndAnimation(void);
  * 	Global Variables					*
  * **************************************/
 
-#endif // __END_SCREEN_HEADER__
+#endif // END_SCREEN_HEADER__

@@ -1,5 +1,5 @@
-#ifndef __SFX_HEADER__
-#define __SFX_HEADER__
+#ifndef SFX_HEADER__
+#define SFX_HEADER__
 
 /* *************************************
  * 	Includes
@@ -34,4 +34,4 @@ bool SfxUploadSound(char* file_path, SsVag * vag);
 void SfxPlayTrack(MUSIC_TRACKS track);
 void SfxStopMusic(void);
 
-#endif //__SFX_HEADER__
+#endif //SFX_HEADER__

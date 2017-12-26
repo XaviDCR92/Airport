@@ -1,5 +1,5 @@
-#ifndef __PLT_PARSER__
-#define __PLT_PARSER__
+#ifndef PLT_PARSER__
+#define PLT_PARSER__
 
 /* *************************************
  * 	Includes
@@ -27,4 +27,4 @@ uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig);
  * 	Global variables
  * *************************************/
 
-#endif //__PLT_PARSER__
+#endif //PLT_PARSER__

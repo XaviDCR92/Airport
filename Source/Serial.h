@@ -1,5 +1,5 @@
-#ifndef __SERIAL_HEADER__
-#define __SERIAL_HEADER__
+#ifndef SERIAL_HEADER__
+#define SERIAL_HEADER__
 
 /* *************************************
  * 	Includes
@@ -30,4 +30,4 @@ volatile bool SerialIsBusy(void);
 void Serial_printf(const char* str, ...);
 #endif // SERIAL_INTERFACE
 
-#endif // __SERIAL_HEADER__
+#endif // SERIAL_HEADER__

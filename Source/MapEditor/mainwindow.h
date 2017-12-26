@@ -6,6 +6,7 @@
 #include <QSettings>
 #include <QDebug>
 
+#include "mygraphicsscene.h"
 #include "ui_mainwindow.h"
 
 namespace Ui {
@@ -26,10 +27,12 @@ private:
     bool checkFile(QFile &f);
     void appSettings(void);
     QString _last_dir;
+    MyGraphicsScene *gscene;
 
 protected slots:
     void onLoadMap(void);
-
+    void onCreateMap(void);
+    void onProcessMapFile(QByteArray data);
 };
 
 #endif // MAINWINDOW_H

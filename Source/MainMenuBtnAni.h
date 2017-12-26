@@ -1,5 +1,5 @@
-#ifndef __MAINMENUBTN_HEADER__
-#define __MAINMENUBTN_HEADER__
+#ifndef MAINMENUBTN_HEADER__
+#define MAINMENUBTN_HEADER__
 
 
 /* *************************************
@@ -23,4 +23,4 @@
 extern short MainMenuBtnAni[];
 extern size_t MainMenuBtnAni_sz;
 
-#endif // __MAINMENUBTN_HEADER__
+#endif // MAINMENUBTN_HEADER__

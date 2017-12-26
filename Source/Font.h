@@ -1,5 +1,5 @@
-#ifndef __FONT_HEADER__
-#define __FONT_HEADER__
+#ifndef FONT_HEADER__
+#define FONT_HEADER__
 
 /* *************************************
  * 	Includes
@@ -35,4 +35,4 @@ void FontSetSpacing(TYPE_FONT* ptrFont, short spacing);
 TYPE_FONT RadioFont;
 TYPE_FONT SmallFont;
 
-#endif //__FONT_HEADER__
+#endif //FONT_HEADER__

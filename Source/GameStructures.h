@@ -1,5 +1,5 @@
-#ifndef __GAME_STRUCTURES__HEADER__
-#define __GAME_STRUCTURES__HEADER__
+#ifndef GAME_STRUCTURES__HEADER__
+#define GAME_STRUCTURES__HEADER__
 
 /* *************************************
  * 	Defines
@@ -254,4 +254,4 @@ typedef struct t_PltConfig
 	uint8_t maxLostFlights;
 }TYPE_PLT_CONFIG;
 
-#endif // __GAME_STRUCTURES__HEADER__
+#endif // GAME_STRUCTURES__HEADER__

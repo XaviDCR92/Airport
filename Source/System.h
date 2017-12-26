@@ -1,5 +1,5 @@
-#ifndef __SYSTEM_HEADER__
-#define __SYSTEM_HEADER__
+#ifndef SYSTEM_HEADER__
+#define SYSTEM_HEADER__
 
 /* **************************************
  * 	Includes							*
@@ -137,4 +137,4 @@ unsigned char SystemGetSineValue(void);
  * 	Global Variables					*
  * **************************************/
 
-#endif //__SYSTEM_HEADER__
+#endif //SYSTEM_HEADER__

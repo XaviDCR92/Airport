@@ -1,5 +1,5 @@
-#ifndef __MEMCARD_HEADER__
-#define __MEMCARD_HEADER__
+#ifndef MEMCARD_HEADER__
+#define MEMCARD_HEADER__
 
 /* *************************************
  * 	Includes
@@ -144,4 +144,4 @@ bool MemCardSaveData(TYPE_BLOCK_DATA * ptrBlockData);
 
 extern TYPE_BLOCK_DATA MemCardData[MEMCARD_BLOCKS_PER_CARD][MEMCARD_NUMBER_OF_SLOTS];
 
-#endif //__MEMCARD_HEADER__
+#endif //MEMCARD_HEADER__

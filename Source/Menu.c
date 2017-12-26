@@ -124,18 +124,21 @@ static void MenuTestCheat(void);
 
 static GsSprite MenuSpr;
 static GsSprite MenuStarSpr;
+static GsSprite BcnGWSpr;
 static SsVag BellSnd;
 static SsVag AcceptSnd;
 static TYPE_CHEAT TestCheat;
 static TYPE_CHEAT StackCheckCheat;
 static TYPE_CHEAT DevMenuCheat;
 static TYPE_CHEAT SerialCheat;
+static volatile bool BcnGWSpr_set;
 
 static const char* MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
                                         "cdrom:\\DATA\\SOUNDS\\BELL.VAG;1"		,
                                         "cdrom:\\DATA\\SOUNDS\\ACCEPT.VAG;1"	,
                                         "cdrom:\\DATA\\SPRITES\\BUTTONS.TIM;1"	,
                                         "cdrom:\\DATA\\SPRITES\\MENUSTAR.TIM;1"	,
+                                        "cdrom:\\DATA\\SPRITES\\BCNGW.TIM;1"	,
 #ifndef NO_INTRO
                                         "cdrom:\\DATA\\SPRITES\\PSXDISK.TIM;1"	,
                                         "cdrom:\\DATA\\FONTS\\INTROFNT.TIM;1"	,
@@ -151,6 +154,7 @@ static void* MainMenuDest[] = {     (GsSprite*)&MenuSpr			,
 									(SsVag*)&AcceptSnd			,
 									(GsSprite*)&PSXButtons		,
 									(GsSprite*)&MenuStarSpr		,
+									(GsSprite*)&BcnGWSpr		,
 #ifndef NO_INTRO
                                     (GsSprite*)&PsxDisk			,
                                     (GsSprite*)&PSXSDKIntroFont	,
@@ -242,12 +246,18 @@ void MainMenuInit(void)
 	MainMenuBtn[TWO_PLAYER_BUTTON_INDEX].f = &TwoPlayerMenu;
 	MainMenuBtn[TWO_PLAYER_BUTTON_INDEX].i = TWO_PLAYER_BUTTON_INDEX;
 
+    // BcnGWSpr.x = X_SCREEN_RESOLUTION - (BcnGWSpr.w << 1);
+    // BcnGWSpr.y = Y_SCREEN_RESOLUTION - BcnGWSpr.h;
+    // BcnGWSpr_set = true;
+
 	menuLevel = PLAY_OPTIONS_LEVEL;
 
 	MainMenuMinimumBtn = PLAY_BUTTON_INDEX;
 
     MenuStarSpr.x = MENU_STAR_X;
     MenuStarSpr.y = MENU_STAR_Y;
+    MenuStarSpr.mx = MenuStarSpr.w >> 1;
+    MenuStarSpr.my = MenuStarSpr.h >> 1;
     MenuStarSpr.rotate = 0;
 
     MenuCheatInit();
@@ -311,6 +321,18 @@ void MenuCheatInit(void)
     PadAddCheat(&SerialCheat);
 }
 
+GsSprite* MainMenuGetBCNGWLogo(void)
+{
+    if (BcnGWSpr_set != false)
+    {
+        return &BcnGWSpr;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
 void MainMenu(void)
 {
 	MainMenuInit();
@@ -336,7 +358,14 @@ void MainMenu(void)
 
         MenuStarSpr.rotate += ROTATE_ONE;
 
-        GfxSortSprite(&MenuStarSpr);
+        //DEBUG_PRINT_VAR(MenuStarSpr.x);
+        //DEBUG_PRINT_VAR(MenuStarSpr.y);
+        //DEBUG_PRINT_VAR(MenuStarSpr.w);
+        //DEBUG_PRINT_VAR(MenuStarSpr.h);
+        //DEBUG_PRINT_VAR(MenuStarSpr.tpage);
+        //DEBUG_PRINT_VAR(MenuStarSpr.u);
+        //DEBUG_PRINT_VAR(MenuStarSpr.v);
+        //GfxSortSprite(&MenuStarSpr);
 
 		switch(menuLevel)
 		{
@@ -391,7 +420,7 @@ void MainMenuButtonHandler(void)
 	static uint8_t previous_btn_selected = 0;
 	uint8_t max_buttons;
 
-	if (PadOneAnyKeyPressed() == true)
+	if (PadOneAnyKeyPressed() != false)
 	{
 		if (SystemIsRandSeedSet() == false)
 		{
@@ -399,9 +428,9 @@ void MainMenuButtonHandler(void)
 		}
 	}
 
-	if (	(PadOneKeySinglePress(PAD_CROSS) == true)
+	if (	(PadOneKeySinglePress(PAD_CROSS) != false)
 				||
-		(PadOneKeySinglePress(PAD_TRIANGLE) == true)	)
+		(PadOneKeySinglePress(PAD_TRIANGLE) != false)	)
 	{
 		SfxPlaySound(&AcceptSnd);
 	}
@@ -425,7 +454,7 @@ void MainMenuButtonHandler(void)
                 max_buttons = MAIN_MENU_ONE_TWO_PLAYERS_LEVEL_BUTTONS;
             }
 
-			if (PadOneKeySinglePress(PAD_TRIANGLE) == true)
+			if (PadOneKeySinglePress(PAD_TRIANGLE) != false)
 			{
 				menuLevel = PLAY_OPTIONS_LEVEL;
 				MainMenuMinimumBtn = PLAY_BUTTON_INDEX;
@@ -508,7 +537,7 @@ void MainMenuDrawButton(TYPE_MMBtn * btn)
 		btn->timer++;
 	}
 
-	if (btn->selected == true)
+	if (btn->selected != false)
 	{
 		if (btn->was_selected == false)
 		{

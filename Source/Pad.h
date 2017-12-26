@@ -1,5 +1,5 @@
-#ifndef __PAD_HEADER__
-#define __PAD_HEADER__
+#ifndef PAD_HEADER__
+#define PAD_HEADER__
 
 /* *************************************
  * 	Includes
@@ -68,4 +68,4 @@ unsigned short* PadGetPlayerOneCheatArray(void);
 // Experimental (to be removed)
 unsigned short* PadOneGetAddress(void);
 
-#endif //__PAD_HEADER__
+#endif //PAD_HEADER__

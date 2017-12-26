@@ -225,7 +225,7 @@ bool SystemRefreshNeeded(void)
 
 void ISR_SystemDefaultVBlank(void)
 {
-    if (System1SecondTick() == true)
+    if (System1SecondTick() != false)
     {
         fps = temp_fps;
         temp_fps = 0;
@@ -456,7 +456,7 @@ void SystemRunTimers(void)
 
 void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
 {
-	if (*timer == true)
+	if (*timer != false)
 	{
 		*timer = false;
 	}
@@ -492,7 +492,7 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 	int32_t size = 0;
 
 	// Wait for possible previous operation from the GPU before entering this section.
-	while ( (SystemIsBusy() == true) || (GfxIsGPUBusy() == true) );
+	while ( (SystemIsBusy() != false) || (GfxIsGPUBusy() != false) );
 
 	if (fname == NULL)
 	{
@@ -1163,7 +1163,7 @@ void SystemDevMenu(void)
         DEVMENU_ROOTCNT2_TEXT_Y = DEVMENU_PAD2_RAW_DATA_TEXT_Y + DEVMENU_TEXT_GAP,
     };
 
-    if (devmenu_flag == true)
+    if (devmenu_flag != false)
     {
         GsRectangle devMenuBg = {   .x = DEVMENU_BG_X,
                                     .y = DEVMENU_BG_Y,

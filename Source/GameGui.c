@@ -218,6 +218,16 @@ static void* GameFileDest[] = {(GsSprite*)&BubbleSpr		,
 
 static uint32_t slowScore; // It will update slowly to actual score value
 
+/* ***************************************************************************************
+ *
+ * @name: void GameGuiInit(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Reportedly, GameGui module initialization.
+ *
+ * ***************************************************************************************/
 void GameGuiInit(void)
 {
 	enum
@@ -250,7 +260,7 @@ void GameGuiInit(void)
 
     static bool firstLoad = true;
 
-    if (firstLoad == true)
+    if (firstLoad != false)
     {
         firstLoad = false;
 
@@ -298,6 +308,20 @@ void GameGuiInit(void)
     FontSetSpacing(&RadioFont, RADIO_FONT_SPACING);
 }
 
+/* ***************************************************************************************
+ *
+ * @name: void GameGuiInit(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Checks for pause event (player presses START button). If true, it traps the game
+ *  on a while loop, waiting for user action.
+ *
+ * @remarks:
+ *  Blocking function!
+ *
+ * ***************************************************************************************/
 bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer)
 {
 	GfxSaveDisplayData(&SecondDisplay);
@@ -306,11 +330,11 @@ bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer)
 
 	//DrawFBRect(0, 0, X_SCREEN_RESOLUTION, VRAM_H, 0, 0, 0);
 
-	while (GfxIsGPUBusy() == true);
+	while (GfxIsGPUBusy() != false);
 
 	do
 	{
-		if (ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS) == true)
+		if (ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS) != false)
 		{
 			return true;
 		}
@@ -326,6 +350,18 @@ bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer)
 	return false;
 }
 
+/* **********************************************************************************************
+ *
+ * @name: void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Updates ptrPlayer->SelectedAircraft and ptrPlayer->FlightDataPage when new aircraft are
+ *  added/removed. On the other hand, it also updates ptrPlayer->SelectedAircraft depending on
+ *  user interaction.
+ *
+ * **********************************************************************************************/
 void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	if (ptrPlayer->ActiveAircraft != 0)
@@ -344,14 +380,14 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlig
         }
     }
 
-    while (ptrPlayer->SelectedAircraft > (uint8_t)(GAME_GUI_AIRCRAFT_DATA_MAX_PAGE * (ptrPlayer->FlightDataPage + 1)) )
+    while (ptrPlayer->SelectedAircraft >= (uint8_t)(GAME_GUI_AIRCRAFT_DATA_MAX_PAGE * (ptrPlayer->FlightDataPage + 1)) )
     {
         ptrPlayer->FlightDataPage++;
     }
 
-	if (ptrPlayer->ShowAircraftData == true)
+	if (ptrPlayer->ShowAircraftData != false)
 	{
-		if (ptrPlayer->PadKeySinglePress_Callback(PAD_DOWN) == true)
+		if (ptrPlayer->PadKeySinglePress_Callback(PAD_DOWN) != false)
 		{
 			if ( ( (ptrPlayer->SelectedAircraft + 1) < ptrPlayer->ActiveAircraft)
 												&&
@@ -361,7 +397,7 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlig
 			}
 		}
 
-		if (ptrPlayer->PadKeySinglePress_Callback(PAD_UP) == true)
+		if (ptrPlayer->PadKeySinglePress_Callback(PAD_UP) != false)
 		{
 			if (ptrPlayer->SelectedAircraft > ( (ptrPlayer->FlightDataPage) * GAME_GUI_AIRCRAFT_DATA_MAX_PAGE) )
 			{
@@ -369,7 +405,7 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlig
 			}
 		}
 
-		if (ptrPlayer->PadKeySinglePress_Callback(PAD_RIGHT) == true)
+		if (ptrPlayer->PadKeySinglePress_Callback(PAD_RIGHT) != false)
 		{
 			if (ptrPlayer->ActiveAircraft > (GAME_GUI_AIRCRAFT_DATA_MAX_PAGE * (ptrPlayer->FlightDataPage + 1) ) )
 			{
@@ -379,7 +415,7 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlig
 			}
 		}
 
-		if (ptrPlayer->PadKeySinglePress_Callback(PAD_LEFT) == true)
+		if (ptrPlayer->PadKeySinglePress_Callback(PAD_LEFT) != false)
 		{
 			if (ptrPlayer->FlightDataPage != 0)
 			{
@@ -391,6 +427,16 @@ void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlig
 	}
 }
 
+/* **********************************************************************************************
+ *
+ * @name: void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Draws aircraft list for current player when ptrPlayer->ShowAircraftData state is active.
+ *
+ * **********************************************************************************************/
 void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	short y_offset;
@@ -413,7 +459,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
         AIRCRAFT_STOP_TEXT_Y = AIRCRAFT_STOP_Y + 4
     };
 
-	if (ptrPlayer->ShowAircraftData == true)
+	if (ptrPlayer->ShowAircraftData != false)
 	{
 		// Prepare RGB data and (X,Y) coordinates for aircraft
 		// data list request rectangle.
@@ -434,7 +480,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 
 		AircraftDataGPoly4.attribute |= ENABLE_TRANS | TRANS_MODE(0);
 
-		if (GameTwoPlayersActive() == true)
+		if (GameTwoPlayersActive() != false)
 		{
 			AircraftDataGPoly4.x[0] = AIRCRAFT_DATA_GSGPOLY4_X0_2PLAYER;
 			AircraftDataGPoly4.x[1] = AIRCRAFT_DATA_GSGPOLY4_X1_2PLAYER;
@@ -461,7 +507,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 
 		GsSortGPoly4(&AircraftDataGPoly4);
 
-		if (GameTwoPlayersActive() == true)
+		if (GameTwoPlayersActive() != false)
 		{
 			FontPrintText(	&SmallFont,
 							GAME_GUI_REMAINING_AIRCRAFT_X_2PLAYER,
@@ -497,7 +543,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 
 			SelectedAircraftGPoly4.attribute |= ENABLE_TRANS | TRANS_MODE(0);
 
-			if (GameTwoPlayersActive() == true)
+			if (GameTwoPlayersActive() != false)
 			{
 				SelectedAircraftGPoly4.x[0] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X0_2PLAYER;
 				SelectedAircraftGPoly4.x[1] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X1_2PLAYER;
@@ -521,7 +567,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 			Serial_printf("ptrPlayer->FlightDataPage = %d\n",ptrPlayer->FlightDataPage);
 			Serial_printf("y_offset = %d\n",y_offset);*/
 
-			if (GameTwoPlayersActive() == true)
+			if (GameTwoPlayersActive() != false)
 			{
 				SelectedAircraftGPoly4.y[0] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_Y0_2PLAYER;
 				SelectedAircraftGPoly4.y[1] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_Y1_2PLAYER;
@@ -551,7 +597,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 
 				PageUpDownSpr.u = orig_pageupdn_u + AIRCRAFT_DATA_FLIGHT_PAGE_UP_U;
 
-				if (GameTwoPlayersActive() == true)
+				if (GameTwoPlayersActive() != false)
 				{
 					PageUpDownSpr.x = AIRCRAFT_DATA_FLIGHT_PAGE_UP_X_2PLAYER;
 					PageUpDownSpr.y = AIRCRAFT_DATA_FLIGHT_PAGE_UP_Y_2PLAYER;
@@ -573,7 +619,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 
 				PageUpDownSpr.u = orig_pageupdn_u + AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_U;
 
-				if (GameTwoPlayersActive() == true)
+				if (GameTwoPlayersActive() != false)
 				{
 					PageUpDownSpr.x = AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_X_2PLAYER;
 					PageUpDownSpr.y = AIRCRAFT_DATA_FLIGHT_PAGE_DOWN_Y_2PLAYER;
@@ -593,7 +639,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 
 			GfxDrawButton(AIRCRAFT_LOCK_TARGET_X, AIRCRAFT_LOCK_TARGET_Y, PAD_SQUARE);
 
-			if (ptrPlayer->LockTarget == true)
+			if (ptrPlayer->LockTarget != false)
 			{
 				FontPrintText(&SmallFont, AIRCRAFT_LOCK_TARGET_TEXT_X, AIRCRAFT_LOCK_TARGET_TEXT_Y, "Unlock target");
 			}
@@ -615,7 +661,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 		}
 		else
 		{
-			if (GameTwoPlayersActive() == true)
+			if (GameTwoPlayersActive() != false)
 			{
 				FontPrintText( 	&SmallFont,
 								AIRCRAFT_DATA_GSGPOLY4_X0_2PLAYER +
@@ -638,6 +684,16 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 
 }
 
+/* **********************************************************************************************
+ *
+ * @name: void GameGuiBubbleShow(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Handler for GameGuiBubbleTimer.
+ *
+ * **********************************************************************************************/
 void GameGuiBubbleShow(void)
 {
 	static TYPE_TIMER* GameGuiBubbleTimer = NULL;
@@ -660,7 +716,7 @@ void GameGuiBubble(TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	static bool GameGuiBubbleShowFlagOld;
 
-	if (GameGuiBubbleShowFlag == true)
+	if (GameGuiBubbleShowFlag != false)
 	{
 		static TYPE_TIMER* GameGuiBubbleVibrationTimer = NULL;
 
@@ -680,7 +736,7 @@ void GameGuiBubble(TYPE_FLIGHT_DATA* ptrFlightData)
 		BubbleSpr.x = BUBBLE_SPRITE_X;
 		BubbleSpr.y = BUBBLE_SPRITE_Y;
 
-		if (GameGuiBubbleVibrationFlag == true)
+		if (GameGuiBubbleVibrationFlag != false)
 		{
 			BubbleSpr.x += SystemRand(BUBBLE_SPRITE_RAND_MIN,BUBBLE_SPRITE_RAND_MAX);
 			BubbleSpr.y += SystemRand(BUBBLE_SPRITE_RAND_MIN,BUBBLE_SPRITE_RAND_MAX);
@@ -706,7 +762,7 @@ void GameGuiClock(uint8_t hour, uint8_t min)
 
 	static char strClock[6]; // HH:MM + \0 (6 characters needed)
 
-	if (GameStartupFlag || System1SecondTick() == true)
+	if (GameStartupFlag || System1SecondTick() != false)
 	{
 		memset(strClock, 0, 6);
 		snprintf(strClock,6,"%02d:%02d",hour, min);
@@ -719,7 +775,7 @@ void GameGuiClock(uint8_t hour, uint8_t min)
 
 void GameGuiShowPassengersLeft(TYPE_PLAYER* ptrPlayer)
 {
-	if (GameGuiClearPassengersLeft_Flag == true)
+	if (GameGuiClearPassengersLeft_Flag != false)
 	{
 		// Reset flag
 		GameGuiClearPassengersLeft_Flag = false;
@@ -728,7 +784,7 @@ void GameGuiShowPassengersLeft(TYPE_PLAYER* ptrPlayer)
 
 	if (ptrPlayer->PassengersLeftSelectedAircraft != 0)
 	{
-		if (GameTwoPlayersActive() == true)
+		if (GameTwoPlayersActive() != false)
 		{
 			FontPrintText(&SmallFont, 48, Y_SCREEN_RESOLUTION - 64, "%d left", ptrPlayer->PassengersLeftSelectedAircraft);
 		}
@@ -755,7 +811,7 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlight
 	short AircraftDataRemainingTime_Y;
 	short orig_DepArr_u = DepArrSpr.u;
 
-	if (GameTwoPlayersActive() == true)
+	if (GameTwoPlayersActive() != false)
 	{
 		AircraftDataDirection_X = AIRCRAFT_DATA_DIRECTION_X_2PLAYER;
 		AircraftDataDirection_Y = AIRCRAFT_DATA_DIRECTION_Y_2PLAYER;
@@ -896,11 +952,11 @@ bool GameGuiShowAircraftDataSpecialConditions(TYPE_PLAYER* ptrPlayer)
 {
 	// Aircraft list data cannot be shown under these conditions.
 
-	if (	(ptrPlayer->SelectRunway == true)
+	if (	(ptrPlayer->SelectRunway != false)
 						||
-		(ptrPlayer->SelectTaxiwayParking == true)
+		(ptrPlayer->SelectTaxiwayParking != false)
 						||
-		(ptrPlayer->SelectTaxiwayRunway == true)	)
+		(ptrPlayer->SelectTaxiwayRunway != false)	)
 	{
 		return true;
 	}
@@ -949,7 +1005,7 @@ void GameGuiDrawUnboardingSequence(TYPE_PLAYER* ptrPlayer)
 {
 	uint8_t i;
 
-	if (ptrPlayer->Unboarding == true)
+	if (ptrPlayer->Unboarding != false)
 	{
 		for (i = ptrPlayer->UnboardingSequenceIdx; i < GAME_MAX_SEQUENCE_KEYS; i++)
 		{
@@ -959,7 +1015,7 @@ void GameGuiDrawUnboardingSequence(TYPE_PLAYER* ptrPlayer)
 			}
 
 			// TODO: Draw above the plane
-			if (GameTwoPlayersActive() == true)
+			if (GameTwoPlayersActive() != false)
 			{
 				GfxDrawButton(48 + (16*i), Y_SCREEN_RESOLUTION - 32, ptrPlayer->UnboardingSequence[i]);
 			}
@@ -984,7 +1040,7 @@ bool GameGuiFinishedDialog(TYPE_PLAYER* ptrPlayer)
 
 	do
 	{
-		if (ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS) == true)
+		if (ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS) != false)
 		{
 			return true;
 		}
@@ -1030,6 +1086,16 @@ void GameGuiAircraftCollision(TYPE_PLAYER* ptrPlayer)
 	}while (ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS) == false);
 }
 
+/* **********************************************************************************************
+ *
+ * @name: void GameGuiBubbleStop(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Callback executed when bubble must not be shown because of bubble timer timeout.
+ *
+ * **********************************************************************************************/
 void GameGuiBubbleStop(void)
 {
 	Serial_printf("GameGuiBubbleStop\n");

@@ -183,18 +183,18 @@ void PSXSDKIntro(void)
 
 	while (1)
 	{
-		while (GfxIsGPUBusy() == true);
+		while (GfxIsGPUBusy() != false);
 
 		if ( (	(GfxGetGlobalLuminance() - BG_LUMINANCE_STEP) > 0)
 						&&
-					(PSXSDKIntroClose == true)		)
+					(PSXSDKIntroClose != false)		)
 		{
 			GfxIncreaseGlobalLuminance(-BG_LUMINANCE_STEP);
 		}
 
 		if (	(GfxGetGlobalLuminance() <= BG_LUMINANCE_STEP)
 						&&
-			(PSXSDKIntroClose == true)	)
+			(PSXSDKIntroClose != false)	)
 		{
 			break;
 		}
@@ -203,7 +203,7 @@ void PSXSDKIntro(void)
 
 		for (i = 0; i < strlen(strPSXSDKIntro) ; i++)
 		{
-			if (	(PSXSDKIntroRandTextEvent == true)
+			if (	(PSXSDKIntroRandTextEvent != false)
 					&&
 				(PSXSDKIntroStringEvent == false) )
 			{
@@ -223,13 +223,13 @@ void PSXSDKIntro(void)
 				OpenSource_Logo.g = 0;
 				OpenSource_Logo.b = 0;
 			}
-			else if (	(PSXSDKIntroRandTextEvent == true)
+			else if (	(PSXSDKIntroRandTextEvent != false)
 							&&
-						(PSXSDKIntroStringEvent == true) )
+						(PSXSDKIntroStringEvent != false) )
 			{
 				PSXSDKIntroDrawChar(FONT_X + (i << FONT_SIZE_BITSHIFT),FONT_Y,strPSXSDKIntro[i]);
 
-				if (System100msTick() == true)
+				if (System100msTick() != false)
 				{
 					if (GPL_Logo.r < GPL_LOGO_LUMINANCE_TARGET)
 					{
@@ -259,15 +259,15 @@ void PSXSDKIntro(void)
 
 		for (i = 0; i < strlen(strPSXSDKIntroAuthor) ; i++)
 		{
-			if (	(PSXSDKIntroRandTextEvent == true)
+			if (	(PSXSDKIntroRandTextEvent != false)
 					&&
 				(PSXSDKIntroStringEvent == false) )
 			{
 				PSXSDKIntroDrawChar(FONT_X2 + (i << FONT_SIZE_BITSHIFT),FONT_Y2,SystemRand('A','Z'));
 			}
-			else if (	(PSXSDKIntroRandTextEvent == true)
+			else if (	(PSXSDKIntroRandTextEvent != false)
 							&&
-						(PSXSDKIntroStringEvent == true) )
+						(PSXSDKIntroStringEvent != false) )
 			{
 				PSXSDKIntroDrawChar(FONT_X2 + (i << FONT_SIZE_BITSHIFT),FONT_Y2,strPSXSDKIntroAuthor[i]);
 			}
@@ -277,7 +277,7 @@ void PSXSDKIntro(void)
 
 		PSXSDKIntroDrawDisk();
 
-		if (PSXSDKIntroCloseShellEvent == true)
+		if (PSXSDKIntroCloseShellEvent != false)
 		{
 			if (PSXSDKIntroCloseShellEventReminder == false)
 			{
@@ -335,7 +335,7 @@ void PSXSDKIntroRunTimers(void)
 
 	if (	(intro_timer >= DISK_SPIN_EV_TIM)
 			&&
-		(PSXSDKIntroCloseShellEvent == true)
+		(PSXSDKIntroCloseShellEvent != false)
 			&&
 		(PSXSDKIntroSpinDiskEvent == false)	)
 	{
@@ -345,9 +345,9 @@ void PSXSDKIntroRunTimers(void)
 
 	if ( (intro_timer >= TEXT_APPEAR_RANDOM_TIM)
 			&&
-		(PSXSDKIntroCloseShellEvent == true)
+		(PSXSDKIntroCloseShellEvent != false)
 			&&
-		(PSXSDKIntroSpinDiskEvent == true)
+		(PSXSDKIntroSpinDiskEvent != false)
 			&&
 		(PSXSDKIntroRandTextEvent == false)	)
 	{
@@ -357,11 +357,11 @@ void PSXSDKIntroRunTimers(void)
 
 	if ( (intro_timer >= TEXT_APPEAR_STRING_TIM)
 			&&
-		(PSXSDKIntroCloseShellEvent == true)
+		(PSXSDKIntroCloseShellEvent != false)
 			&&
-		(PSXSDKIntroSpinDiskEvent == true)
+		(PSXSDKIntroSpinDiskEvent != false)
 			&&
-		(PSXSDKIntroRandTextEvent == true)
+		(PSXSDKIntroRandTextEvent != false)
 			&&
 		(PSXSDKIntroStringEvent == false)	)
 	{
@@ -372,13 +372,13 @@ void PSXSDKIntroRunTimers(void)
 
 	if ( (intro_timer >= INTRO_CLOSE_TIM)
 			&&
-		(PSXSDKIntroCloseShellEvent == true)
+		(PSXSDKIntroCloseShellEvent != false)
 			&&
-		(PSXSDKIntroSpinDiskEvent == true)
+		(PSXSDKIntroSpinDiskEvent != false)
 			&&
-		(PSXSDKIntroRandTextEvent == true)
+		(PSXSDKIntroRandTextEvent != false)
 			&&
-		(PSXSDKIntroStringEvent == true)	)
+		(PSXSDKIntroStringEvent != false)	)
 	{
 		PSXSDKIntroClose = true;
 		intro_timer = 0;
@@ -402,7 +402,7 @@ void PSXSDKIntroDrawDisk(void)
 	PsxDisk.u = DISK_U;
 	PsxDisk.v = DISK_V;
 
-	if (PSXSDKIntroSpinDiskEvent == true)
+	if (PSXSDKIntroSpinDiskEvent != false)
 	{
 		if (PSXSDKIntroSpinDiskEventReminder == false)
 		{

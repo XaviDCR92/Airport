@@ -1,9 +1,11 @@
-#ifndef __MENU_HEADER__
-#define __MENU_HEADER__
+#ifndef MENU_HEADER__
+#define MENU_HEADER__
 
 /* *************************************
  * 	Includes
  * *************************************/
+
+#include "Gfx.h"
 
 /* *************************************
  * 	Defines
@@ -14,5 +16,6 @@
  * *************************************/
 
 void MainMenu(void);
+GsSprite* MainMenuGetBCNGWLogo(void);
 
-#endif //__MENU_HEADER__
+#endif //MENU_HEADER__

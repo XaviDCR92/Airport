@@ -89,14 +89,26 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 
 			if (strlen(buffer) != PLT_FIRST_LINE_CHARACTERS)
 			{
+                int k;
+
+                dprintf("Buffer: ");
+                
+                for (k = 0; k < strlen(buffer); k++)
+                {
+                    dprintf("0x%02X ", buffer[k]);
+                }
 				// Format should always be HH:MM (5 characters)
 				// Treat any other combination as possible error
+                Serial_printf(  "Invalid first line length: %d, expected %d characters.\n",
+                                strlen(buffer),
+                                PLT_FIRST_LINE_CHARACTERS   );
 				return false;
 			}
 
 			if (buffer[PLT_COLON_POSITION] != ':')
 			{
 				// Check whether time format is HH:MM
+                Serial_printf("Invalid hour/minute format: %s\n", buffer);
 				return false;
 			}
 

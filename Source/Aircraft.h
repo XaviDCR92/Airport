@@ -1,5 +1,5 @@
-#ifndef __AIRCRAFT_HEADER__
-#define __AIRCRAFT_HEADER__
+#ifndef AIRCRAFT_HEADER__
+#define AIRCRAFT_HEADER__
 
 /* *************************************
  * 	Includes
@@ -29,4 +29,4 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 						uint8_t FlightDataIndex,
 						uint16_t* targets		);
 
-#endif //__AIRCRAFT_HEADER__
+#endif //AIRCRAFT_HEADER__

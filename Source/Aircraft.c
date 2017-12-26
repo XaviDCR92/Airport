@@ -264,12 +264,12 @@ void AircraftHandler(void)
                 // other aircraft.
                 // WARNING: only STATE_TAXIING can be used to automatically stop an aircraft
                 // when calling GameStopFlight() or GameResumeFlightFromAutoStop().
-                collision_warning = AircraftCheckPath(ptrAircraft, ptrOtherAircraft);
+                collision_warning |= AircraftCheckPath(ptrAircraft, ptrOtherAircraft);
             }
 
             if (j > i)
             {
-                if (AircraftCheckCollision(ptrAircraft, ptrOtherAircraft) == true)
+                if (AircraftCheckCollision(ptrAircraft, ptrOtherAircraft) != false)
                 {
                     GameAircraftCollision(ptrAircraft->FlightDataIdx);
                     break;
@@ -282,7 +282,7 @@ void AircraftHandler(void)
 
 		}
 
-        if (collision_warning == true)
+        if (collision_warning != false)
         {
             GameStopFlight(ptrAircraft->FlightDataIdx);
         }
@@ -436,7 +436,7 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx)
 
     if ( (ptrPlayer->FlightDataSelectedAircraft == aircraftIdx)
                         &&
-        (ptrPlayer->ShowAircraftData == true)                   )
+        (ptrPlayer->ShowAircraftData != false)                   )
     {
         static uint8_t aircraft_sine;
         static bool aircraft_sine_decrease;
@@ -593,7 +593,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 			}
 		}
 
-		if (ptrAircraft->TargetReached == true)
+		if (ptrAircraft->TargetReached != false)
 		{
 			ptrAircraft->IsoPos.x = targetPos.x;
 			ptrAircraft->IsoPos.y = targetPos.y;

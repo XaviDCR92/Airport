@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "Pad.h"
 #include "Game.h"
+#include "Menu.h"
 
 /* *************************************
  * 	Defines
@@ -103,6 +104,17 @@ static uint8_t global_lum;
 static bool five_hundred_ms_show;
 static bool one_second_show;
 
+/* **********************************************************************
+ *
+ * @name: void GfxSwapBuffers(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ * 	Does double buffering by swapping drawing and display environments.
+ *
+ *
+ * **********************************************************************/
 void GfxSwapBuffers(void)
 {
 	// Consistency check
@@ -152,7 +164,16 @@ void GfxSwapBuffers(void)
 	}
 }
 
-
+/* **********************************************************************
+ *
+ * @name: void GfxInitDrawEnv(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ * 	Initialization of drawing environment.
+ *
+ * **********************************************************************/
 void GfxInitDrawEnv(void)
 {
 	DrawEnv.x = 0;
@@ -164,6 +185,16 @@ void GfxInitDrawEnv(void)
 	GsSetDrawEnv(&DrawEnv);
 }
 
+/* **********************************************************************
+ *
+ * @name: void GfxInitDispEnv(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ * 	Initialization of display environment.
+ *
+ * **********************************************************************/
 void GfxInitDispEnv(void)
 {
 	DispEnv.x = 0;
@@ -172,23 +203,46 @@ void GfxInitDispEnv(void)
 	GsSetDispEnv(&DispEnv);
 }
 
+/* **********************************************************************
+ *
+ * @name: void GfxSetPrimitiveList(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ * 	Sets pointer to a buffer to be used as primitive list (only
+ *  used internally by PSXSDK).
+ *
+ * **********************************************************************/
 void GfxSetPrimitiveList(void)
 {
 	GsSetList(prim_list);
 }
 
+/* **********************************************************************
+ *
+ * @name: void GfxDrawScene_Fast(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ * 	Draws current primitive list into screen without waiting for
+ *  GPU to finish. Also, routinary checks and functionalities are
+ *  executed.
+ *
+ * **********************************************************************/
 void GfxDrawScene_Fast(void)
 {
     SystemDevMenu();
 
     FontSetFlags(&SmallFont, FONT_NOFLAGS);
 
-	if (System1SecondTick() == true)
+	if (System1SecondTick() != false)
 	{
 		one_second_show = one_second_show? false:true;
 	}
 
-	if (System500msTick() == true)
+	if (System500msTick() != false)
 	{
 		five_hundred_ms_show = five_hundred_ms_show? false:true;
 	}
@@ -213,9 +267,14 @@ void GfxDrawScene(void)
 
 	while (	(SystemRefreshNeeded() == false)
 				||
-			(GfxIsGPUBusy() == true)		);
+			(GfxIsGPUBusy() != false)		);
 
-    FontPrintText(&SmallFont, FPS_INFO_X, FPS_INFO_Y, "%d/%d", SystemGetFPS(), REFRESH_FREQUENCY);
+    //~ FontPrintText(&SmallFont, FPS_INFO_X, FPS_INFO_Y, "%d/%d", SystemGetFPS(), REFRESH_FREQUENCY);
+
+    if (MainMenuGetBCNGWLogo() != NULL)
+    {
+        GfxSortSprite(MainMenuGetBCNGWLogo());
+    }
 
 	GfxDrawScene_Fast();
 
@@ -225,7 +284,7 @@ void GfxDrawScene(void)
 void GfxDrawScene_Slow(void)
 {
 	GfxDrawScene();
-	while (GfxIsGPUBusy() == true);
+	while (GfxIsGPUBusy() != false);
 }
 
 void GfxSortSprite(GsSprite * spr)
@@ -288,7 +347,7 @@ void GfxSortSprite(GsSprite * spr)
 		}
 	}
 
-	if (has_1hz_flash == true)
+	if (has_1hz_flash != false)
 	{
 		spr->attribute &= ~(GFX_1HZ_FLASH);
 	}
@@ -316,7 +375,7 @@ void GfxSortSprite(GsSprite * spr)
 		GsSortSprite(spr);
 	}
 
-	if (has_1hz_flash == true)
+	if (has_1hz_flash != false)
 	{
 		spr->attribute |= GFX_1HZ_FLASH;
 	}
@@ -369,7 +428,7 @@ bool GfxSpriteFromFile(char* fname, GsSprite * spr)
 		return false;
 	}
 
-	while (GfxIsGPUBusy() == true);
+	while (GfxIsGPUBusy() != false);
 
 	gfx_busy = true;
 
@@ -397,7 +456,7 @@ bool GfxCLUTFromFile(char* fname)
 		return false;
 	}
 
-	while (GfxIsGPUBusy() == true);
+	while (GfxIsGPUBusy() != false);
 
 	gfx_busy = true;
 
@@ -453,7 +512,7 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 	static short orig_u;
 	static short orig_v;
 
-	if (first_entered == true)
+	if (first_entered != false)
 	{
 		first_entered = false;
 		orig_u = PSXButtons.u;
@@ -582,7 +641,7 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 
 void GfxSaveDisplayData(GsSprite *spr)
 {
-	while (GfxIsGPUBusy() == true);
+	while (GfxIsGPUBusy() != false);
 
 	MoveImage(	DispEnv.x,
 				DispEnv.y,
@@ -603,7 +662,7 @@ void GfxSaveDisplayData(GsSprite *spr)
 	spr->g = NORMAL_LUMINANCE;
 	spr->b = NORMAL_LUMINANCE;
 
-	while (GfxIsGPUBusy() == true);
+	while (GfxIsGPUBusy() != false);
 }
 
 bool Gfx1HzFlash(void)

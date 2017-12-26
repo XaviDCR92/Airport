@@ -1,5 +1,5 @@
-#ifndef __LOAD_MENU_HEADER__
-#define __LOAD_MENU_HEADER__
+#ifndef LOAD_MENU_HEADER__
+#define LOAD_MENU_HEADER__
 
 /* *************************************
  * 	Includes
@@ -21,4 +21,4 @@ void LoadMenu(	const char*	fileList[],
 
 void LoadMenuEnd(void);
 
-#endif //__LOAD_MENU_HEADER__
+#endif //LOAD_MENU_HEADER__

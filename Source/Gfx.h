@@ -1,5 +1,5 @@
-#ifndef __GFX_HEADER__
-#define __GFX_HEADER__
+#ifndef GFX_HEADER__
+#define GFX_HEADER__
 
 /* *************************************
  * 	Includes
@@ -118,4 +118,4 @@ void GfxDevMenuEnable(void);
 
 extern GsSprite PSXButtons;
 
-#endif //__GFX_HEADER__
+#endif //GFX_HEADER__

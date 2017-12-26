@@ -1,5 +1,5 @@
-#ifndef __CAM_HEADER__
-#define __CAM_HEADER__
+#ifndef CAM_HEADER__
+#define CAM_HEADER__
 
 /* *************************************
  * 	Includes
@@ -23,4 +23,4 @@ void CameraApplyCoordinatesToRectangle(TYPE_PLAYER* ptrPlayer, GsRectangle * rec
 TYPE_ISOMETRIC_POS CameraGetIsoPos(TYPE_PLAYER* ptrPlayer);
 void CameraMoveToIsoPos(TYPE_PLAYER* ptrPlayer, TYPE_ISOMETRIC_POS IsoPos);
 
-#endif //__CAM_HEADER__
+#endif //CAM_HEADER__

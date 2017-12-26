@@ -184,7 +184,7 @@ void EndAnimationSquares(void)
 				sqPos[randInd] = true;
 				sqCounter--;
 
-				while (sqPos[maxIndex] == true)
+				while (sqPos[maxIndex] != false)
 				{
 					// Lower maximum value for rand() so that it's
 					// easier to spot new empty index on next iteration.
@@ -209,7 +209,7 @@ void EndAnimationSquares(void)
 		{
 			for (j = 0; j < END_ANIMATION_SQUARES_TOTAL ; j++)
 			{
-				if (sqPos[j] == true)
+				if (sqPos[j] != false)
 				{
 					EndAnimationRect.x = ((j) << END_ANIMATION_SQUARES_SIZE_BITSHIFT) -
 												(short)( (j / END_ANIMATION_SQUARES_PER_ROW) *

@@ -1,5 +1,5 @@
-#ifndef __PSXSDK_INTRO_HEADER__
-#define __PSXSDK_INTRO_HEADER__
+#ifndef PSXSDK_INTRO_HEADER__
+#define PSXSDK_INTRO_HEADER__
 
 /* *************************************
  * 	Includes
@@ -28,4 +28,4 @@ extern GsSprite OpenSource_Logo;
 extern SsVag TrayClSnd;
 extern SsVag SpinDiskSnd;
 
-#endif //__PSXSDK_INTRO_HEADER__
+#endif //PSXSDK_INTRO_HEADER__
