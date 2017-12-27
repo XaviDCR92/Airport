@@ -7,20 +7,107 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    gscene(new MyGraphicsScene)
+    gscene(new MyGraphicsScene),
+    selected_item(-1)
 {
     ui->setupUi(this);
 
-    connect(ui->LoadMap_Btn,    SIGNAL(released()), this,   SLOT(onLoadMap()));
-    connect(ui->CreateMap_Btn,  SIGNAL(released()), this,   SLOT(onCreateMap()));
+    connect(ui->LoadMap_Btn,        SIGNAL(released()),                 this,   SLOT(onLoadMap()));
+    connect(ui->CreateMap_Btn,      SIGNAL(released()),                 this,   SLOT(onCreateMap()));
+    connect(ui->saveMap_Btn,        SIGNAL(released()),                 this,   SLOT(onSaveMap(void)));
+    connect(gscene,                 SIGNAL(positionClicked(QPointF)),   this,   SLOT(onMapItemClicked(QPointF)));
+    connect(gscene,                 SIGNAL(noItemSelected(void)),       this,   SLOT(onNoItemSelected(void)));
+    connect(gscene,                 SIGNAL(updateSelectedItem(void)),   this,   SLOT(onListItemSelected(void)));
 
     appSettings();
+    loadTilesetData();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
     delete gscene;
+}
+
+void MainWindow::onMapItemClicked(QPointF pos)
+{
+    QPoint realPos;
+
+    pos.setX(pos.x() - (TILE_SIZE / 2));
+
+    realPos.setX(pos.x() + (pos.y() * 2));
+    realPos.setY((pos.y() * 2) - pos.x());
+
+    int tile_no = 0;
+
+    tile_no = realPos.x() / TILE_SIZE;
+    tile_no += (realPos.y() / TILE_SIZE) * level_size;
+
+    if (tile_no < (level_size * level_size))
+    {
+        selected_item = tile_no;
+        onProcessMapFile(map_buffer);
+    }
+    else
+    {
+        selected_item = -1;
+    }
+}
+
+void MainWindow::onListItemSelected(void)
+{
+    QList<QListWidgetItem *> item = ui->listWidget->selectedItems();
+
+    foreach (QListWidgetItem *it, item)
+    {
+        int row = ui->listWidget->row(it);
+
+        if (selected_item != -1)
+        {
+            int map_buffer_pos = (DATA_HEADER_SIZE + 1) + (selected_item * sizeof(quint16));
+            //map_buffer_pos++; // MSB: building data, LSB: terrain data.
+
+            qDebug() << "Calculated file offset: 0x" + QString::number(map_buffer_pos, 16);
+
+            if (map_buffer_pos < map_buffer.count())
+            {
+                qDebug() << "Current data at 0x" + QString::number(map_buffer_pos, 16) + ": " + tilesetData.value(map_buffer[map_buffer_pos]);
+                map_buffer[map_buffer_pos] = row;
+
+                if (ui->mirror_CheckBox->isChecked() == true)
+                {
+                    map_buffer[map_buffer_pos] = map_buffer[map_buffer_pos] | TILE_MIRROR_FLAG;
+                }
+
+                onProcessMapFile(map_buffer);
+            }
+        }
+    }
+}
+
+void MainWindow::onSaveMap(void)
+{
+    QString path = QFileDialog::getSaveFileName(this,
+                                                "Save map file",
+                                                _last_dir,
+                                                "Map files (*.LVL)");
+
+    QFile f(path);
+
+    if(checkFile(f, QFile::WriteOnly) == false)
+    {
+        return;
+    }
+
+    f.write(map_buffer);
+
+    f.close();
+}
+
+void MainWindow::onNoItemSelected(void)
+{
+    selected_item = -1;
+    onProcessMapFile(map_buffer);
 }
 
 void MainWindow::onCreateMap(void)
@@ -32,8 +119,13 @@ void MainWindow::onCreateMap(void)
     items << "16";
     items << "24";
 
-    QString size = QInputDialog::getItem(this, tr("Create new map"),
-                                         tr("Select map size:"), items, 0, false, &ok);
+    QString size = QInputDialog::getItem(   this,
+                                            tr("Create new map"),
+                                            tr("Select map size:"),
+                                            items,
+                                            0,
+                                            false,
+                                            &ok     );
 
     if ( (ok == false) || (size.isEmpty() == true) )
     {
@@ -46,20 +138,23 @@ void MainWindow::onCreateMap(void)
 
     if (size == "8")
     {
+        level_size = 8;
         data.append((char)0x08);
     }
     else if (size == "16")
     {
+        level_size = 16;
         data.append((char)0x10);
     }
     else if (size == "24")
     {
+        level_size = 24;
         data.append((char)0x18);
     }
 
     data.append("Default airport");
 
-    for (int i = (data.count() - 1); i < 0x3F; i++)
+    for (int i = (data.count() - 1); i < DATA_HEADER_SIZE; i++)
     {
         data.append(0xFF);
     }
@@ -109,6 +204,8 @@ void MainWindow::onLoadMap(void)
 
 void MainWindow::onProcessMapFile(QByteArray data)
 {
+    map_buffer = data;
+
     QDataStream ds(&data, QIODevice::ReadWrite);
 
     char header[3];
@@ -125,13 +222,11 @@ void MainWindow::onProcessMapFile(QByteArray data)
 
     ds.readRawData(&ch, sizeof(char));
 
-    int level_size = ch;
-    qDebug() << level_size;
-    qDebug() << data.count();
+    level_size = ch;
 
     QPixmap tile1("..\\..\\Sprites\\TILESET1.bmp");
 
-    int expected_filesize = (0x3F + (level_size * level_size));
+    int expected_filesize = (DATA_HEADER_SIZE + (level_size * level_size));
 
     if (data.count() < expected_filesize)
     {
@@ -154,7 +249,7 @@ void MainWindow::onProcessMapFile(QByteArray data)
             ds.readRawData(byte, 2);
             quint8 CurrentTile = byte[1];
 
-            if (CurrentTile & 0x80)
+            if (CurrentTile & TILE_MIRROR_FLAG)
             {
                 u = (int)((CurrentTile & 0x7F) % 4) * 64;
                 v = (int)((CurrentTile & 0x7F) / 4) * 48;
@@ -167,12 +262,20 @@ void MainWindow::onProcessMapFile(QByteArray data)
 
             QImage cropped = tile1.copy(u, v, 64, 48).toImage();
 
-            if (CurrentTile & 0x80)
+            if (CurrentTile & TILE_MIRROR_FLAG)
             {
                 cropped = cropped.mirrored(true, false);
             }
 
-            qDebug() << CurrentTile;
+            bool selected = false;
+
+            if (selected_item != -1)
+            {
+                if (selected_item == ((j * level_size) + i))
+                {
+                    selected = true;
+                }
+            }
 
             cropped = cropped.convertToFormat(QImage::Format_ARGB32); // or maybe other format
 
@@ -186,6 +289,16 @@ void MainWindow::onProcessMapFile(QByteArray data)
                     {
                         cropped.setPixel(i, j, qRgba(0,0,0,0));
                     }
+                    else if (selected == true)
+                    {
+                        QColor c = cropped.pixelColor(i, j);
+
+                        c.setRed(255 - c.red());
+                        c.setBlue(255 - c.blue());
+                        c.setGreen(255 - c.green());
+
+                        cropped.setPixel(i, j, qRgb(c.red(), c.green(), c.blue()));
+                    }
                 }
             }
 
@@ -193,11 +306,11 @@ void MainWindow::onProcessMapFile(QByteArray data)
             int x;
             int y;
 
-            x = (i * 64) - (i * 32);
-            x -= (j * 32);
+            x = (i * TILE_SIZE) - (i * (TILE_SIZE / 2));
+            x -= (j * (TILE_SIZE / 2));
 
-            y = (j * 16);
-            y += i * 16;
+            y = (j * (TILE_SIZE / 4));
+            y += i * (TILE_SIZE / 4);
 
             it->setX(x);
             it->setY(y);
@@ -208,16 +321,11 @@ void MainWindow::onProcessMapFile(QByteArray data)
     ui->graphicsView->show();
 }
 
-bool MainWindow::checkFile(QFile& f)
+bool MainWindow::checkFile(QFile& f, QFile::OpenModeFlag flags)
 {
     QFileInfo fi(f);
 
-    if(fi.exists() == false)
-    {
-        return false;
-    }
-
-    if(f.open(QFile::ReadWrite) == false)
+    if(f.open(flags) == false)
     {
         return false;
     }
@@ -231,7 +339,7 @@ bool MainWindow::checkFile(QFile& f)
 
 void MainWindow::appSettings(void)
 {
-    QSettings set("./settings.ini",QSettings::IniFormat);
+    QSettings set("./settings.ini", QSettings::IniFormat);
 
     set.beginGroup("app_settings");
 
@@ -242,11 +350,52 @@ void MainWindow::appSettings(void)
 
 void MainWindow::closeEvent(QCloseEvent*)
 {
-    QSettings set("./settings.ini",QSettings::IniFormat);
+    QSettings set("./settings.ini", QSettings::IniFormat);
 
     set.beginGroup("app_settings");
 
-    set.setValue("last_dir",_last_dir);
+    set.setValue("last_dir", _last_dir);
 
     set.endGroup();
+}
+
+void MainWindow::loadTilesetData(void)
+{
+    QFile f("./tileset.ini");
+
+    if (f.exists() == false)
+    {
+        qDebug() << "tileset.ini does not exist. Please create it";
+    }
+    else
+    {
+        QSettings tilesetFile("./tileset.ini", QSettings::IniFormat);
+        QStringList tilesets_to_check;
+
+        tilesets_to_check << "tileset1";
+        tilesets_to_check << "tileset2";
+
+        int i = 0;
+
+        foreach (QString tileset, tilesets_to_check)
+        {
+            tilesetFile.beginGroup(tileset);
+
+            while (1)
+            {
+                QString tileNumber = "tile" + QString::number(i);
+                QString tileName = tilesetFile.value(tileNumber, "").toString();
+
+                if (tileName.isEmpty() == true)
+                {
+                    break;
+                }
+
+                tilesetData.insert(i++, tileName);
+                ui->listWidget->addItem(tileName);
+            }
+
+            tilesetFile.endGroup();
+        }
+    }
 }

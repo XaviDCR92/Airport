@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>501</width>
-    <height>380</height>
+    <width>920</width>
+    <height>582</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,37 +41,40 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_3">
+       <widget class="QPushButton" name="saveMap_Btn">
         <property name="text">
-         <string>PushButton</string>
+         <string>Save map</string>
         </property>
        </widget>
       </item>
      </layout>
     </item>
-    <item row="0" column="0">
-     <widget class="QTreeWidget" name="treeWidget">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+    <item row="0" column="2">
+     <widget class="QGraphicsView" name="graphicsView">
+      <property name="minimumSize">
+       <size>
+        <width>640</width>
+        <height>480</height>
+       </size>
       </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QListWidget" name="listWidget">
       <property name="maximumSize">
        <size>
-        <width>16777215</width>
+        <width>256</width>
         <height>16777215</height>
        </size>
       </property>
-      <column>
-       <property name="text">
-        <string>Items</string>
-       </property>
-      </column>
      </widget>
     </item>
-    <item row="0" column="1">
-     <widget class="QGraphicsView" name="graphicsView"/>
+    <item row="1" column="0">
+     <widget class="QCheckBox" name="mirror_CheckBox">
+      <property name="text">
+       <string>Mirror tile</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -80,7 +83,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>501</width>
+     <width>920</width>
      <height>21</height>
     </rect>
    </property>
