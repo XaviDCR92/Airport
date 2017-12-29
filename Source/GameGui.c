@@ -562,11 +562,6 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 
             y_offset =  (short)(page_aircraft * AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H);
 
-            /*Serial_printf("ptrPlayer->ActiveAircraft = %d\n",ptrPlayer->ActiveAircraft);
-            Serial_printf("ptrPlayer->SelectedAircraft = %d\n",ptrPlayer->SelectedAircraft);
-            Serial_printf("ptrPlayer->FlightDataPage = %d\n",ptrPlayer->FlightDataPage);
-            Serial_printf("y_offset = %d\n",y_offset);*/
-
             if (GameTwoPlayersActive() != false)
             {
                 SelectedAircraftGPoly4.y[0] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_Y0_2PLAYER;

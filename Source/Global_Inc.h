@@ -4,7 +4,6 @@
 /* *************************************
  * 	Includes
  * *************************************/
-
 #include <psx.h>
 #include <stdio.h>
 #include <psxsio.h>

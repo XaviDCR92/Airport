@@ -1,7 +1,6 @@
 /* *************************************
  * 	Includes
  * *************************************/
-
 #include "System.h"
 #include "Pad.h"
 #include "Menu.h"
@@ -13,7 +12,6 @@
 /* *************************************
  * 	Defines
  * *************************************/
-
 #define FILE_BUFFER_SIZE (128 << 10)    // 128 KB
 
 #define END_STACK_PATTERN (uint32_t) 0x18022015
@@ -24,7 +22,6 @@
 /* *************************************
  * 	Local Prototypes
  * *************************************/
-
 static void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step);
 static void SystemSetStackPattern(void);
 static void ISR_RootCounter2(void);
@@ -32,7 +29,6 @@ static void ISR_RootCounter2(void);
 /* *************************************
  * 	Local Variables
  * *************************************/
-
 //Buffer to store any kind of files. It supports files up to 128 kB
 static uint8_t file_buffer[FILE_BUFFER_SIZE];
 //Global timer (called by interrupt)
@@ -69,7 +65,6 @@ static unsigned char sine_counter;
  * @remarks: To be called before main loop.
  *
  * *******************************************************************/
-
 void SystemInit(void)
 {
 	//Reset global timer
@@ -134,9 +129,18 @@ void SystemInit(void)
 
 static volatile uint16_t u16_0_01seconds_cnt;
 
+/* *******************************************************************
+ *
+ * @name: void ISR_RootCounter2(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ * 	Executed on RCnt2 ISR.
+ *
+ * *******************************************************************/
 void ISR_RootCounter2(void)
 {
-    Serial_printf("YO\n");
     u16_0_01seconds_cnt++;
 }
 
@@ -155,7 +159,6 @@ void ISR_RootCounter2(void)
  * 	It is recommended to call it once user has pressed any key.
  *
  * *******************************************************************/
-
 void SystemSetRandSeed(void)
 {
 	if (rand_seed == false)
@@ -183,7 +186,6 @@ void SystemSetRandSeed(void)
  *	 Reportedly, returns whether rand seed has already been set.
  *
  * *******************************************************************/
-
 bool SystemIsRandSeedSet(void)
 {
 	return rand_seed;
@@ -203,7 +205,6 @@ bool SystemIsRandSeedSet(void)
  *	 Returns whether VSync flag has been enabled.
  *
  * *******************************************************************/
-
 bool SystemRefreshNeeded(void)
 {
 	return refresh_needed;
@@ -222,7 +223,6 @@ bool SystemRefreshNeeded(void)
  * 	60 times a second in NTSC mode.
  *
  * *******************************************************************/
-
 void ISR_SystemDefaultVBlank(void)
 {
     if (System1SecondTick() != false)
@@ -246,7 +246,6 @@ void ISR_SystemDefaultVBlank(void)
  * 	Called by Game module in order to calculate frames per second.
  *
  * *******************************************************************/
-
 void SystemAcknowledgeFrame(void)
 {
     temp_fps++;
@@ -266,7 +265,6 @@ void SystemAcknowledgeFrame(void)
  * 	To be called only once, preferibly on SystemCyclic().
  *
  * *******************************************************************/
-
 void SystemCalculateSine(void)
 {
     enum
@@ -312,7 +310,6 @@ void SystemCalculateSine(void)
  *  a parabola) function to be used wherever you want.
  *
  * *******************************************************************/
-
 unsigned char SystemGetSineValue(void)
 {
     return sine_counter;
@@ -331,7 +328,6 @@ unsigned char SystemGetSineValue(void)
  * 	Usually called from ISR_SystemDefaultVBlank().
  *
  * *******************************************************************/
-
 void SystemIncreaseGlobalTimer(void)
 {
 	global_timer++;
@@ -346,7 +342,6 @@ void SystemIncreaseGlobalTimer(void)
  * @brief: Returns internal global timer value.
  *
  * *******************************************************************/
-
 uint64_t SystemGetGlobalTimer(void)
 {
 	return global_timer;
@@ -361,7 +356,6 @@ uint64_t SystemGetGlobalTimer(void)
  * @brief: Resets VBlank IRQ flag.
  *
  * *******************************************************************/
-
 void SystemDisableScreenRefresh(void)
 {
 	refresh_needed = false;
@@ -377,7 +371,6 @@ void SystemDisableScreenRefresh(void)
  * 			set each second.
  *
  * *******************************************************************/
-
 bool System1SecondTick(void)
 {
 	return one_second_timer;
@@ -393,7 +386,6 @@ bool System1SecondTick(void)
  * 			set every 100 milliseconds.
  *
  * *******************************************************************/
-
 bool System100msTick(void)
 {
 	return hundred_ms_timer;
@@ -409,7 +401,6 @@ bool System100msTick(void)
  * 			set every 500 milliseconds.
  *
  * *******************************************************************/
-
 bool System500msTick(void)
 {
 	return five_hundred_ms_timer;
@@ -426,7 +417,6 @@ bool System500msTick(void)
  * @remarks:	1 second, 500 ms and 100 ms ticks get updated here.
  *
  * *******************************************************************/
-
 void SystemRunTimers(void)
 {
 	static uint64_t last_one_second_tick;
@@ -453,7 +443,6 @@ void SystemRunTimers(void)
  * @brief:	Checks if needed time step has been elapsed. If true, flag gets set.
  *
  * *******************************************************************************/
-
 void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
 {
 	if (*timer != false)
@@ -480,7 +469,6 @@ void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
  * @return:	true if file has been loaded successfully, false otherwise.
  *
  * ****************************************************************************************/
-
 bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 {
 #ifdef SERIAL_INTERFACE
@@ -587,7 +575,6 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
  * @return:	true if file has been loaded successfully, false otherwise.
  *
  * ****************************************************************************************/
-
 bool SystemLoadFile(char*fname)
 {
 	return SystemLoadFileToBuffer(fname,file_buffer,sizeof(file_buffer));
@@ -602,7 +589,6 @@ bool SystemLoadFile(char*fname)
  * @return:	Reportedly, returns internal buffer initial address.
  *
  * *****************************************************************/
-
 uint8_t* SystemGetBufferAddress(void)
 {
 	return file_buffer;
@@ -617,7 +603,6 @@ uint8_t* SystemGetBufferAddress(void)
  * @return:	Fills internal buffer with zeros
  *
  * *****************************************************************/
-
 void SystemClearBuffer(void)
 {
 	memset(file_buffer, 0, sizeof(file_buffer));
@@ -632,7 +617,6 @@ void SystemClearBuffer(void)
  * @return:	halts program execution for n-"cycles"
  *
  * *****************************************************************/
-
 void SystemWaitCycles(uint32_t cycles)
 {
 	uint64_t currentTime = global_timer;
@@ -652,7 +636,6 @@ void SystemWaitCycles(uint32_t cycles)
  * 			 you will predictable values otherwise!
  *
  * *****************************************************************/
-
 uint32_t SystemRand(uint32_t min, uint32_t max)
 {
     if (rand_seed == false)
@@ -674,7 +657,6 @@ uint32_t SystemRand(uint32_t min, uint32_t max)
  * @remarks: emergency mode is set once that a controller is unplugged.
  *
  * ***********************************************************************/
-
 void SystemSetEmergencyMode(bool value)
 {
 	emergency_mode = value;
@@ -689,7 +671,6 @@ void SystemSetEmergencyMode(bool value)
  * @return:	returns emergency mode flag.
  *
  * ***********************************************************************/
-
 bool SystemGetEmergencyMode(void)
 {
 	return emergency_mode;
@@ -704,7 +685,6 @@ bool SystemGetEmergencyMode(void)
  * @return:	returns system busy flag.
  *
  * ***********************************************************************/
-
 volatile bool SystemIsBusy(void)
 {
 	return system_busy;
@@ -721,7 +701,6 @@ volatile bool SystemIsBusy(void)
  * @return:	true if value is contained inside buffer, false otherwise.
  *
  * ****************************************************************************/
-
 bool SystemContains_u8(uint8_t value, uint8_t* buffer, size_t sz)
 {
 	size_t i = 0;
@@ -749,7 +728,6 @@ bool SystemContains_u8(uint8_t value, uint8_t* buffer, size_t sz)
  * @return:	true if value is contained inside buffer, false otherwise.
  *
  * ****************************************************************************/
-
 bool SystemContains_u16(uint16_t value, uint16_t* buffer, size_t sz)
 {
 	size_t i = 0;
@@ -776,7 +754,6 @@ bool SystemContains_u16(uint16_t value, uint16_t* buffer, size_t sz)
  * @return: true if they are equal, false otherwise.
  *
  * ****************************************************************************************/
-
 bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz)
 {
 	size_t i;
@@ -801,7 +778,6 @@ bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz)
  * @brief:	Prints stack usage in percentage via dprintf calls.
  *
  * ****************************************************************************************/
-
 void SystemPrintStackPointerAddress(void)
 {
 #ifdef PSXSDK_DEBUG // Used to avoid unused variable warning
@@ -835,7 +811,6 @@ void SystemPrintStackPointerAddress(void)
  *          overflow has been caused, and application returns to a safe state.
  *
  * ****************************************************************************************/
-
 void SystemCheckStack(void)
 {
 	uint32_t * ptrStack = BEGIN_STACK_ADDRESS;
@@ -863,7 +838,6 @@ void SystemCheckStack(void)
  *          overflow during execution.
  *
  * ****************************************************************************************/
-
 void SystemSetStackPattern(void)
 {
 	uint32_t * ptrStack = BEGIN_STACK_ADDRESS;
@@ -884,7 +858,6 @@ void SystemSetStackPattern(void)
  * @return  Index for a string "str" inside "array". -1 if it could not be found.
  *
  * ****************************************************************************************/
-
 int32_t SystemIndexOfStringArray(char* str, char** array)
 {
 	int32_t i;
@@ -914,7 +887,6 @@ int32_t SystemIndexOfStringArray(char* str, char** array)
  * @return  Index for a variable "value" inside "array". -1 if it could not be found.
  *
  * ****************************************************************************************/
-
 int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz)
 {
 	int32_t i;
@@ -943,7 +915,6 @@ int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz)
  *
  * ****************************************************************************************/
 
-
 int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t sz)
 {
 	int32_t i;
@@ -968,7 +939,6 @@ int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t 
  * @return: Frames per second
  *
  * ****************************************************************************************/
-
 volatile uint8_t SystemGetFPS(void)
 {
     return fps;
@@ -984,7 +954,6 @@ volatile uint8_t SystemGetFPS(void)
  *
  *
  * ****************************************************************************************/
-
 void SystemCyclicHandler(void)
 {
     UpdatePads();
@@ -1016,7 +985,6 @@ void SystemCyclicHandler(void)
  *          e.g.: when reading files from CD-ROM.
  *
  * ****************************************************************************************/
-
 void SystemDisableVBlankInterrupt(void)
 {
 	I_MASK &= ~(0x0001);
@@ -1032,7 +1000,6 @@ void SystemDisableVBlankInterrupt(void)
  *
  *
  * ****************************************************************************************/
-
 void SystemEnableVBlankInterrupt(void)
 {
 	I_MASK |= (0x0001);
@@ -1048,7 +1015,6 @@ void SystemEnableVBlankInterrupt(void)
  *          located at memory address 0x801A0000
  *
  * ****************************************************************************************/
-
 void SystemReturnToLoader(void)
 {
     Serial_printf("Returning to loader...\n");
@@ -1070,7 +1036,6 @@ void SystemReturnToLoader(void)
  *          top of all drawn primitives for debugging/development purposes.
  *
  * ****************************************************************************************/
-
 void SystemDevMenuToggle(void)
 {
     devmenu_flag = devmenu_flag? false: true;
@@ -1085,7 +1050,6 @@ void SystemDevMenuToggle(void)
  * @brief:	Enables bit 6 from I_MASK (0x1F801074)/IRQ6 RCNT2 (System clock / 8)
  *
  * ****************************************************************************************/
-
 void SystemEnableRCnt2Interrupt(void)
 {
     I_MASK |= 1<<6;
@@ -1101,7 +1065,6 @@ void SystemEnableRCnt2Interrupt(void)
  * @brief:	Disables bit 6 from I_MASK (0x1F801074)/IRQ6 RCNT2 (System clock / 8)
  *
  * ****************************************************************************************/
-
 void SystemDisableRCnt2Interrupt(void)
 {
     I_MASK &= ~(1<<6);
@@ -1116,7 +1079,6 @@ void SystemDisableRCnt2Interrupt(void)
  * @brief:	Shows information on top of all drawn primitives for debugging/development purposes.
  *
  * ****************************************************************************************/
-
 void SystemDevMenu(void)
 {
     enum

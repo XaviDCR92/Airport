@@ -4,21 +4,18 @@
 /* **************************************
  * 	Includes							*
  * **************************************/
-
 #include "Global_Inc.h"
 #include "GameStructures.h"
 
 /* **************************************
  * 	Defines								*
  * **************************************/
-
 #define TIMER_PRESCALER_1_SECOND    10
 #define TIMER_PRESCALER_1_MINUTE    (TIMER_PRESCALER_1_SECOND * 60)
 
 /* **************************************
  * 	Global Prototypes					*
  * **************************************/
-
 // Calls PSXSDK init routines
 void SystemInit(void);
 
@@ -136,5 +133,4 @@ unsigned char SystemGetSineValue(void);
 /* **************************************
  * 	Global Variables					*
  * **************************************/
-
 #endif //SYSTEM_HEADER__

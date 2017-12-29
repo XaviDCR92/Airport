@@ -17,7 +17,6 @@
 #define DOUBLE_BUFFERING_SWAP_Y	256
 #define UPLOAD_IMAGE_FLAG 1
 #define MAX_LUMINANCE 0xFF
-#define ROTATE_BIT_SHIFT 12
 #define GPUSTAT (*(volatile unsigned int*)0x1F801814)
 #define D2_CHCR (*(volatile unsigned int*)0x1F8010A8)
 
@@ -252,41 +251,78 @@ void GfxDrawScene_Fast(void)
 	GsDrawList();
 }
 
+/* **********************************************************************
+ *
+ * @name: bool GfxReadyForDMATransfer(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @return:
+ *  true when a DMA transfer can be executed. Returns false otherwise.
+ *
+ * **********************************************************************/
 bool GfxReadyForDMATransfer(void)
 {
 	return ( (GPUSTAT & 1<<28) && !(D2_CHCR & 1<<24) );
 }
 
+/* **********************************************************************
+ *
+ * @name: void GfxDrawScene(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Renders all queued primitives and performs system-related actions.
+ *
+ * **********************************************************************/
 void GfxDrawScene(void)
 {
-    enum
-    {
-        FPS_INFO_X = 16,
-        FPS_INFO_Y = 16
-    };
-
-	while (	(SystemRefreshNeeded() == false)
+    while (	(SystemRefreshNeeded() == false)
 				||
 			(GfxIsGPUBusy() != false)		);
-
-    //~ FontPrintText(&SmallFont, FPS_INFO_X, FPS_INFO_Y, "%d/%d", SystemGetFPS(), REFRESH_FREQUENCY);
-
-    if (MainMenuGetBCNGWLogo() != NULL)
-    {
-        GfxSortSprite(MainMenuGetBCNGWLogo());
-    }
 
 	GfxDrawScene_Fast();
 
 	SystemCyclicHandler();
 }
 
+/* **********************************************************************
+ *
+ * @name: void GfxDrawScene_Slow(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Slow, blocking function which ensures GPU is ready again before
+ *  exiting.
+ *
+ * @remarks:
+ *  Blocking function. To be used only when absolutely needed.
+ *
+ * **********************************************************************/
 void GfxDrawScene_Slow(void)
 {
 	GfxDrawScene();
 	while (GfxIsGPUBusy() != false);
 }
 
+/* **********************************************************************
+ *
+ * @name: void GfxSortSprite(GsSprite * spr)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Reportedly, adds a sprite to primitive list. Internal flags
+ *  (e.g.: 1 Hz flash) are checked and special tasks are performed.
+ *  Also, global_lum is applied to sprite's RGB values.
+ *
+ * @remarks:
+ *  It is checked sprite fits into screen beforehand. Use GsSortSprite()
+ *  if you need to skip this check.
+ *
+ * **********************************************************************/
 void GfxSortSprite(GsSprite * spr)
 {
 	uint8_t aux_r = spr->r;
@@ -298,7 +334,7 @@ void GfxSortSprite(GsSprite * spr)
 	bool has_1hz_flash = spr->attribute & GFX_1HZ_FLASH;
 	bool has_2hz_flash = spr->attribute & GFX_2HZ_FLASH;
 
-	if (	(spr->w <= 0) || (spr->h <= 0) )
+	if ( (spr->w <= 0) || (spr->h <= 0) )
 	{
 		// Invalid width or heigth
 		return;
@@ -385,16 +421,48 @@ void GfxSortSprite(GsSprite * spr)
 	spr->b = aux_b;
 }
 
+/* **********************************************************************
+ *
+ * @name: void GfxSortSprite(GsSprite * spr)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @return:
+ *  Returns global_lum value, a global variable used to dim all drawn
+ *  sprites as needed.
+ *
+ * **********************************************************************/
 uint8_t GfxGetGlobalLuminance(void)
 {
 	return global_lum;
 }
 
+/* **********************************************************************
+ *
+ * @name: void GfxSetGlobalLuminance(uint8_t value)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @return:
+ *  Sets global_lum value, a global variable used to dim all drawn
+ *  sprites as needed.
+ *
+ * **********************************************************************/
 void GfxSetGlobalLuminance(uint8_t value)
 {
 	global_lum = value;
 }
 
+/* **********************************************************************
+ *
+ * @name: void GfxIncreaseGlobalLuminance(int8_t step)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @return:
+ *  Increases global_lum in steps given by user, avoiding overflow.
+ *
+ * **********************************************************************/
 void GfxIncreaseGlobalLuminance(int8_t step)
 {
 	if ( (	(global_lum + step) < MAX_LUMINANCE )
@@ -409,16 +477,53 @@ void GfxIncreaseGlobalLuminance(int8_t step)
 	}
 }
 
+/* **********************************************************************
+ *
+ * @name: int GfxRotateFromDegrees(int deg)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Performs automatic conversion between PSX rotate units and degrees.
+ *
+ * @return:
+ *  PSX rotate units to rotate (1 degree == 4096 rotate units).
+ *
+ * **********************************************************************/
 int GfxRotateFromDegrees(int deg)
 {
 	return deg << ROTATE_BIT_SHIFT;
 }
 
+/* **********************************************************************
+ *
+ * @name: bool GfxIsGPUBusy(void)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @return:
+ *  true if GPU can't be used, false otherwise.
+ *
+ * **********************************************************************/
 bool GfxIsGPUBusy(void)
 {
 	return (GsIsDrawing() || gfx_busy || (GfxReadyForDMATransfer() == false) );
 }
 
+/* **********************************************************************
+ *
+ * @name: bool GfxSpriteFromFile(char* fname, GsSprite * spr)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Given input file path, it loads file contents into a GsSprite
+ *  instance.
+ *
+ * @return:
+ *  false if an error happened, true otherwise.
+ *
+ * **********************************************************************/
 bool GfxSpriteFromFile(char* fname, GsSprite * spr)
 {
 	GsImage gsi;
@@ -438,15 +543,23 @@ bool GfxSpriteFromFile(char* fname, GsSprite * spr)
 
 	gfx_busy = false;
 
-    DEBUG_PRINT_VAR(spr->tpage);
-    DEBUG_PRINT_VAR(spr->u);
-    DEBUG_PRINT_VAR(spr->v);
-    DEBUG_PRINT_VAR(spr->w);
-    DEBUG_PRINT_VAR(spr->h);
-
 	return true;
 }
 
+/* **********************************************************************
+ *
+ * @name: bool GfxCLUTFromFile(char* fname)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Given input file path, it loads file contents and uploads CLUT
+ *  data into VRAM.
+ *
+ * @return:
+ *  false if an error happened, true otherwise.
+ *
+ * **********************************************************************/
 bool GfxCLUTFromFile(char* fname)
 {
 	GsImage gsi;
@@ -469,6 +582,17 @@ bool GfxCLUTFromFile(char* fname)
 	return true;
 }
 
+/* **********************************************************************
+ *
+ * @name: bool GfxIsInsideScreenArea(short x, short y, short w, short h)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @return:
+ *  true if polygon determined by XYWH data is inside screen area,
+ *  false otherwise.
+ *
+ * **********************************************************************/
 bool GfxIsInsideScreenArea(short x, short y, short w, short h)
 {
 	if ( ( (x + w) >= 0)
@@ -485,6 +609,16 @@ bool GfxIsInsideScreenArea(short x, short y, short w, short h)
 	return false;
 }
 
+/* **********************************************************************
+ *
+ * @name: bool GfxIsSpriteInsideScreenArea(GsSprite * spr)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @return:
+ *  true if sprite is inside screen area, false otherwise.
+ *
+ * **********************************************************************/
 bool GfxIsSpriteInsideScreenArea(GsSprite * spr)
 {
 	return GfxIsInsideScreenArea(spr->x, spr->y, spr->w, spr->h);

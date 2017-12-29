@@ -23,6 +23,7 @@
 /* *************************************
  * 	Local Prototypes
  * *************************************/
+
 static void PltParserResetBuffers(TYPE_FLIGHT_DATA* ptrFlightData);
 
 bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
@@ -92,7 +93,7 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
                 int k;
 
                 dprintf("Buffer: ");
-                
+
                 for (k = 0; k < strlen(buffer); k++)
                 {
                     dprintf("0x%02X ", buffer[k]);

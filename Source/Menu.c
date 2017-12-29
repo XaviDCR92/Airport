@@ -124,7 +124,6 @@ static void MenuTestCheat(void);
 
 static GsSprite MenuSpr;
 static GsSprite MenuStarSpr;
-static GsSprite BcnGWSpr;
 static SsVag BellSnd;
 static SsVag AcceptSnd;
 static TYPE_CHEAT TestCheat;
@@ -138,7 +137,6 @@ static const char* MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
                                         "cdrom:\\DATA\\SOUNDS\\ACCEPT.VAG;1"	,
                                         "cdrom:\\DATA\\SPRITES\\BUTTONS.TIM;1"	,
                                         "cdrom:\\DATA\\SPRITES\\MENUSTAR.TIM;1"	,
-                                        "cdrom:\\DATA\\SPRITES\\BCNGW.TIM;1"	,
 #ifndef NO_INTRO
                                         "cdrom:\\DATA\\SPRITES\\PSXDISK.TIM;1"	,
                                         "cdrom:\\DATA\\FONTS\\INTROFNT.TIM;1"	,
@@ -154,7 +152,6 @@ static void* MainMenuDest[] = {     (GsSprite*)&MenuSpr			,
 									(SsVag*)&AcceptSnd			,
 									(GsSprite*)&PSXButtons		,
 									(GsSprite*)&MenuStarSpr		,
-									(GsSprite*)&BcnGWSpr		,
 #ifndef NO_INTRO
                                     (GsSprite*)&PsxDisk			,
                                     (GsSprite*)&PSXSDKIntroFont	,
@@ -246,10 +243,6 @@ void MainMenuInit(void)
 	MainMenuBtn[TWO_PLAYER_BUTTON_INDEX].f = &TwoPlayerMenu;
 	MainMenuBtn[TWO_PLAYER_BUTTON_INDEX].i = TWO_PLAYER_BUTTON_INDEX;
 
-    // BcnGWSpr.x = X_SCREEN_RESOLUTION - (BcnGWSpr.w << 1);
-    // BcnGWSpr.y = Y_SCREEN_RESOLUTION - BcnGWSpr.h;
-    // BcnGWSpr_set = true;
-
 	menuLevel = PLAY_OPTIONS_LEVEL;
 
 	MainMenuMinimumBtn = PLAY_BUTTON_INDEX;
@@ -321,18 +314,6 @@ void MenuCheatInit(void)
     PadAddCheat(&SerialCheat);
 }
 
-GsSprite* MainMenuGetBCNGWLogo(void)
-{
-    if (BcnGWSpr_set != false)
-    {
-        return &BcnGWSpr;
-    }
-    else
-    {
-        return NULL;
-    }
-}
-
 void MainMenu(void)
 {
 	MainMenuInit();
@@ -357,15 +338,6 @@ void MainMenu(void)
         GsSortCls(MAIN_MENU_BG_R, MAIN_MENU_BG_G, MAIN_MENU_BG_B);
 
         MenuStarSpr.rotate += ROTATE_ONE;
-
-        //DEBUG_PRINT_VAR(MenuStarSpr.x);
-        //DEBUG_PRINT_VAR(MenuStarSpr.y);
-        //DEBUG_PRINT_VAR(MenuStarSpr.w);
-        //DEBUG_PRINT_VAR(MenuStarSpr.h);
-        //DEBUG_PRINT_VAR(MenuStarSpr.tpage);
-        //DEBUG_PRINT_VAR(MenuStarSpr.u);
-        //DEBUG_PRINT_VAR(MenuStarSpr.v);
-        //GfxSortSprite(&MenuStarSpr);
 
 		switch(menuLevel)
 		{
@@ -587,6 +559,7 @@ void MainMenuDrawButton(TYPE_MMBtn * btn)
                 MenuSpr.g = NORMAL_LUMINANCE >> 1;
                 MenuSpr.b = NORMAL_LUMINANCE >> 1;
             }
+
 		break;
 
 		default:

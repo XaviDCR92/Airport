@@ -1,7 +1,6 @@
 /* *************************************
  * 	Includes
  * *************************************/
-
 #include "EndAnimation.h"
 #include "Global_Inc.h"
 #include "Gfx.h"
@@ -10,11 +9,9 @@
 /* *************************************
  * 	Defines
  * *************************************/
-
 /* *************************************
  * 	Structs and enums
  * *************************************/
-
 enum
 {
 	END_ANIMATION_FADEOUT_STEP = 8,
@@ -39,7 +36,6 @@ enum
 /* *************************************
  * 	Local Prototypes
  * *************************************/
-
 static void EndAnimationSquares(void);
 static void EndAnimationFadeOut(void);
 static void EndAnimationLine(void);
@@ -47,7 +43,6 @@ static void EndAnimationLine(void);
 /* *************************************
  * 	Local Variables
  * *************************************/
-
 static GsRectangle EndAnimationRect;
 static GsSprite EndAnimationDisplay;
 

@@ -4,18 +4,15 @@
 /* *************************************
  * 	Includes
  * *************************************/
-
 #include "Global_Inc.h"
 #include "GameStructures.h"
 
 /* *************************************
  * 	Defines
  * *************************************/
-
 /* *************************************
  * 	Global prototypes
  * *************************************/
-
 void CameraInit(TYPE_PLAYER* ptrPlayer);
 void CameraHandler(TYPE_PLAYER* ptrPlayer);
 void CameraApplyCoordinatesToSprite(TYPE_PLAYER* ptrPlayer, GsSprite * spr);

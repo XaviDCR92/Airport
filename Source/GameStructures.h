@@ -102,12 +102,12 @@ typedef enum t_livery
 
 typedef enum t_direction
 {
-	AIRCRAFT_DIR_NO_DIRECTION = 0,
-	AIRCRAFT_DIR_NORTH,
-	AIRCRAFT_DIR_SOUTH,
-	AIRCRAFT_DIR_EAST,
-	AIRCRAFT_DIR_WEST,
-}AIRCRAFT_DIRECTION;
+	NO_DIRECTION = 0,
+	DIR_NORTH,
+	DIR_SOUTH,
+	DIR_EAST,
+	DIR_WEST,
+}DIRECTION;
 
 typedef enum t_aircraftAttitude
 {
@@ -120,7 +120,7 @@ typedef enum t_aircraftAttitude
 typedef struct t_aircraftData
 {
 	AIRCRAFT_LIVERY Livery;
-	AIRCRAFT_DIRECTION Direction;
+	DIRECTION Direction;
 	AIRCRAFT_ATTITUDE Attitude;
 	FL_STATE State;
 	// Target tile (used to calculate direction and movement)

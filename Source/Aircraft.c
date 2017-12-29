@@ -118,7 +118,8 @@ void AircraftInit(void)
 
 bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 						uint8_t FlightDataIndex,
-						uint16_t* targets		)
+						uint16_t* targets,
+                        DIRECTION direction		)
 {
 	TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[AircraftIndex];
 	uint8_t level_columns = GameGetLevelColumns();
@@ -141,12 +142,9 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 
 	if (ptrFlightData->FlightDirection[FlightDataIndex] == ARRIVAL)
 	{
-        RWY_DIR rwyDir = GameGetRunwayDirection(ptrAircraft->Target[0]);
-        // Calculate direction automatically.
-
-        switch (rwyDir)
+        switch (direction)
         {
-            case RWY_DIR_EAST:
+            case DIR_EAST:
                 ptrAircraft->IsoPos.x = 0;
 
                 ptrAircraft->IsoPos.y = targets[0] / level_columns;
@@ -157,11 +155,9 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
                 ptrAircraft->IsoPos.z = targets[0] % level_columns;
                 ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 1;
                 ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
-
-                ptrAircraft->Direction = AIRCRAFT_DIR_EAST;
             break;
 
-            case RWY_DIR_SOUTH:
+            case DIR_SOUTH:
                 ptrAircraft->IsoPos.x = targets[0] % level_columns;
                 ptrAircraft->IsoPos.x <<= TILE_SIZE_BIT_SHIFT;
                 ptrAircraft->IsoPos.x += TILE_SIZE >> 1; // Adjust to tile center
@@ -172,23 +168,29 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
                 ptrAircraft->IsoPos.z = targets[0] / level_columns;
                 ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 1;
                 ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
-
-                ptrAircraft->Direction = AIRCRAFT_DIR_SOUTH;
             break;
 
-            case RWY_INVALID_DIR:
+            case NO_DIRECTION:
                 // Fall through
             default:
-                Serial_printf("Invalid runway direction %d for inbound flight.\n", rwyDir);
+                Serial_printf("Invalid runway direction %d for inbound flight.\n", direction);
             return false;
         }
 	}
 	else if (ptrFlightData->FlightDirection[FlightDataIndex] == DEPARTURE)
 	{
+        if (direction == NO_DIRECTION)
+        {
+            Serial_printf("Invalid direction for outbound flight.\n");
+            return false;
+        }
+
 		ptrAircraft->IsoPos.x = GameGetXFromTile(ptrFlightData->Parking[FlightDataIndex]);
 		ptrAircraft->IsoPos.y = GameGetYFromTile(ptrFlightData->Parking[FlightDataIndex]);
 		ptrAircraft->IsoPos.z = 0;
 	}
+
+    ptrAircraft->Direction = direction;
 
 	ptrAircraft->State = ptrFlightData->State[FlightDataIndex];
     AircraftFlightDataIdx_HashTable[FlightDataIndex] = AircraftIndex;
@@ -205,6 +207,8 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 
 		Serial_printf(" %d", ptrAircraft->Target[i]);
 	}
+
+    Serial_printf("\n\tDirection: %d\n", ptrAircraft->Direction);
 
 	Serial_printf("\nLivery: %d\n",	ptrAircraft->Livery	);
 
@@ -332,23 +336,23 @@ bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* ptrAircraft, TYPE_AIRCRAFT_DATA* ptrO
 
     switch (ptrAircraft->Direction)
     {
-        case AIRCRAFT_DIR_EAST:
+        case DIR_EAST:
             nextTile = currentTile + 1;
         break;
 
-        case AIRCRAFT_DIR_WEST:
+        case DIR_WEST:
             nextTile = currentTile - 1;
         break;
 
-        case AIRCRAFT_DIR_NORTH:
+        case DIR_NORTH:
             nextTile = currentTile - GameGetLevelColumns();
         break;
 
-        case AIRCRAFT_DIR_SOUTH:
+        case DIR_SOUTH:
             nextTile = currentTile + GameGetLevelColumns();
         break;
 
-        case AIRCRAFT_DIR_NO_DIRECTION:
+        case NO_DIRECTION:
             // Fall through
         default:
             Serial_printf("AircraftCheckPath: Undefined direction\n");
@@ -509,6 +513,8 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx)
             else if (AircraftSpr.x > X_SCREEN_RESOLUTION)
             {
                 ArrowSpr.x = X_SCREEN_RESOLUTION - ArrowSpr.w;
+                ArrowSpr.mx = ArrowSpr.w >> 1;
+                ArrowSpr.my = ArrowSpr.h >> 1;
             }
             else
             {
@@ -569,7 +575,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 				}
 				else
 				{
-					ptrAircraft->Direction = AIRCRAFT_DIR_EAST;
+					ptrAircraft->Direction = DIR_EAST;
 					ptrAircraft->IsoPos.x += ptrAircraft->Speed;
 				}
 			}
@@ -581,7 +587,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 				}
 				else
 				{
-					ptrAircraft->Direction = AIRCRAFT_DIR_WEST;
+					ptrAircraft->Direction = DIR_WEST;
 					ptrAircraft->IsoPos.x -= ptrAircraft->Speed;
 				}
 			}
@@ -600,7 +606,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 				}
 				else
 				{
-					ptrAircraft->Direction = AIRCRAFT_DIR_SOUTH;
+					ptrAircraft->Direction = DIR_SOUTH;
 					ptrAircraft->IsoPos.y += ptrAircraft->Speed;
 				}
 			}
@@ -612,7 +618,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 				}
 				else
 				{
-					ptrAircraft->Direction = AIRCRAFT_DIR_NORTH;
+					ptrAircraft->Direction = DIR_NORTH;
 					ptrAircraft->IsoPos.y -= ptrAircraft->Speed;
 				}
 			}
@@ -640,23 +646,23 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 		// STATE_CLIMBING
 		switch(ptrAircraft->Direction)
 		{
-			case AIRCRAFT_DIR_EAST:
+			case DIR_EAST:
 				ptrAircraft->IsoPos.x += ptrAircraft->Speed;
 			break;
 
-			case AIRCRAFT_DIR_WEST:
+			case DIR_WEST:
 				ptrAircraft->IsoPos.x -= ptrAircraft->Speed;
 			break;
 
-			case AIRCRAFT_DIR_NORTH:
+			case DIR_NORTH:
 				ptrAircraft->IsoPos.y -= ptrAircraft->Speed;
 			break;
 
-			case AIRCRAFT_DIR_SOUTH:
+			case DIR_SOUTH:
 				ptrAircraft->IsoPos.y += ptrAircraft->Speed;
 			break;
 
-			case AIRCRAFT_DIR_NO_DIRECTION:
+			case NO_DIRECTION:
 				// Fall through
 			default:
 			return;
@@ -695,27 +701,27 @@ void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* ptrAircraft)
 
 	switch(ptrAircraft->Direction)
 	{
-		case AIRCRAFT_DIR_NORTH:
+		case DIR_NORTH:
 			AircraftSpr.v += AircraftSpr.h;
 			AircraftSpr.attribute |= H_FLIP;
 		break;
 
-		case AIRCRAFT_DIR_SOUTH:
+		case DIR_SOUTH:
 			AircraftSpr.v += 0;
 			AircraftSpr.attribute |= H_FLIP;
 		break;
 
-		case AIRCRAFT_DIR_EAST:
+		case DIR_EAST:
 			AircraftSpr.v += 0;
 			AircraftSpr.attribute &= ~(H_FLIP);
 		break;
 
-		case AIRCRAFT_DIR_WEST:
+		case DIR_WEST:
 			AircraftSpr.v += AircraftSpr.h;
 			AircraftSpr.attribute &= ~(H_FLIP);
 		break;
 
-		case AIRCRAFT_DIR_NO_DIRECTION:
+		case NO_DIRECTION:
 			// Fall through
 		default:
 		break;
@@ -791,7 +797,7 @@ void AircraftFromFlightDataIndexAddTargets(uint8_t index, uint16_t* targets)
 	AircraftAddTargets(AircraftFromFlightDataIndex(index), targets);
 }
 
-AIRCRAFT_DIRECTION AircraftGetDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
+DIRECTION AircraftGetDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
 {
 	return ptrAircraft->Direction;
 }

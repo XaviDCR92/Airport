@@ -46,6 +46,7 @@ protected slots:
     void onNoItemSelected(void);
     void onListItemSelected(void);
     void onSaveMap(void);
+    void onShowNumbers(int);
 };
 
 #endif // MAINWINDOW_H

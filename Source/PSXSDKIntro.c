@@ -1,7 +1,6 @@
 /* *************************************
  * 	Includes
  * *************************************/
-
 #include "PSXSDKIntro.h"
 #include "System.h"
 #include "Gfx.h"
@@ -10,11 +9,9 @@
 /* *************************************
  * 	Defines
  * *************************************/
-
 /* **************************************
  * 	Structs and enums					*
  * *************************************/
-
 enum
 {
 	PSX_W = 48,
@@ -105,7 +102,6 @@ enum
 /* *************************************
  * 	Local Prototypes
  * *************************************/
-
 static void PSXSDKIntroDrawConsole(void);
 static void PSXSDKIntroRunTimers(void);
 static void PSXSDKIntroDrawDisk(void);
@@ -115,7 +111,6 @@ static void PSXSDKIntroDrawChar(short x, short y, char ch);
 /* *************************************
  * 	Local variables
  * *************************************/
-
 // Events
 static bool PSXSDKIntroCloseShellEvent;
 static bool PSXSDKIntroCloseShellEventReminder;
@@ -133,7 +128,6 @@ static char* strPSXSDKIntroAuthor = {"BY NEXTVOLUME"};
 /* *************************************
  * 	Global variables
  * *************************************/
-
 GsSprite PsxDisk;
 GsSprite PSXSDKIntroFont;
 GsSprite GPL_Logo;

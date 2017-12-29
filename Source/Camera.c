@@ -1,7 +1,6 @@
 /* *************************************
  * 	Includes
  * *************************************/
-
 #include "Camera.h"
 #include "Game.h"
 #include "System.h"
@@ -10,7 +9,6 @@
 /* *************************************
  * 	Defines
  * *************************************/
-
 #define SPEED_CALCULATION_TIME 3
 #define MAX_CAMERA_SPEED 5
 #define MIN_CAMERA_SPEED 1
@@ -20,14 +18,12 @@
 /* *************************************
  * 	Local Variables
  * *************************************/
-
 static int32_t Camera_Max_X_Offset;
 static int32_t Camera_Max_Y_Offset;
 
 /* *************************************
  * 	Local Prototypes
  * *************************************/
-
 static void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer);
 static bool CameraSpecialConditions(TYPE_PLAYER* ptrPlayer);
 

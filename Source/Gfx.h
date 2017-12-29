@@ -22,6 +22,7 @@
 #define GFX_1HZ_FLASH			(1<<7)
 #define GFX_2HZ_FLASH			(1<<8)
 #define FULL_LUMINANCE			0xFF
+#define ROTATE_BIT_SHIFT        12 // 4096 = 2^12
 
 /* *************************************
  * 	Global prototypes

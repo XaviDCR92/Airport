@@ -43,7 +43,7 @@
 
 typedef struct t_rwyentrydata
 {
-	AIRCRAFT_DIRECTION Direction;
+	DIRECTION Direction;
 	uint16_t rwyEntryTile;
 	int8_t rwyStep;
 	uint16_t rwyHeader;
@@ -191,6 +191,8 @@ static void GameBuildingsInit(void);
 static void GameGetAircraftTilemap(uint8_t i);
 static bool GameWaypointCheckExisting(TYPE_PLAYER* ptrPlayer, uint16_t temp_tile);
 static void GameDrawBackground(TYPE_PLAYER* ptrPlayer);
+static DIRECTION GameGetRunwayDirection(uint16_t rwyHeader);
+static DIRECTION GameGetParkingDirection(uint16_t parkingTile);
 
 /* *************************************
  * 	Global Variables
@@ -1568,7 +1570,7 @@ void GameAircraftState(uint8_t i)
 
 					Serial_printf("Target assigned = %d\n", target[0]);
 
-					if (AircraftAddNew(&FlightData, i, target) == false)
+					if (AircraftAddNew(&FlightData, i, target, GameGetParkingDirection(GameLevelBuffer[target[0]])) == false)
 					{
 						Serial_printf("Exceeded maximum aircraft number!\n");
 						return;
@@ -1618,7 +1620,6 @@ void GameAircraftState(uint8_t i)
  *  or ptrPlayer->InvalidPath != false.
  *
  * ******************************************************************************************/
-
 void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 {
 	uint16_t i;
@@ -1632,23 +1633,6 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 	TYPE_ISOMETRIC_POS tileIsoPos;
 	TYPE_CARTESIAN_POS tileCartPos;
 
-	//uint16_t init_timer_value = 0;
-	//uint16_t end_timer_value = 0;
-
-	// Prepare runway to be painted in blue if player is on runway selection mode
-	if (ptrPlayer->SelectRunway != false)
-	{
-
-		/*Serial_printf("Runway array:\n");
-
-		for (j = 0; j < GAME_MAX_RWY_LENGTH; j++)
-		{
-			Serial_printf("%d ",ptrPlayer->RwyArray[j]);
-		}
-
-		Serial_printf("\n");*/
-	}
-
 	for (i = 0 ; i < GameLevelSize; i++)
 	{
 		// GameLevelBuffer bits explanation:
@@ -1660,9 +1644,17 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 		// | | | |  | | | |     | | | |     V Tile, bit 2
 		// | | | |  | | | |     | | | V     Tile, bit 3
 		// | | | |  | | | |     | | V Tile, bit 4
-		// | |            |     | V Tile, bit 5
-		// |              |     V Tile, bit 6
-		//                |     Tile mirror flag
+		// | | | |  | | | |     | V Tile, bit 5
+		// | | | |  | | | |     V Tile, bit 6
+        // | | | |  | | | V     Tile mirror flag
+		// | | | |  | | V Building, bit 0
+        // | | | |  | V Building, bit 1
+        // | | | |  V Building, bit 2
+        // | | | V  Building, bit 3
+        // | | V Building, bit 4
+        // | V Building, bit 5
+        // V Building, bit 6
+        // Building, bit 7
 
 		uint8_t CurrentTile = (uint8_t)(GameLevelBuffer[i] & 0x00FF);
 
@@ -1740,72 +1732,71 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 		ptrTileset->g = NORMAL_LUMINANCE;
 		ptrTileset->b = NORMAL_LUMINANCE;
 
-		if (	(ptrPlayer->SelectRunway != false)
-						&&
-			(i != 0)
-						&&
-			(SystemContains_u16(i, ptrPlayer->RwyArray, GAME_MAX_RWY_LENGTH) != false)	)
-		{
-
-			if (used_rwy != false)
-			{
-				ptrTileset->r = rwy_sine;
-				ptrTileset->b = NORMAL_LUMINANCE >> 2;
-				ptrTileset->g = NORMAL_LUMINANCE >> 2;
-			}
-			else
-			{
-				ptrTileset->r = NORMAL_LUMINANCE >> 2;
-				ptrTileset->g = NORMAL_LUMINANCE >> 2;
-				ptrTileset->b = rwy_sine;
-			}
-		}
-		else if ( (	(ptrPlayer->SelectTaxiwayParking != false)
-										||
-					(ptrPlayer->SelectTaxiwayRunway != false)	)
-								&&
-					(i != 0)		)
-		{
-			if ((	(SystemContains_u16(i, ptrPlayer->Waypoints, PLAYER_MAX_WAYPOINTS) != false)
-								||
-					(i == ptrPlayer->SelectedTile)	)
-								&&
-					(ptrPlayer->SelectedTile != GAME_INVALID_TILE_SELECTION)	)
-			{
-				if (ptrPlayer->InvalidPath != false)
-				{
-					ptrTileset->r = rwy_sine;
-					ptrTileset->b = NORMAL_LUMINANCE >> 2;
-					ptrTileset->g = NORMAL_LUMINANCE >> 2;
-				}
-				else
-				{
-					ptrTileset->r = NORMAL_LUMINANCE >> 2;
-					ptrTileset->g = NORMAL_LUMINANCE >> 2;
-					ptrTileset->b = rwy_sine;
-				}
-			}
-			else if (	(ptrPlayer->SelectTaxiwayRunway != false)
-									&&
-						(	(CurrentTile == TILE_RWY_HOLDING_POINT)
-									||
-							(CurrentTile == TILE_RWY_HOLDING_POINT_2)	)	)
-			{
-				ptrTileset->r = NORMAL_LUMINANCE >> 2;
-				ptrTileset->g = rwy_sine;
-				ptrTileset->b = NORMAL_LUMINANCE >> 2;
-			}
-			else if (	(ptrPlayer->SelectTaxiwayParking != false)
-									&&
-						(	(CurrentTile == TILE_PARKING)
-									||
-							(CurrentTile == TILE_PARKING_2)	)	)
-			{
-				ptrTileset->r = NORMAL_LUMINANCE >> 2;
-				ptrTileset->g = rwy_sine;
-				ptrTileset->b = NORMAL_LUMINANCE >> 2;
-			}
-		}
+        if (i != 0)
+        {
+            if (ptrPlayer->SelectRunway != false)
+            {
+                if (SystemContains_u16(i, ptrPlayer->RwyArray, GAME_MAX_RWY_LENGTH) != false)
+                {
+                    if (used_rwy != false)
+                    {
+                        ptrTileset->r = rwy_sine;
+                        ptrTileset->b = NORMAL_LUMINANCE >> 2;
+                        ptrTileset->g = NORMAL_LUMINANCE >> 2;
+                    }
+                    else
+                    {
+                        ptrTileset->r = NORMAL_LUMINANCE >> 2;
+                        ptrTileset->g = NORMAL_LUMINANCE >> 2;
+                        ptrTileset->b = rwy_sine;
+                    }
+                }
+            }
+            else if (   (ptrPlayer->SelectTaxiwayParking != false)
+                                            ||
+                        (ptrPlayer->SelectTaxiwayRunway != false)	)
+            {
+                if ((	(SystemContains_u16(i, ptrPlayer->Waypoints, PLAYER_MAX_WAYPOINTS) != false)
+                                    ||
+                        (i == ptrPlayer->SelectedTile)	)
+                                    &&
+                        (ptrPlayer->SelectedTile != GAME_INVALID_TILE_SELECTION)	)
+                {
+                    if (ptrPlayer->InvalidPath != false)
+                    {
+                        ptrTileset->r = rwy_sine;
+                        ptrTileset->b = NORMAL_LUMINANCE >> 2;
+                        ptrTileset->g = NORMAL_LUMINANCE >> 2;
+                    }
+                    else
+                    {
+                        ptrTileset->r = NORMAL_LUMINANCE >> 2;
+                        ptrTileset->g = NORMAL_LUMINANCE >> 2;
+                        ptrTileset->b = rwy_sine;
+                    }
+                }
+                else if (	(ptrPlayer->SelectTaxiwayRunway != false)
+                                        &&
+                            (	(CurrentTile == TILE_RWY_HOLDING_POINT)
+                                        ||
+                                (CurrentTile == TILE_RWY_HOLDING_POINT_2)	)	)
+                {
+                    ptrTileset->r = NORMAL_LUMINANCE >> 2;
+                    ptrTileset->g = rwy_sine;
+                    ptrTileset->b = NORMAL_LUMINANCE >> 2;
+                }
+                else if (	(ptrPlayer->SelectTaxiwayParking != false)
+                                        &&
+                            (	(CurrentTile == TILE_PARKING)
+                                        ||
+                                (CurrentTile == TILE_PARKING_2)	)	)
+                {
+                    ptrTileset->r = NORMAL_LUMINANCE >> 2;
+                    ptrTileset->g = rwy_sine;
+                    ptrTileset->b = NORMAL_LUMINANCE >> 2;
+                }
+            }
+        }
 
 		if (ptrTileset != NULL)
 		{
@@ -1827,8 +1818,6 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 			CurrentTile = aux_id;
 		}
 
-	//	Serial_printf("Tile %d, attribute 0x%X\n",i,ptrTileset->attribute);
-
 		GfxSortSprite(ptrTileset);
 
 		if (ptrTileset->attribute & H_FLIP)
@@ -1836,12 +1825,6 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 			ptrTileset->attribute &= ~(H_FLIP);
 		}
 	}
-
-	/*dprintf("GameRenderLevel execution time = %d\t"
-			"end_timer_value = 0x%04X\tinit_timer_value = 0x%04X\n",
-			end_timer_value - init_timer_value,
-			end_timer_value,
-			init_timer_value                                );*/
 }
 
 /* *******************************************************************
@@ -1858,7 +1841,6 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
  * 	To be used on GameInit() after PLT file parsing.
  *
  * *******************************************************************/
-
 void GameSetTime(uint8_t hour, uint8_t minutes)
 {
 	GameHour = hour;
@@ -1884,7 +1866,6 @@ void GameSetTime(uint8_t hour, uint8_t minutes)
  *  executed GAME_MAX_AIRCRAFT times on each cycle.
  *
  * *******************************************************************/
-
 void GameActiveAircraft(uint8_t i)
 {
 	// Reset iterator when i == 0.
@@ -2493,36 +2474,74 @@ void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 
 /* **************************************************************************************************
  *
- * @name: RWY_DIR GameGetRunwayDirection(uint16_t rwyHeader)
+ * @name: DIRECTION GameGetParkingDirection(uint16_t parkingTile)
  *
  * @author: Xavier Del Campo
  *
- * @brief:
- *  Depending on runway header, runway direction is returned.
+ * @return:
+ *  Depending on tile number, parking direction is returned.
  *
  * **************************************************************************************************/
-RWY_DIR GameGetRunwayDirection(uint16_t rwyHeader)
+DIRECTION GameGetParkingDirection(uint16_t parkingTile)
+{
+    DEBUG_PRINT_VAR(parkingTile);
+    DEBUG_PRINT_VAR(TILE_PARKING);
+    DEBUG_PRINT_VAR(TILE_PARKING | TILE_MIRROR_FLAG);
+    DEBUG_PRINT_VAR(TILE_PARKING_2);
+    DEBUG_PRINT_VAR(TILE_PARKING_2 | TILE_MIRROR_FLAG);
+    switch (parkingTile)
+    {
+        case TILE_PARKING:
+        return DIR_WEST;
+
+        case TILE_PARKING | TILE_MIRROR_FLAG:
+        return DIR_NORTH;
+
+        case TILE_PARKING_2:
+        return DIR_EAST;
+
+        case TILE_PARKING_2 | TILE_MIRROR_FLAG:
+        return DIR_SOUTH;
+
+        default:
+        break;
+    }
+
+    return NO_DIRECTION;
+}
+
+/* **************************************************************************************************
+ *
+ * @name: DIRECTION GameGetRunwayDirection(uint16_t rwyHeader)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @return:
+ *  Depending on tile number, runway direction is returned.
+ *
+ * **************************************************************************************************/
+DIRECTION GameGetRunwayDirection(uint16_t rwyHeader)
 {
     switch(GameLevelBuffer[rwyHeader])
     {
         case TILE_RWY_START_1:
-            return RWY_DIR_EAST;
+            return DIR_EAST;
 
         case TILE_RWY_START_2:
-            return RWY_DIR_WEST;
+            return DIR_WEST;
 
         case TILE_RWY_START_1 | TILE_MIRROR_FLAG:
-            return RWY_DIR_SOUTH;
+            return DIR_SOUTH;
 
         case TILE_RWY_START_2 | TILE_MIRROR_FLAG:
-            return RWY_DIR_NORTH;
+            return DIR_NORTH;
 
         default:
             Serial_printf("Unknown direction for tile %d\n",rwyHeader);
             break;
     }
 
-    return RWY_INVALID_DIR;
+    return NO_DIRECTION;
 }
 
 /* **************************************************************************************************
@@ -2555,7 +2574,7 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t s
 {
 	static uint16_t last_tile = 0;
 	static uint8_t i = 0;
-	static RWY_DIR dir;
+	static DIRECTION dir;
 
 	if (sz != (GAME_MAX_RWY_LENGTH * sizeof(uint16_t) ))
 	{
@@ -2581,7 +2600,7 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t s
 
         dir = GameGetRunwayDirection(rwyHeader);
 
-        if (dir == RWY_INVALID_DIR)
+        if (dir == NO_DIRECTION)
         {
             return;
         }
@@ -2612,23 +2631,23 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t s
 
 	switch(dir)
 	{
-		case RWY_DIR_EAST:
+		case DIR_EAST:
 			last_tile++;
         break;
 
-		case RWY_DIR_WEST:
+		case DIR_WEST:
 			last_tile--;
         break;
 
-		case RWY_DIR_NORTH:
+		case DIR_NORTH:
 			last_tile -= GameLevelColumns;
         break;
 
-		case RWY_DIR_SOUTH:
+		case DIR_SOUTH:
 			last_tile += GameLevelColumns;
         break;
 
-        case RWY_INVALID_DIR:
+        case NO_DIRECTION:
             // Fall through
         default:
             Serial_printf("Invalid runway direction.\n");
@@ -2731,7 +2750,8 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 
 		if (AircraftAddNew( ptrFlightData,
 							aircraftIndex,
-							targets	) == false)
+							targets,
+                            GameGetRunwayDirection(assignedRwy)	) == false)
 		{
 			Serial_printf("Exceeded maximum aircraft number!\n");
 			return;
@@ -3196,21 +3216,6 @@ bool GamePathToTile(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 	y_diff = (uint16_t)abs(	(ptrPlayer->SelectedTile / GameLevelColumns) -
 							(ptrPlayer->Waypoints[ptrPlayer->LastWaypointIdx] / GameLevelColumns) );
 
-	/*Serial_printf("SelectedTile = %d, ptrPlayer->Waypoints[%d] = %d\n",
-			ptrPlayer->SelectedTile,
-			0,
-			ptrPlayer->Waypoints[0] );
-
-	Serial_printf("X = abs(%d - %d)\n",
-			ptrPlayer->SelectedTile % GameLevelColumns,
-			(ptrPlayer->Waypoints[0] % GameLevelColumns) );
-
-	Serial_printf("Y = abs(%d - %d)\n",
-			ptrPlayer->SelectedTile / GameLevelColumns,
-			(ptrPlayer->Waypoints[0] / GameLevelColumns) );
-
-	Serial_printf("Diff = {%d, %d}\n", x_diff, y_diff);*/
-
 	// At this point, we have to update current waypoints list.
 	// ptrPlayer->Waypoints[ptrPlayer->WaypointIdx - 1] points to the last inserted point,
 	// so now we have to determine how many points need to be created.
@@ -3610,7 +3615,7 @@ void GameCreateTakeoffWaypoints(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 	// Look for aircraft direction by searching TILE_RWY_EXIT
 	//uint16_t currentTile = AircraftGetTileFromFlightDataIndex(aircraftIdx);
 	//uint8_t targetsIdx = 0;
-	AIRCRAFT_DIRECTION aircraftDir = AircraftGetDirection(AircraftFromFlightDataIndex(aircraftIdx));
+	DIRECTION aircraftDir = AircraftGetDirection(AircraftFromFlightDataIndex(aircraftIdx));
 	int8_t rwyStep = 0;
 	uint16_t currentTile = 0;
 	uint16_t targets[AIRCRAFT_MAX_TARGETS] = {0};
@@ -3618,22 +3623,22 @@ void GameCreateTakeoffWaypoints(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 
 	switch(aircraftDir)
 	{
-		case AIRCRAFT_DIR_EAST:
+		case DIR_EAST:
 			//Serial_printf("EAST\n");
 			rwyStep = 1;
 		break;
 
-		case AIRCRAFT_DIR_WEST:
+		case DIR_WEST:
 			//Serial_printf("WEST\n");
 			rwyStep = -1;
 		break;
 
-		case AIRCRAFT_DIR_NORTH:
+		case DIR_NORTH:
 			//Serial_printf("NORTH\n");
 			rwyStep = -GameLevelColumns;
 		break;
 
-		case AIRCRAFT_DIR_SOUTH:
+		case DIR_SOUTH:
 			//Serial_printf("SOUTH\n");
 			rwyStep = GameLevelColumns;
 		break;
@@ -3704,32 +3709,32 @@ void GameGetRunwayEntryTile(uint8_t aircraftIdx, TYPE_RWY_ENTRY_DATA* ptrRwyEntr
 	{
 		if (GameLevelBuffer[currentTile + 1] == TILE_RWY_EXIT)
 		{
-			ptrRwyEntry->Direction = AIRCRAFT_DIR_EAST;
+			ptrRwyEntry->Direction = DIR_EAST;
 			ptrRwyEntry->rwyStep = GameLevelColumns;
 			step = -1;
 		}
 		else if (GameLevelBuffer[currentTile - 1] == TILE_RWY_EXIT)
 		{
-			ptrRwyEntry->Direction = AIRCRAFT_DIR_WEST;
+			ptrRwyEntry->Direction = DIR_WEST;
 			ptrRwyEntry->rwyStep = -GameLevelColumns;
 			step = 1;
 		}
 		else if (GameLevelBuffer[currentTile + GameLevelColumns] == TILE_RWY_EXIT)
 		{
-			ptrRwyEntry->Direction = AIRCRAFT_DIR_SOUTH;
+			ptrRwyEntry->Direction = DIR_SOUTH;
 			ptrRwyEntry->rwyStep = 1;
 			step = GameLevelColumns;
 		}
 		else if (GameLevelBuffer[currentTile - GameLevelColumns] == TILE_RWY_EXIT)
 		{
-			ptrRwyEntry->Direction = AIRCRAFT_DIR_NORTH;
+			ptrRwyEntry->Direction = DIR_NORTH;
 			ptrRwyEntry->rwyStep = -1;
 			step = -GameLevelColumns;
 		}
 		else
 		{
 			ptrRwyEntry->rwyEntryTile = 0;
-			ptrRwyEntry->Direction = AIRCRAFT_DIR_NO_DIRECTION;
+			ptrRwyEntry->Direction = NO_DIRECTION;
 			ptrRwyEntry->rwyStep = 0;
 			Serial_printf("GameCreateTakeoffWaypoints(): could not determine aircraft direction.\n");
 			return;

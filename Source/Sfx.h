@@ -4,18 +4,15 @@
 /* *************************************
  * 	Includes
  * *************************************/
-
 #include "Global_Inc.h"
 #include "System.h"
 
 /* *************************************
  * 	Defines
  * *************************************/
-
  /* *************************************
  * 	Structs and enums
  * *************************************/
-
 typedef enum t_musicTracks
 {
 	INTRO_TRACK = 2,
@@ -28,7 +25,6 @@ typedef enum t_musicTracks
 /* *************************************
  * 	Global prototypes
  * *************************************/
-
 void SfxPlaySound(SsVag * sound);
 bool SfxUploadSound(char* file_path, SsVag * vag);
 void SfxPlayTrack(MUSIC_TRACKS track);

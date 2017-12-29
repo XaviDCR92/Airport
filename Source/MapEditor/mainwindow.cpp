@@ -12,12 +12,16 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect(ui->LoadMap_Btn,        SIGNAL(released()),                 this,   SLOT(onLoadMap()));
-    connect(ui->CreateMap_Btn,      SIGNAL(released()),                 this,   SLOT(onCreateMap()));
-    connect(ui->saveMap_Btn,        SIGNAL(released()),                 this,   SLOT(onSaveMap(void)));
-    connect(gscene,                 SIGNAL(positionClicked(QPointF)),   this,   SLOT(onMapItemClicked(QPointF)));
-    connect(gscene,                 SIGNAL(noItemSelected(void)),       this,   SLOT(onNoItemSelected(void)));
-    connect(gscene,                 SIGNAL(updateSelectedItem(void)),   this,   SLOT(onListItemSelected(void)));
+    ui->centralWidget->setWindowTitle("Airport Map Editor");
+
+    connect(ui->LoadMap_Btn,            SIGNAL(released()),                 this,   SLOT(onLoadMap()));
+    connect(ui->CreateMap_Btn,          SIGNAL(released()),                 this,   SLOT(onCreateMap()));
+    connect(ui->saveMap_Btn,            SIGNAL(released()),                 this,   SLOT(onSaveMap(void)));
+    connect(ui->showNumbers_Checkbox,   SIGNAL(stateChanged(int)),          this,   SLOT(onShowNumbers(int)));
+
+    connect(gscene,                     SIGNAL(positionClicked(QPointF)),   this,   SLOT(onMapItemClicked(QPointF)));
+    connect(gscene,                     SIGNAL(noItemSelected(void)),       this,   SLOT(onNoItemSelected(void)));
+    connect(gscene,                     SIGNAL(updateSelectedItem(void)),   this,   SLOT(onListItemSelected(void)));
 
     appSettings();
     loadTilesetData();
@@ -27,6 +31,11 @@ MainWindow::~MainWindow()
 {
     delete ui;
     delete gscene;
+}
+
+void MainWindow::onShowNumbers(int)
+{
+    onProcessMapFile(map_buffer);
 }
 
 void MainWindow::onMapItemClicked(QPointF pos)
@@ -314,6 +323,15 @@ void MainWindow::onProcessMapFile(QByteArray data)
 
             it->setX(x);
             it->setY(y);
+
+            if (ui->showNumbers_Checkbox->isChecked() == true)
+            {
+                QGraphicsTextItem* io = new QGraphicsTextItem();
+                io->setPos(x + (TILE_SIZE / 4), y);
+                io->setPlainText(QString::number(i + (j * level_size)));
+
+                gscene->addItem(io);
+            }
         }
     }
 

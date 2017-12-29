@@ -1,7 +1,6 @@
 /* *************************************
  * 	Includes
  * *************************************/
-
 #include "Pad.h"
 #include "System.h"
 #include "Timer.h"
@@ -42,7 +41,6 @@ enum
 	NUMBER_OF_KEYS
 
 };
-
 
 /* *************************************
  * 	Local Prototypes

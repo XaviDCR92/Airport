@@ -490,14 +490,14 @@ void LoadMenuLoadFileList(	const char* fileList[], 	void* dest[],
 		//Restore original file path in order to load file
 		strncpy(strCurrentFile, aux_file_name, 100);
 
-		if (strncmp(extension,"TIM",3) == 0)
+		if (strncmp(extension, "TIM", 3) == 0)
 		{
 			if (GfxSpriteFromFile(strCurrentFile, dest[fileLoadedCount]) == false)
 			{
 				Serial_printf("Could not load image file \"%s\"!\n", strCurrentFile);
 			}
 		}
-		else if (strncmp(extension,"CLT",3) == 0)
+		else if (strncmp(extension, "CLT", 3) == 0)
 		{
 			if (dest[fileLoadedCount] != NULL)
 			{
@@ -509,21 +509,21 @@ void LoadMenuLoadFileList(	const char* fileList[], 	void* dest[],
 				Serial_printf("Could not load CLUT file \"%s\"!\n", strCurrentFile);
 			}
 		}
-		else if (strncmp(extension,"VAG",3) == 0)
+		else if (strncmp(extension, "VAG", 3) == 0)
 		{
 			if (SfxUploadSound(strCurrentFile, dest[fileLoadedCount]) == false)
 			{
 				Serial_printf("Could not load sound file \"%s\"!\n", strCurrentFile);
 			}
 		}
-		else if (strncmp(extension,"FNT",3) == 0)
+		else if (strncmp(extension, "FNT", 3) == 0)
 		{
 			if (FontLoadImage(strCurrentFile, dest[fileLoadedCount]) == false)
 			{
 				Serial_printf("Could not load font file \"%s\"!\n", strCurrentFile);
 			}
 		}
-		else if (strncmp(extension,"PLT",3) == 0)
+		else if (strncmp(extension, "PLT", 3) == 0)
 		{
 			if (PltParserLoadFile(strCurrentFile, dest[fileLoadedCount]) == false)
 			{

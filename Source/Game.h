@@ -4,14 +4,12 @@
 /* *************************************
  * 	Includes
  * *************************************/
-
 #include "Global_Inc.h"
 #include "GameStructures.h"
 
 /* *************************************
  * 	Defines
  * *************************************/
-
 #define PLAYER_ONE 0
 #define PLAYER_TWO 1
 #define MAX_PLAYERS (PLAYER_TWO + 1)
@@ -23,26 +21,14 @@
 /* *************************************
  * 	Structs and enums
  * *************************************/
-
-typedef enum t_rwydir
-{
-    RWY_DIR_EAST = 0,
-    RWY_DIR_WEST,
-    RWY_DIR_NORTH,
-    RWY_DIR_SOUTH,
-    RWY_INVALID_DIR,
-}RWY_DIR;
-
 /* *************************************
  * 	Global variables
  * *************************************/
-
 extern bool GameStartupFlag;
 
 /* *************************************
  * 	Global prototypes
  * *************************************/
-
 void 		Game(bool two_players);
 void 		GameSetTime(uint8_t hour, uint8_t minutes);
 bool		GameTwoPlayersActive(void);
@@ -61,6 +47,5 @@ void		GameCalculateRemainingAircraft(void);
 void		GameAircraftCollision(uint8_t AircraftIdx);
 void        GameStopFlight(uint8_t AicraftIdx);
 void        GameResumeFlightFromAutoStop(uint8_t AircraftIdx);
-RWY_DIR     GameGetRunwayDirection(uint16_t rwyHeader);
 
 #endif //GAME_HEADER__

@@ -4,23 +4,19 @@
 /* *************************************
  * 	Includes
  * *************************************/
-
 #include "Global_Inc.h"
 
 /* *************************************
  * 	Defines
   *************************************/
-
 /* *************************************
  * 	Global prototypes
  * *************************************/
-
 void PSXSDKIntro(void);
 
 /* *************************************
  * 	Global variables
  * *************************************/
-
 extern GsSprite PsxDisk;
 extern GsSprite PSXSDKIntroFont;
 extern GsSprite GPL_Logo;

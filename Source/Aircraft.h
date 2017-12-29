@@ -24,9 +24,10 @@ bool AircraftRemove(uint8_t aircraftIdx);
 uint16_t* AircraftGetTargets(uint8_t index);
 bool AircraftMoving(uint8_t index);
 uint8_t AircraftGetTargetIdx(uint8_t index);
-AIRCRAFT_DIRECTION AircraftGetDirection(TYPE_AIRCRAFT_DATA* ptrAircraft);
+DIRECTION AircraftGetDirection(TYPE_AIRCRAFT_DATA* ptrAircraft);
 bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 						uint8_t FlightDataIndex,
-						uint16_t* targets		);
+						uint16_t* targets,
+                        DIRECTION direction		);
 
 #endif //AIRCRAFT_HEADER__
