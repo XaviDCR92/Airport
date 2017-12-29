@@ -262,21 +262,12 @@ void ISR_LoadMenuVBlank(void)
 
     SystemIncreaseGlobalTimer();
 
-    if (SystemIsBusy() != false)
+    if (    (SystemIsBusy() != false)
+                    ||
+            (GfxIsGPUBusy() != false)
+                    ||
+            (SerialIsBusy() != false)   )
     {
-        dprintf("SystemIsBusy...\n");
-        return;
-    }
-
-    if ((GfxIsGPUBusy() != false))
-    {
-        dprintf("(GfxIsGPUBusy() != false)\n");
-        return;
-    }
-
-    if (SerialIsBusy() != false)
-    {
-        dprintf("Serialisbusy\n");
         return;
     }
 

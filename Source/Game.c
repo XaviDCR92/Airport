@@ -51,13 +51,13 @@ typedef struct t_rwyentrydata
 
 typedef struct t_buildingdata
 {
-    TYPE_ISOMETRIC_POS IsoPos;  // Offset inside tile
-    short orig_x;               // Coordinate X origin inside building sprite
-    short orig_y;               // Coordinate Y origin inside building sprite
-    short w;                    // Building width
-    short h;                    // Building height
-    short u;                    // Building X offset inside texture page
-    short v;                    // Building Y offset inside texture page
+	TYPE_ISOMETRIC_POS IsoPos;  // Offset inside tile
+	short orig_x;               // Coordinate X origin inside building sprite
+	short orig_y;               // Coordinate Y origin inside building sprite
+	short w;                    // Building width
+	short h;                    // Building height
+	short u;                    // Building X offset inside texture page
+	short v;                    // Building Y offset inside texture page
 }TYPE_BUILDING_DATA;
 
 enum
@@ -90,58 +90,60 @@ enum
 
 enum
 {
-    BUILDING_NONE = 0,
-    BUILDING_HANGAR,
-    BUILDING_ILS,
-    BUILDING_ATC_TOWER,
-    BUILDING_ATC_LOC,
-    BUILDING_TERMINAL,
-    BUILDING_TERMINAL_2,
-    BUILDING_GATE,
+	BUILDING_NONE = 0,
+	BUILDING_HANGAR,
+	BUILDING_ILS,
+	BUILDING_ATC_TOWER,
+	BUILDING_ATC_LOC,
+	BUILDING_TERMINAL,
+	BUILDING_TERMINAL_2,
+	BUILDING_GATE,
 
-    LAST_BUILDING = BUILDING_GATE,
-    MAX_BUILDING_ID
+	LAST_BUILDING = BUILDING_GATE,
+	MAX_BUILDING_ID
 };
 
 enum
 {
-    TILE_GRASS = 0,
-    TILE_ASPHALT_WITH_BORDERS,
-    TILE_WATER,
-    TILE_ASPHALT,
+	TILE_GRASS = 0,
+	TILE_ASPHALT_WITH_BORDERS,
+	TILE_WATER,
+	TILE_ASPHALT,
 
-    TILE_RWY_MID,
-    TILE_RWY_START_1,
-    TILE_RWY_START_2,
-    TILE_PARKING,
+	TILE_RWY_MID,
+	TILE_RWY_START_1,
+	TILE_RWY_START_2,
+	TILE_PARKING,
 
-    TILE_PARKING_2,
-    TILE_TAXIWAY_INTERSECT_GRASS,
-    TILE_TAXIWAY_GRASS,
-    TILE_TAXIWAY_CORNER_GRASS,
+	TILE_PARKING_2,
+	TILE_TAXIWAY_INTERSECT_GRASS,
+	TILE_TAXIWAY_GRASS,
+	TILE_TAXIWAY_CORNER_GRASS,
 
-    TILE_HALF_WATER_1,
-    TILE_HALF_WATER_2,
-    TILE_RWY_HOLDING_POINT,
-    TILE_RWY_HOLDING_POINT_2,
+	TILE_HALF_WATER_1,
+	TILE_HALF_WATER_2,
+	TILE_RWY_HOLDING_POINT,
+	TILE_RWY_HOLDING_POINT_2,
 
-    TILE_RWY_EXIT,
-    TILE_TAXIWAY_CORNER_GRASS_2,
+	TILE_RWY_EXIT,
+	TILE_TAXIWAY_CORNER_GRASS_2,
+    TILE_TAXIWAY_4WAY_CROSSING,
+    TILE_RWY_EXIT_2,
 
-    LAST_TILE_TILESET1 = TILE_TAXIWAY_CORNER_GRASS_2
+	LAST_TILE_TILESET1 = TILE_RWY_EXIT_2
 };
 
 enum
 {
-    LAST_TILE_TILESET2 = LAST_TILE_TILESET1
+	LAST_TILE_TILESET2 = LAST_TILE_TILESET1
 };
 
 enum
 {
-    SOUND_M1_INDEX = 0,
-    SOUND_W1_INDEX,
+	SOUND_M1_INDEX = 0,
+	SOUND_W1_INDEX,
 
-    MAX_RADIO_CHATTER_SOUNDS
+	MAX_RADIO_CHATTER_SOUNDS
 }RADIO_CHATTER_VOICE_NUMBERS;
 
 /* *************************************
@@ -236,37 +238,37 @@ static SsVag BeepSnd;
 static TYPE_PLAYER PlayerData[MAX_PLAYERS];
 
 static const char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\TILESET1.TIM;1"	,
-                                        "cdrom:\\DATA\\SPRITES\\GAMEPLN.TIM;1"	,
-                                        "cdrom:\\DATA\\SPRITES\\PLNBLUE.CLT;1"	,
-                                        "cdrom:\\DATA\\SPRITES\\MOUSE.TIM;1"	,
-                                        "cdrom:\\DATA\\SPRITES\\BLDNGS1.TIM;1"	,
-                                        "cdrom:\\DATA\\SOUNDS\\RCPW1A1.VAG;1"   ,
-                                        "cdrom:\\DATA\\SOUNDS\\RCPM1A1.VAG;1"   ,
-                                        "cdrom:\\DATA\\SOUNDS\\RCTM1F1.VAG;1"   ,
-                                        "cdrom:\\DATA\\SOUNDS\\TAKEOFF1.VAG;1"  ,
-                                        "cdrom:\\DATA\\SPRITES\\CITYBG1.TIM;1"  ,
-                                        "cdrom:\\DATA\\SOUNDS\\BEEP.VAG;1"      };
+										"cdrom:\\DATA\\SPRITES\\GAMEPLN.TIM;1"	,
+										"cdrom:\\DATA\\SPRITES\\PLNBLUE.CLT;1"	,
+										"cdrom:\\DATA\\SPRITES\\MOUSE.TIM;1"	,
+										"cdrom:\\DATA\\SPRITES\\BLDNGS1.TIM;1"	,
+										"cdrom:\\DATA\\SOUNDS\\RCPW1A1.VAG;1"   ,
+										"cdrom:\\DATA\\SOUNDS\\RCPM1A1.VAG;1"   ,
+										"cdrom:\\DATA\\SOUNDS\\RCTM1F1.VAG;1"   ,
+										"cdrom:\\DATA\\SOUNDS\\TAKEOFF1.VAG;1"  ,
+										"cdrom:\\DATA\\SPRITES\\CITYBG1.TIM;1"  ,
+										"cdrom:\\DATA\\SOUNDS\\BEEP.VAG;1"      };
 
 static void* GameFileDest[] = { (GsSprite*)&GameTilesetSpr		        ,
-                                (GsSprite*)&GamePlaneSpr		        ,
-                                NULL                                    ,   // CLT files must use NULL pointers
-                                (GsSprite*)&GameMouseSpr		        ,
-                                (GsSprite*)&GameBuildingSpr		        ,
-                                (SsVag*)&ApproachSnds[SOUND_M1_INDEX]   ,
-                                (SsVag*)&ApproachSnds[SOUND_W1_INDEX]   ,
-                                (SsVag*)&TowerFinalSnds[SOUND_M1_INDEX] ,
-                                (SsVag*)&TakeoffSnd                     ,
-                                (GsSprite*)&CityBg1Spr                  ,
-                                (SsVag*)&BeepSnd                        };
+								(GsSprite*)&GamePlaneSpr		        ,
+								NULL                                    ,   // CLT files must use NULL pointers
+								(GsSprite*)&GameMouseSpr		        ,
+								(GsSprite*)&GameBuildingSpr		        ,
+								(SsVag*)&ApproachSnds[SOUND_M1_INDEX]   ,
+								(SsVag*)&ApproachSnds[SOUND_W1_INDEX]   ,
+								(SsVag*)&TowerFinalSnds[SOUND_M1_INDEX] ,
+								(SsVag*)&TakeoffSnd                     ,
+								(GsSprite*)&CityBg1Spr                  ,
+								(SsVag*)&BeepSnd                        };
 
-static const char* GamePlt[] = { "cdrom:\\DATA\\LEVELS\\LEVEL1.PLT;1"	};
+static const char* GamePlt[] = { "cdrom:\\DATA\\LEVELS\\LEVEL2.PLT;1"	};
 static void* GamePltDest[] = {(TYPE_FLIGHT_DATA*)&FlightData	};
 
-static char* GameLevelList[] = {"cdrom:\\DATA\\LEVELS\\LEVEL1.LVL;1"};
+static char* GameLevelList[] = {"cdrom:\\DATA\\LEVELS\\LEVEL2.LVL;1"};
 static uint16_t GameLevelBuffer[GAME_MAX_MAP_SIZE];
 
 static uint8_t GameLevelColumns;
-static uint8_t GameLevelSize;
+static uint16_t GameLevelSize;
 
 static char GameLevelTitle[LEVEL_TITLE_SIZE];
 
@@ -300,10 +302,10 @@ void Game(bool two_players)
 
 	while (1)
 	{
-        if (GameExit() != false)
-        {
-            break;
-        }
+		if (GameExit() != false)
+		{
+			break;
+		}
 
 		GameEmergencyMode();
 
@@ -338,31 +340,31 @@ void Game(bool two_players)
 
 bool GameExit(void)
 {
-    //Serial_printf("GameFinishedFlag...\n");
-    if (GameFinishedFlag != false)
-    {
-        // Exit game on level finished.
-        if (GameGuiFinishedDialog(&PlayerData[PLAYER_ONE]) != false)
-        {
-            return true;
-        }
-    }
+	//Serial_printf("GameFinishedFlag...\n");
+	if (GameFinishedFlag != false)
+	{
+		// Exit game on level finished.
+		if (GameGuiFinishedDialog(&PlayerData[PLAYER_ONE]) != false)
+		{
+			return true;
+		}
+	}
 
-    //Serial_printf("GamePause...\n");
-    if (GamePause() != false)
-    {
-        // Exit game if player desires to exit.
-        return true;
-    }
+	//Serial_printf("GamePause...\n");
+	if (GamePause() != false)
+	{
+		// Exit game if player desires to exit.
+		return true;
+	}
 
-    //Serial_printf("GameAircraftCollisionFlag...\n");
-    if (GameAircraftCollisionFlag != false)
-    {
-        GameGuiAircraftCollision(&PlayerData[PLAYER_ONE]);
-        return true;
-    }
+	//Serial_printf("GameAircraftCollisionFlag...\n");
+	if (GameAircraftCollisionFlag != false)
+	{
+		GameGuiAircraftCollision(&PlayerData[PLAYER_ONE]);
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 /* ***************************************************************************************
@@ -434,30 +436,30 @@ void GameInit(void)
 {
 	uint8_t i;
 	uint32_t track;
-    static bool firstLoad = true;
+	static bool firstLoad = true;
 
 	GameStartupFlag = true;
 
-    if (firstLoad != false)
-    {
-        firstLoad = false;
+	if (firstLoad != false)
+	{
+		firstLoad = false;
 
-        LoadMenu(	GameFileList,
-                    GameFileDest,
-                    sizeof(GameFileList) / sizeof(char*),
-                    sizeof(GameFileDest) /sizeof(void*)	);
-    }
+		LoadMenu(	GameFileList,
+					GameFileDest,
+					sizeof(GameFileList) / sizeof(char*),
+					sizeof(GameFileDest) /sizeof(void*)	);
+	}
 
-    LoadMenu(   GamePlt,
-                GamePltDest,
-                sizeof(GamePlt) / sizeof(GamePlt[0]),
-                sizeof(GamePltDest) / sizeof(GamePltDest[0]) );
+	LoadMenu(   GamePlt,
+				GamePltDest,
+				sizeof(GamePlt) / sizeof(GamePlt[0]),
+				sizeof(GamePltDest) / sizeof(GamePltDest[0]) );
 
 	GameLoadLevel();
 
 	GameGuiInit();
 
-    GameBuildingsInit();
+	GameBuildingsInit();
 
 	memset(GameRwy,0,GAME_MAX_RUNWAYS * sizeof(uint16_t) );
 
@@ -472,6 +474,14 @@ void GameInit(void)
 	PlayerData[PLAYER_ONE].FlightDataPage = 0;
 	PlayerData[PLAYER_ONE].UnboardingSequenceIdx = 0;
 
+    PlayerData[PLAYER_ONE].ShowAircraftData = false;
+    PlayerData[PLAYER_ONE].SelectRunway = false;
+    PlayerData[PLAYER_ONE].SelectTaxiwayRunway = false;
+    PlayerData[PLAYER_ONE].SelectTaxiwayParking = false;
+    PlayerData[PLAYER_ONE].InvalidPath = false;
+    PlayerData[PLAYER_ONE].LockTarget = false;
+    PlayerData[PLAYER_ONE].Unboarding = false;
+
 	memset(PlayerData[PLAYER_ONE].UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS * sizeof(unsigned short) );
 
 	PlayerData[PLAYER_TWO].Active = TwoPlayersActive? true : false;
@@ -485,6 +495,14 @@ void GameInit(void)
 		PlayerData[PLAYER_TWO].PadKeySinglePress_Callback = &PadTwoKeySinglePress;
 		PlayerData[PLAYER_TWO].PadLastKeySinglePressed_Callback = &PadTwoGetLastKeySinglePressed;
 		PlayerData[PLAYER_TWO].UnboardingSequenceIdx = 0;
+
+        PlayerData[PLAYER_TWO].ShowAircraftData = false;
+        PlayerData[PLAYER_TWO].SelectRunway = false;
+        PlayerData[PLAYER_TWO].SelectTaxiwayRunway = false;
+        PlayerData[PLAYER_TWO].SelectTaxiwayParking = false;
+        PlayerData[PLAYER_TWO].InvalidPath = false;
+        PlayerData[PLAYER_TWO].LockTarget = false;
+        PlayerData[PLAYER_TWO].Unboarding = false;
 
 		memset(PlayerData[PLAYER_TWO].UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS * sizeof(unsigned short) );
 
@@ -544,7 +562,7 @@ void GameInit(void)
 
 	GameSelectedTile = 0;
 
-    GameFinishedFlag = false;
+	GameFinishedFlag = false;
 
 	AircraftInit();
 
@@ -574,123 +592,123 @@ void GameInit(void)
 
 void GameBuildingsInit(void)
 {
-    enum
-    {
-        BUILDING_ATC_LOC_OFFSET_X = TILE_SIZE >> 1,
-        BUILDING_ATC_LOC_OFFSET_Y = TILE_SIZE >> 1,
+	enum
+	{
+		BUILDING_ATC_LOC_OFFSET_X = TILE_SIZE >> 1,
+		BUILDING_ATC_LOC_OFFSET_Y = TILE_SIZE >> 1,
 
-        BUILDING_ILS_OFFSET_X = 0,
-        BUILDING_ILS_OFFSET_Y = 0,
+		BUILDING_ILS_OFFSET_X = 0,
+		BUILDING_ILS_OFFSET_Y = 0,
 
-        BUILDING_GATE_OFFSET_X = (TILE_SIZE >> 1) - 4,
-        BUILDING_GATE_OFFSET_Y = 0,
+		BUILDING_GATE_OFFSET_X = (TILE_SIZE >> 1) - 4,
+		BUILDING_GATE_OFFSET_Y = 0,
 
-        BUILDING_HANGAR_OFFSET_X = 4,
-        BUILDING_HANGAR_OFFSET_Y = TILE_SIZE >> 1,
+		BUILDING_HANGAR_OFFSET_X = 4,
+		BUILDING_HANGAR_OFFSET_Y = TILE_SIZE >> 1,
 
-        BUILDING_ATC_TOWER_OFFSET_X = TILE_SIZE >> 2,
-        BUILDING_ATC_TOWER_OFFSET_Y = TILE_SIZE >> 1,
-    };
+		BUILDING_ATC_TOWER_OFFSET_X = TILE_SIZE >> 2,
+		BUILDING_ATC_TOWER_OFFSET_Y = TILE_SIZE >> 1,
+	};
 
-    enum
-    {
-        BUILDING_ILS_U = 34,
-        BUILDING_ILS_V = 0,
-        BUILDING_ILS_W = 24,
-        BUILDING_ILS_H = 34,
+	enum
+	{
+		BUILDING_ILS_U = 34,
+		BUILDING_ILS_V = 0,
+		BUILDING_ILS_W = 24,
+		BUILDING_ILS_H = 34,
 
-        BUILDING_GATE_U = 0,
-        BUILDING_GATE_V = 70,
-        BUILDING_GATE_W = 28,
-        BUILDING_GATE_H = 25,
+		BUILDING_GATE_U = 0,
+		BUILDING_GATE_V = 70,
+		BUILDING_GATE_W = 28,
+		BUILDING_GATE_H = 25,
 
-        BUILDING_HANGAR_U = 0,
-        BUILDING_HANGAR_V = 34,
-        BUILDING_HANGAR_W = 51,
-        BUILDING_HANGAR_H = 36,
+		BUILDING_HANGAR_U = 0,
+		BUILDING_HANGAR_V = 34,
+		BUILDING_HANGAR_W = 51,
+		BUILDING_HANGAR_H = 36,
 
-        BUILDING_ATC_TOWER_U = 58,
-        BUILDING_ATC_TOWER_V = 0,
-        BUILDING_ATC_TOWER_W = 29,
-        BUILDING_ATC_TOWER_H = 34,
-    };
+		BUILDING_ATC_TOWER_U = 58,
+		BUILDING_ATC_TOWER_V = 0,
+		BUILDING_ATC_TOWER_W = 29,
+		BUILDING_ATC_TOWER_H = 34,
+	};
 
-    enum
-    {
-        BUILDING_ILS_ORIGIN_X = 10,
-        BUILDING_ILS_ORIGIN_Y = 22,
+	enum
+	{
+		BUILDING_ILS_ORIGIN_X = 10,
+		BUILDING_ILS_ORIGIN_Y = 22,
 
-        BUILDING_GATE_ORIGIN_X = 20,
-        BUILDING_GATE_ORIGIN_Y = 8,
+		BUILDING_GATE_ORIGIN_X = 20,
+		BUILDING_GATE_ORIGIN_Y = 8,
 
-        BUILDING_HANGAR_ORIGIN_X = 20,
-        BUILDING_HANGAR_ORIGIN_Y = 11,
+		BUILDING_HANGAR_ORIGIN_X = 20,
+		BUILDING_HANGAR_ORIGIN_Y = 11,
 
-        BUILDING_ATC_TOWER_ORIGIN_X = 12,
-        BUILDING_ATC_TOWER_ORIGIN_Y = 20,
-    };
+		BUILDING_ATC_TOWER_ORIGIN_X = 12,
+		BUILDING_ATC_TOWER_ORIGIN_Y = 20,
+	};
 
-    memset(GameBuildingData, 0, sizeof(TYPE_BUILDING_DATA) );
+	memset(GameBuildingData, 0, sizeof(TYPE_BUILDING_DATA) );
 
-    GameBuildingData[BUILDING_GATE].IsoPos.x = BUILDING_GATE_OFFSET_X;
-    GameBuildingData[BUILDING_GATE].IsoPos.y = BUILDING_GATE_OFFSET_Y;
-    // z coordinate set to 0 by default.
+	GameBuildingData[BUILDING_GATE].IsoPos.x = BUILDING_GATE_OFFSET_X;
+	GameBuildingData[BUILDING_GATE].IsoPos.y = BUILDING_GATE_OFFSET_Y;
+	// z coordinate set to 0 by default.
 
-    // BUILDING_ATC_LOC coordinates inside tile.
-    GameBuildingData[BUILDING_ATC_LOC].IsoPos.x = BUILDING_ATC_LOC_OFFSET_X;
-    GameBuildingData[BUILDING_ATC_LOC].IsoPos.y = BUILDING_ATC_LOC_OFFSET_Y;
-    // z coordinate set to 0 by default.
-    GameBuildingData[BUILDING_GATE].orig_x = BUILDING_GATE_ORIGIN_X;
-    GameBuildingData[BUILDING_GATE].orig_y = BUILDING_GATE_ORIGIN_Y;
-    GameBuildingData[BUILDING_GATE].u = BUILDING_GATE_U;
-    GameBuildingData[BUILDING_GATE].v = BUILDING_GATE_V;
-    GameBuildingData[BUILDING_GATE].w = BUILDING_GATE_W;
-    GameBuildingData[BUILDING_GATE].h = BUILDING_GATE_H;
+	// BUILDING_ATC_LOC coordinates inside tile.
+	GameBuildingData[BUILDING_ATC_LOC].IsoPos.x = BUILDING_ATC_LOC_OFFSET_X;
+	GameBuildingData[BUILDING_ATC_LOC].IsoPos.y = BUILDING_ATC_LOC_OFFSET_Y;
+	// z coordinate set to 0 by default.
+	GameBuildingData[BUILDING_GATE].orig_x = BUILDING_GATE_ORIGIN_X;
+	GameBuildingData[BUILDING_GATE].orig_y = BUILDING_GATE_ORIGIN_Y;
+	GameBuildingData[BUILDING_GATE].u = BUILDING_GATE_U;
+	GameBuildingData[BUILDING_GATE].v = BUILDING_GATE_V;
+	GameBuildingData[BUILDING_GATE].w = BUILDING_GATE_W;
+	GameBuildingData[BUILDING_GATE].h = BUILDING_GATE_H;
 
-    // BUILDING_ILS coordinates inside tile.
-    GameBuildingData[BUILDING_ILS].IsoPos.x = BUILDING_ILS_OFFSET_X;
-    GameBuildingData[BUILDING_ILS].IsoPos.y = BUILDING_ILS_OFFSET_Y;
-    // z coordinate set to 0 by default.
-    GameBuildingData[BUILDING_ILS].orig_x = BUILDING_ILS_ORIGIN_X;
-    GameBuildingData[BUILDING_ILS].orig_y = BUILDING_ILS_ORIGIN_Y;
-    GameBuildingData[BUILDING_ILS].u = BUILDING_ILS_U;
-    GameBuildingData[BUILDING_ILS].v = BUILDING_ILS_V;
-    GameBuildingData[BUILDING_ILS].w = BUILDING_ILS_W;
-    GameBuildingData[BUILDING_ILS].h = BUILDING_ILS_H;
+	// BUILDING_ILS coordinates inside tile.
+	GameBuildingData[BUILDING_ILS].IsoPos.x = BUILDING_ILS_OFFSET_X;
+	GameBuildingData[BUILDING_ILS].IsoPos.y = BUILDING_ILS_OFFSET_Y;
+	// z coordinate set to 0 by default.
+	GameBuildingData[BUILDING_ILS].orig_x = BUILDING_ILS_ORIGIN_X;
+	GameBuildingData[BUILDING_ILS].orig_y = BUILDING_ILS_ORIGIN_Y;
+	GameBuildingData[BUILDING_ILS].u = BUILDING_ILS_U;
+	GameBuildingData[BUILDING_ILS].v = BUILDING_ILS_V;
+	GameBuildingData[BUILDING_ILS].w = BUILDING_ILS_W;
+	GameBuildingData[BUILDING_ILS].h = BUILDING_ILS_H;
 
-    // BUILDING_HANGAR coordinates inside tile.
-    GameBuildingData[BUILDING_HANGAR].IsoPos.x = BUILDING_HANGAR_OFFSET_X;
-    GameBuildingData[BUILDING_HANGAR].IsoPos.y = BUILDING_HANGAR_OFFSET_Y;
-    // z coordinate set to 0 by default.
-    GameBuildingData[BUILDING_HANGAR].orig_x = BUILDING_HANGAR_ORIGIN_X;
-    GameBuildingData[BUILDING_HANGAR].orig_y = BUILDING_HANGAR_ORIGIN_Y;
-    GameBuildingData[BUILDING_HANGAR].u = BUILDING_HANGAR_U;
-    GameBuildingData[BUILDING_HANGAR].v = BUILDING_HANGAR_V;
-    GameBuildingData[BUILDING_HANGAR].w = BUILDING_HANGAR_W;
-    GameBuildingData[BUILDING_HANGAR].h = BUILDING_HANGAR_H;
+	// BUILDING_HANGAR coordinates inside tile.
+	GameBuildingData[BUILDING_HANGAR].IsoPos.x = BUILDING_HANGAR_OFFSET_X;
+	GameBuildingData[BUILDING_HANGAR].IsoPos.y = BUILDING_HANGAR_OFFSET_Y;
+	// z coordinate set to 0 by default.
+	GameBuildingData[BUILDING_HANGAR].orig_x = BUILDING_HANGAR_ORIGIN_X;
+	GameBuildingData[BUILDING_HANGAR].orig_y = BUILDING_HANGAR_ORIGIN_Y;
+	GameBuildingData[BUILDING_HANGAR].u = BUILDING_HANGAR_U;
+	GameBuildingData[BUILDING_HANGAR].v = BUILDING_HANGAR_V;
+	GameBuildingData[BUILDING_HANGAR].w = BUILDING_HANGAR_W;
+	GameBuildingData[BUILDING_HANGAR].h = BUILDING_HANGAR_H;
 
-    // BUILDING_ATC_TOWER coordinates inside tile.
-    GameBuildingData[BUILDING_ATC_TOWER].IsoPos.x = BUILDING_ATC_TOWER_OFFSET_X;
-    GameBuildingData[BUILDING_ATC_TOWER].IsoPos.y = BUILDING_ATC_TOWER_OFFSET_Y;
-    // z coordinate set to 0 by default.
-    GameBuildingData[BUILDING_ATC_TOWER].orig_x = BUILDING_ATC_TOWER_ORIGIN_X;
-    GameBuildingData[BUILDING_ATC_TOWER].orig_y = BUILDING_ATC_TOWER_ORIGIN_Y;
-    GameBuildingData[BUILDING_ATC_TOWER].u = BUILDING_ATC_TOWER_U;
-    GameBuildingData[BUILDING_ATC_TOWER].v = BUILDING_ATC_TOWER_V;
-    GameBuildingData[BUILDING_ATC_TOWER].w = BUILDING_ATC_TOWER_W;
-    GameBuildingData[BUILDING_ATC_TOWER].h = BUILDING_ATC_TOWER_H;
+	// BUILDING_ATC_TOWER coordinates inside tile.
+	GameBuildingData[BUILDING_ATC_TOWER].IsoPos.x = BUILDING_ATC_TOWER_OFFSET_X;
+	GameBuildingData[BUILDING_ATC_TOWER].IsoPos.y = BUILDING_ATC_TOWER_OFFSET_Y;
+	// z coordinate set to 0 by default.
+	GameBuildingData[BUILDING_ATC_TOWER].orig_x = BUILDING_ATC_TOWER_ORIGIN_X;
+	GameBuildingData[BUILDING_ATC_TOWER].orig_y = BUILDING_ATC_TOWER_ORIGIN_Y;
+	GameBuildingData[BUILDING_ATC_TOWER].u = BUILDING_ATC_TOWER_U;
+	GameBuildingData[BUILDING_ATC_TOWER].v = BUILDING_ATC_TOWER_V;
+	GameBuildingData[BUILDING_ATC_TOWER].w = BUILDING_ATC_TOWER_W;
+	GameBuildingData[BUILDING_ATC_TOWER].h = BUILDING_ATC_TOWER_H;
 
-    // BUILDING_GATE coordinates inside tile.
-    GameBuildingData[BUILDING_GATE].IsoPos.x = BUILDING_GATE_OFFSET_X;
-    GameBuildingData[BUILDING_GATE].IsoPos.y = BUILDING_GATE_OFFSET_Y;
-    // z coordinate set to 0 by default.
+	// BUILDING_GATE coordinates inside tile.
+	GameBuildingData[BUILDING_GATE].IsoPos.x = BUILDING_GATE_OFFSET_X;
+	GameBuildingData[BUILDING_GATE].IsoPos.y = BUILDING_GATE_OFFSET_Y;
+	// z coordinate set to 0 by default.
 
-    /*BUILDING_ILS,
-    BUILDING_ATC_TOWER,
-    BUILDING_ATC_LOC,
-    BUILDING_TERMINAL,
-    BUILDING_TERMINAL_2,
-    BUILDING_GATE,*/
+	/*BUILDING_ILS,
+	BUILDING_ATC_TOWER,
+	BUILDING_ATC_LOC,
+	BUILDING_TERMINAL,
+	BUILDING_TERMINAL_2,
+	BUILDING_GATE,*/
 }
 
 /* ***************************************************************************************
@@ -711,10 +729,10 @@ void GameBuildingsInit(void)
 
 void GameEmergencyMode(void)
 {
-    uint8_t i;
-    uint8_t disconnected_players = 0x00;
-    bool (*PadXConnected[MAX_PLAYERS])(void) = {    [PLAYER_ONE] = &PadOneConnected,
-                                                    [PLAYER_TWO] = &PadTwoConnected };
+	uint8_t i;
+	uint8_t disconnected_players = 0x00;
+	bool (*PadXConnected[MAX_PLAYERS])(void) = {    [PLAYER_ONE] = &PadOneConnected,
+													[PLAYER_TWO] = &PadTwoConnected };
 
 	enum
 	{
@@ -729,66 +747,66 @@ void GameEmergencyMode(void)
 		ERROR_RECT_B = NORMAL_LUMINANCE
 	};
 
-    enum
-    {
-        PAD_DISCONNECTED_TEXT_X = 48,
-        PAD_DISCONNECTED_TEXT_Y = 48,
-        PAD_DISCONNECTED_TEXT_Y_OFFSET_BITSHIFT = 5
-    };
+	enum
+	{
+		PAD_DISCONNECTED_TEXT_X = 48,
+		PAD_DISCONNECTED_TEXT_Y = 48,
+		PAD_DISCONNECTED_TEXT_Y_OFFSET_BITSHIFT = 5
+	};
 
 	do
 	{
-        bool enabled = false;
+		bool enabled = false;
 
-        GsRectangle errorRct = {.x = ERROR_RECT_X,
-                                .w = ERROR_RECT_W,
-                                .y = ERROR_RECT_Y,
-                                .h = ERROR_RECT_H,
-                                .r = ERROR_RECT_R,
-                                .g = ERROR_RECT_G,
-                                .b = ERROR_RECT_B   };
+		GsRectangle errorRct = {.x = ERROR_RECT_X,
+								.w = ERROR_RECT_W,
+								.y = ERROR_RECT_Y,
+								.h = ERROR_RECT_H,
+								.r = ERROR_RECT_R,
+								.g = ERROR_RECT_G,
+								.b = ERROR_RECT_B   };
 
-        if (SystemGetEmergencyMode() != false)
-        {
-            // One of the pads has been disconnected during gameplay
-            // Show an error screen until it is disconnected again.
+		if (SystemGetEmergencyMode() != false)
+		{
+			// One of the pads has been disconnected during gameplay
+			// Show an error screen until it is disconnected again.
 
-            GsSortCls(0,0,0);
-            GsSortRectangle(&errorRct);
+			GsSortCls(0,0,0);
+			GsSortRectangle(&errorRct);
 
-            for (i = 0; i < MAX_PLAYERS; i++)
-            {
-                if (disconnected_players & (1<<i) )
-                {
-                    FontPrintText(  &SmallFont,
-                                    PAD_DISCONNECTED_TEXT_X,
-                                    PAD_DISCONNECTED_TEXT_Y + (i << PAD_DISCONNECTED_TEXT_Y_OFFSET_BITSHIFT),
-                                    "Pad %s disconnected", i? "right" : "left"    );
-                }
-            }
+			for (i = 0; i < MAX_PLAYERS; i++)
+			{
+				if (disconnected_players & (1<<i) )
+				{
+					FontPrintText(  &SmallFont,
+									PAD_DISCONNECTED_TEXT_X,
+									PAD_DISCONNECTED_TEXT_Y + (i << PAD_DISCONNECTED_TEXT_Y_OFFSET_BITSHIFT),
+									"Pad %s disconnected", i? "right" : "left"    );
+				}
+			}
 
-            GfxDrawScene_Slow();
-        }
+			GfxDrawScene_Slow();
+		}
 
-        for (i = 0; i < MAX_PLAYERS; i++)
-        {
-            TYPE_PLAYER* ptrPlayer = &PlayerData[i];
+		for (i = 0; i < MAX_PLAYERS; i++)
+		{
+			TYPE_PLAYER* ptrPlayer = &PlayerData[i];
 
-            if (ptrPlayer->Active != false)
-            {
-                if (PadXConnected[i]() == false)
-                {
-                    enabled = true;
-                    disconnected_players |= 1<<i;
-                }
-                else
-                {
-                    disconnected_players &= ~(1<<i);
-                }
-            }
-        }
+			if (ptrPlayer->Active != false)
+			{
+				if (PadXConnected[i]() == false)
+				{
+					enabled = true;
+					disconnected_players |= 1<<i;
+				}
+				else
+				{
+					disconnected_players &= ~(1<<i);
+				}
+			}
+		}
 
-        SystemSetEmergencyMode(enabled);
+		SystemSetEmergencyMode(enabled);
 
 	}while (SystemGetEmergencyMode() != false);
 }
@@ -813,33 +831,33 @@ void GameEmergencyMode(void)
 
 void GameGetAircraftTilemap(uint8_t i)
 {
-    uint16_t tileNr;
-    uint8_t j;
+	uint16_t tileNr;
+	uint8_t j;
 
-    if (i == 0)
-    {
-        memset(GameAircraftTilemap, FLIGHT_DATA_INVALID_IDX, sizeof(GameAircraftTilemap) );
-    }
+	if (i == 0)
+	{
+		memset(GameAircraftTilemap, FLIGHT_DATA_INVALID_IDX, sizeof(GameAircraftTilemap) );
+	}
 
-    if (FlightData.State[i] == STATE_IDLE)
-    {
-        return;
-    }
+	if (FlightData.State[i] == STATE_IDLE)
+	{
+		return;
+	}
 
-    tileNr = AircraftGetTileFromFlightDataIndex(i);
+	tileNr = AircraftGetTileFromFlightDataIndex(i);
 
-    for (j = 0; j < GAME_MAX_AIRCRAFT_PER_TILE; j++)
-    {
-        //DEBUG_PRINT_VAR(GameAircraftTilemap[tileNr][j]);
-        if (GameAircraftTilemap[tileNr][j] == FLIGHT_DATA_INVALID_IDX)
-        {
-            break;
-        }
-    }
+	for (j = 0; j < GAME_MAX_AIRCRAFT_PER_TILE; j++)
+	{
+		//DEBUG_PRINT_VAR(GameAircraftTilemap[tileNr][j]);
+		if (GameAircraftTilemap[tileNr][j] == FLIGHT_DATA_INVALID_IDX)
+		{
+			break;
+		}
+	}
 
-    GameAircraftTilemap[tileNr][j] = i;
+	GameAircraftTilemap[tileNr][j] = i;
 
-    //Serial_printf("GameAircraftTileMap[%d][%d] = %d\n", tileNr, j, GameAircraftTilemap[tileNr][j]);
+	//Serial_printf("GameAircraftTileMap[%d][%d] = %d\n", tileNr, j, GameAircraftTilemap[tileNr][j]);
 }
 
 /* ***************************************************************************************
@@ -862,22 +880,22 @@ void GameCalculations(void)
 {
 	uint8_t i;
 
-    GameClock();
+	GameClock();
 
-    // FlightData handling
+	// FlightData handling
 
-    for (i = 0; i < FlightData.nAircraft; i++)
-    {
-        GameFinished(i);
-        GameClockFlights(i);
-        GameAircraftState(i);
-        GameActiveAircraft(i);
-        GameRemainingAircraft(i);
-        GameGetAircraftTilemap(i);
-    }
+	for (i = 0; i < FlightData.nAircraft; i++)
+	{
+		GameFinished(i);
+		GameClockFlights(i);
+		GameAircraftState(i);
+		GameActiveAircraft(i);
+		GameRemainingAircraft(i);
+		GameGetAircraftTilemap(i);
+	}
 
-    AircraftHandler();
-    GameGuiCalculateSlowScore();
+	AircraftHandler();
+	GameGuiCalculateSlowScore();
 
 	for (i = 0 ; i < MAX_PLAYERS ; i++)
 	{
@@ -916,9 +934,9 @@ void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 									// which use this are currently active.
 	ptrPlayer->InvalidPath = false; // Do the same thing for "InvalidPath".
 
-    // Recalculate ptrPlayer->SelectedAircraft. In case new aircraft appear, we may be pointing
-    // to a incorrect instance.
-    GameActiveAircraftList(ptrPlayer, ptrFlightData);
+	// Recalculate ptrPlayer->SelectedAircraft. In case new aircraft appear, we may be pointing
+	// to a incorrect instance.
+	GameActiveAircraftList(ptrPlayer, ptrFlightData);
 
 	if (GameAircraftCollisionFlag != false)
 	{
@@ -988,28 +1006,28 @@ void GameClock(void)
 
 void GameClockFlights(uint8_t i)
 {
-    if (System1SecondTick() != false)
-    {
-        if (	(FlightData.Minutes[i] == 0)
-                    &&
-            (FlightData.Hours[i] > 0)	)
-        {
-            FlightData.Minutes[i] = 60;
-            FlightData.Hours[i]--;
-        }
+	if (System1SecondTick() != false)
+	{
+		if (	(FlightData.Minutes[i] == 0)
+					&&
+			(FlightData.Hours[i] > 0)	)
+		{
+			FlightData.Minutes[i] = 60;
+			FlightData.Hours[i]--;
+		}
 
-        if (FlightData.Minutes[i] > 0)
-        {
-            FlightData.Minutes[i]--;
-        }
+		if (FlightData.Minutes[i] > 0)
+		{
+			FlightData.Minutes[i]--;
+		}
 
-        if ( (FlightData.State[i] != STATE_IDLE)
-                            &&
-            (FlightData.RemainingTime[i] > 0) )
-        {
-            FlightData.RemainingTime[i]--;
-        }
-    }
+		if ( (FlightData.State[i] != STATE_IDLE)
+							&&
+			(FlightData.RemainingTime[i] > 0) )
+		{
+			FlightData.RemainingTime[i]--;
+		}
+	}
 }
 
 /* *******************************************************************
@@ -1035,7 +1053,7 @@ void GameGraphics(void)
 	int i;
 	bool split_screen = false;
 
-    SystemAcknowledgeFrame();
+	SystemAcknowledgeFrame();
 
 	while ( (SystemRefreshNeeded() == false) || (GfxIsGPUBusy() != false) );
 
@@ -1050,13 +1068,13 @@ void GameGraphics(void)
 		GfxIncreaseGlobalLuminance(1);
 	}
 
-    //~ GsSortCls(0,0,GfxGetGlobalLuminance() >> 1);
+	//~ GsSortCls(0,0,GfxGetGlobalLuminance() >> 1);
 
-    while (GsIsDrawing());
+	while (GsIsDrawing());
 
 	for (i = 0; i < MAX_PLAYERS ; i++)
 	{
-        TYPE_PLAYER* ptrPlayer = &PlayerData[i];
+		TYPE_PLAYER* ptrPlayer = &PlayerData[i];
 
 		if (ptrPlayer->Active != false)
 		{
@@ -1069,18 +1087,18 @@ void GameGraphics(void)
 			// only if 2-player mode is active. Else, render
 			// the whole screen as usual.
 
-            // Render background first.
+			// Render background first.
 
-            GameDrawBackground(ptrPlayer);
+			GameDrawBackground(ptrPlayer);
 
-            // Then ground tiles must be rendered.
+			// Then ground tiles must be rendered.
 
 			GameRenderLevel(ptrPlayer);
 
-            // Ground tiles are now rendered. Now, depending on building/aircraft
-            // positions, determine in what order they should be rendered.
+			// Ground tiles are now rendered. Now, depending on building/aircraft
+			// positions, determine in what order they should be rendered.
 
-            GameRenderBuildingAircraft(ptrPlayer);
+			GameRenderBuildingAircraft(ptrPlayer);
 
 			GameGuiAircraftList(ptrPlayer, &FlightData);
 
@@ -1088,11 +1106,11 @@ void GameGraphics(void)
 
 			GameGuiDrawUnboardingSequence(ptrPlayer);
 
-            if (split_screen != false)
-            {
-                GfxDrawScene_NoSwap();
-                while (GfxIsGPUBusy() != false);
-            }
+			if (split_screen != false)
+			{
+				GfxDrawScene_NoSwap();
+				while (GfxIsGPUBusy() != false);
+			}
 		}
 	}
 
@@ -1111,12 +1129,12 @@ void GameGraphics(void)
 
 	GameGuiShowScore();
 
-    if (split_screen != false)
-    {
-        GfxDrawScene_NoSwap();
-    }
+	if (split_screen != false)
+	{
+		GfxDrawScene_NoSwap();
+	}
 
-    GfxDrawScene();
+	GfxDrawScene();
 }
 
 /* *******************************************************************
@@ -1135,85 +1153,85 @@ void GameGraphics(void)
 
 void GameDrawBackground(TYPE_PLAYER* ptrPlayer)
 {
-    enum
-    {
-        BG_POLY4_R0 = 0,
-        BG_POLY4_G0 = BG_POLY4_R0,
-        BG_POLY4_B0 = BG_POLY4_R0,
+	enum
+	{
+		BG_POLY4_R0 = 0,
+		BG_POLY4_G0 = BG_POLY4_R0,
+		BG_POLY4_B0 = BG_POLY4_R0,
 
-        BG_POLY4_R1 = BG_POLY4_R0,
-        BG_POLY4_G1 = BG_POLY4_R1,
-        BG_POLY4_B1 = BG_POLY4_R1,
+		BG_POLY4_R1 = BG_POLY4_R0,
+		BG_POLY4_G1 = BG_POLY4_R1,
+		BG_POLY4_B1 = BG_POLY4_R1,
 
-        BG_POLY4_R2 = 40,
-        BG_POLY4_G2 = BG_POLY4_R2,
-        BG_POLY4_B2 = BG_POLY4_R2,
+		BG_POLY4_R2 = 40,
+		BG_POLY4_G2 = BG_POLY4_R2,
+		BG_POLY4_B2 = BG_POLY4_R2,
 
-        BG_POLY4_R3 = BG_POLY4_R2,
-        BG_POLY4_G3 = BG_POLY4_R3,
-        BG_POLY4_B3 = BG_POLY4_R3,
-    };
+		BG_POLY4_R3 = BG_POLY4_R2,
+		BG_POLY4_G3 = BG_POLY4_R3,
+		BG_POLY4_B3 = BG_POLY4_R3,
+	};
 
-    enum
-    {
-        CITY_BG_X = 0,
-        CITY_BG_Y = Y_SCREEN_RESOLUTION >> 1,
+	enum
+	{
+		CITY_BG_X = 0,
+		CITY_BG_Y = Y_SCREEN_RESOLUTION >> 1,
 
-        CITY_BG_R = 40,
-        CITY_BG_G = 40,
-        CITY_BG_B = 40,
-    };
+		CITY_BG_R = 40,
+		CITY_BG_G = 40,
+		CITY_BG_B = 40,
+	};
 
-    GsGPoly4 BgPoly4 = {.x[0] = 0,
-                        .x[1] = X_SCREEN_RESOLUTION,
-                        .x[2] = 0,
-                        .x[3] = X_SCREEN_RESOLUTION,
+	GsGPoly4 BgPoly4 = {.x[0] = 0,
+						.x[1] = X_SCREEN_RESOLUTION,
+						.x[2] = 0,
+						.x[3] = X_SCREEN_RESOLUTION,
 
-                        .y[0] = 0,
-                        .y[1] = 0,
-                        .y[2] = Y_SCREEN_RESOLUTION,
-                        .y[3] = Y_SCREEN_RESOLUTION,
+						.y[0] = 0,
+						.y[1] = 0,
+						.y[2] = Y_SCREEN_RESOLUTION,
+						.y[3] = Y_SCREEN_RESOLUTION,
 
-                        .r[0] = BG_POLY4_R0,
-                        .g[0] = BG_POLY4_G0,
-                        .b[0] = BG_POLY4_B0,
+						.r[0] = BG_POLY4_R0,
+						.g[0] = BG_POLY4_G0,
+						.b[0] = BG_POLY4_B0,
 
-                        .r[1] = BG_POLY4_R1,
-                        .g[1] = BG_POLY4_G1,
-                        .b[1] = BG_POLY4_B1,
+						.r[1] = BG_POLY4_R1,
+						.g[1] = BG_POLY4_G1,
+						.b[1] = BG_POLY4_B1,
 
-                        .r[2] = BG_POLY4_R2,
-                        .g[2] = BG_POLY4_G2,
-                        .b[2] = BG_POLY4_B2,
+						.r[2] = BG_POLY4_R2,
+						.g[2] = BG_POLY4_G2,
+						.b[2] = BG_POLY4_B2,
 
-                        .r[3] = BG_POLY4_R3,
-                        .g[3] = BG_POLY4_G3,
-                        .b[3] = BG_POLY4_B3 };
+						.r[3] = BG_POLY4_R3,
+						.g[3] = BG_POLY4_G3,
+						.b[3] = BG_POLY4_B3 };
 
-    short x;
-    bool reverse = false;
+	short x;
+	bool reverse = false;
 
-    GsSortGPoly4(&BgPoly4);
+	GsSortGPoly4(&BgPoly4);
 
-    for (x = CITY_BG_X; x < X_SCREEN_RESOLUTION; x += CityBg1Spr.w)
-    {
-        CityBg1Spr.x = x;
-        CityBg1Spr.y = CITY_BG_Y;
+	for (x = CITY_BG_X; x < X_SCREEN_RESOLUTION; x += CityBg1Spr.w)
+	{
+		CityBg1Spr.x = x;
+		CityBg1Spr.y = CITY_BG_Y;
 
-        CityBg1Spr.r = CITY_BG_R;
-        CityBg1Spr.g = CITY_BG_G;
-        CityBg1Spr.b = CITY_BG_B;
+		CityBg1Spr.r = CITY_BG_R;
+		CityBg1Spr.g = CITY_BG_G;
+		CityBg1Spr.b = CITY_BG_B;
 
-        CityBg1Spr.attribute = reverse? CityBg1Spr.attribute | H_FLIP : CityBg1Spr.attribute & ~(H_FLIP);
-        reverse = reverse? true: false; // Revert "reverse" flag.
+		CityBg1Spr.attribute = reverse? CityBg1Spr.attribute | H_FLIP : CityBg1Spr.attribute & ~(H_FLIP);
+		reverse = reverse? true: false; // Revert "reverse" flag.
 
-        CameraApplyCoordinatesToSprite(ptrPlayer, &CityBg1Spr);
+		CameraApplyCoordinatesToSprite(ptrPlayer, &CityBg1Spr);
 
-        // Restore original Y value.
-        CityBg1Spr.y = CITY_BG_Y;
+		// Restore original Y value.
+		CityBg1Spr.y = CITY_BG_Y;
 
-        GfxSortSprite(&CityBg1Spr);
-    }
+		GfxSortSprite(&CityBg1Spr);
+	}
 }
 
 /* *******************************************************************
@@ -1236,158 +1254,158 @@ void GameDrawBackground(TYPE_PLAYER* ptrPlayer)
 
 void GameRenderBuildingAircraft(TYPE_PLAYER* ptrPlayer)
 {
-    uint8_t tileNr;
-    uint8_t rows = 0;
-    uint8_t columns = 0;
-    uint8_t k;
+	uint16_t tileNr;
+	uint8_t rows = 0;
+	uint8_t columns = 0;
+	uint8_t k;
 
-    for (tileNr = 0; tileNr < GameLevelSize; tileNr++)
-    {
-        // Building data is stored in GameLevelBuffer MSB. LSB is dedicated to tile data.
-        uint8_t CurrentBuilding = (uint8_t)(GameLevelBuffer[tileNr] >> 8);
-        uint8_t j;
-        uint8_t AircraftRenderOrder[GAME_MAX_AIRCRAFT_PER_TILE];
-        short Aircraft_Y_Data[GAME_MAX_AIRCRAFT_PER_TILE];
+	for (tileNr = 0; tileNr < GameLevelSize; tileNr++)
+	{
+		// Building data is stored in GameLevelBuffer MSB. LSB is dedicated to tile data.
+		uint8_t CurrentBuilding = (uint8_t)(GameLevelBuffer[tileNr] >> 8);
+		uint8_t j;
+		uint8_t AircraftRenderOrder[GAME_MAX_AIRCRAFT_PER_TILE];
+		short Aircraft_Y_Data[GAME_MAX_AIRCRAFT_PER_TILE];
 
-        memset(AircraftRenderOrder, FLIGHT_DATA_INVALID_IDX, sizeof(AircraftRenderOrder) );
+		memset(AircraftRenderOrder, FLIGHT_DATA_INVALID_IDX, sizeof(AircraftRenderOrder) );
 
-        for (j = 0; j < GAME_MAX_AIRCRAFT_PER_TILE; j++)
-        {
-            // Fill with 0x7FFF (maximum 16-bit positive value).
-            Aircraft_Y_Data[j] = 0x7FFF;
-        }
+		for (j = 0; j < GAME_MAX_AIRCRAFT_PER_TILE; j++)
+		{
+			// Fill with 0x7FFF (maximum 16-bit positive value).
+			Aircraft_Y_Data[j] = 0x7FFF;
+		}
 
-        //memset(Aircraft_Y_Data, 0x7F, GAME_MAX_AIRCRAFT_PER_TILE * sizeof(short));
+		//memset(Aircraft_Y_Data, 0x7F, GAME_MAX_AIRCRAFT_PER_TILE * sizeof(short));
 
-        for (j = 0; j < GAME_MAX_AIRCRAFT_PER_TILE; j++)
-        {
-            uint8_t AircraftIdx = GameAircraftTilemap[tileNr][j];
+		for (j = 0; j < GAME_MAX_AIRCRAFT_PER_TILE; j++)
+		{
+			uint8_t AircraftIdx = GameAircraftTilemap[tileNr][j];
 
-            TYPE_ISOMETRIC_POS aircraftIsoPos = AircraftGetIsoPos(AircraftIdx);
+			TYPE_ISOMETRIC_POS aircraftIsoPos = AircraftGetIsoPos(AircraftIdx);
 
-            if (AircraftIdx == FLIGHT_DATA_INVALID_IDX)
-            {
-                // No more aircraft on this tile.
-                break;
-            }
+			if (AircraftIdx == FLIGHT_DATA_INVALID_IDX)
+			{
+				// No more aircraft on this tile.
+				break;
+			}
 
-            //DEBUG_PRINT_VAR(aircraftIsoPos.y);
+			//DEBUG_PRINT_VAR(aircraftIsoPos.y);
 
-            for (k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
-            {
-                if (aircraftIsoPos.y < Aircraft_Y_Data[k])
-                {
-                    uint8_t idx;
+			for (k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
+			{
+				if (aircraftIsoPos.y < Aircraft_Y_Data[k])
+				{
+					uint8_t idx;
 
-                    for (idx = k; idx < (GAME_MAX_AIRCRAFT_PER_TILE - 1); idx++)
-                    {
-                        // Move previous Y values to the right.
-                        Aircraft_Y_Data[idx + 1] = Aircraft_Y_Data[idx];
-                        AircraftRenderOrder[idx + 1] = AircraftRenderOrder[idx];
-                    }
+					for (idx = k; idx < (GAME_MAX_AIRCRAFT_PER_TILE - 1); idx++)
+					{
+						// Move previous Y values to the right.
+						Aircraft_Y_Data[idx + 1] = Aircraft_Y_Data[idx];
+						AircraftRenderOrder[idx + 1] = AircraftRenderOrder[idx];
+					}
 
-                    Aircraft_Y_Data[k] = aircraftIsoPos.y;
-                    AircraftRenderOrder[k] = AircraftIdx;
+					Aircraft_Y_Data[k] = aircraftIsoPos.y;
+					AircraftRenderOrder[k] = AircraftIdx;
 
-                    break;
-                }
-            }
+					break;
+				}
+			}
 
-            /*for (k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
-            {
-                Serial_printf("Aircraft_Y_Data[%d] = %d\n", k, Aircraft_Y_Data[k]);
-                Serial_printf("AircraftRenderOrder[%d] = %d\n", k, AircraftRenderOrder[k]);
-            }*/
-        }
+			/*for (k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
+			{
+				Serial_printf("Aircraft_Y_Data[%d] = %d\n", k, Aircraft_Y_Data[k]);
+				Serial_printf("AircraftRenderOrder[%d] = %d\n", k, AircraftRenderOrder[k]);
+			}*/
+		}
 
-        if (CurrentBuilding == BUILDING_NONE)
-        {
-            for (k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
-            {
-                AircraftRender(ptrPlayer, AircraftRenderOrder[k]);
-            }
-        }
-        else
-        {
-            // Determine rendering order depending on Y value.
-            short x_bldg_offset = GameBuildingData[CurrentBuilding].IsoPos.x;
-            short y_bldg_offset = GameBuildingData[CurrentBuilding].IsoPos.y;
-            short z_bldg_offset = GameBuildingData[CurrentBuilding].IsoPos.z;
-            short orig_u = GameBuildingSpr.u;
-            short orig_v = GameBuildingSpr.v;
+		if (CurrentBuilding == BUILDING_NONE)
+		{
+			for (k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
+			{
+				AircraftRender(ptrPlayer, AircraftRenderOrder[k]);
+			}
+		}
+		else
+		{
+			// Determine rendering order depending on Y value.
+			short x_bldg_offset = GameBuildingData[CurrentBuilding].IsoPos.x;
+			short y_bldg_offset = GameBuildingData[CurrentBuilding].IsoPos.y;
+			short z_bldg_offset = GameBuildingData[CurrentBuilding].IsoPos.z;
+			short orig_u = GameBuildingSpr.u;
+			short orig_v = GameBuildingSpr.v;
 
-            TYPE_ISOMETRIC_POS buildingIsoPos = {   .x = (columns << (TILE_SIZE_BIT_SHIFT)) + x_bldg_offset,
-                                                    .y = (rows << (TILE_SIZE_BIT_SHIFT)) + y_bldg_offset,
-                                                    .z = z_bldg_offset  };
+			TYPE_ISOMETRIC_POS buildingIsoPos = {   .x = (columns << (TILE_SIZE_BIT_SHIFT)) + x_bldg_offset,
+													.y = (rows << (TILE_SIZE_BIT_SHIFT)) + y_bldg_offset,
+													.z = z_bldg_offset  };
 
-            // Isometric -> Cartesian conversion
-            //buildingIsoPos.x = (columns << (TILE_SIZE_BIT_SHIFT)) + x_bldg_offset;
-            //buildingIsoPos.y = (rows << (TILE_SIZE_BIT_SHIFT)) + y_bldg_offset;
-            //buildingIsoPos.z = z_bldg_offset;
+			// Isometric -> Cartesian conversion
+			//buildingIsoPos.x = (columns << (TILE_SIZE_BIT_SHIFT)) + x_bldg_offset;
+			//buildingIsoPos.y = (rows << (TILE_SIZE_BIT_SHIFT)) + y_bldg_offset;
+			//buildingIsoPos.z = z_bldg_offset;
 
-            TYPE_CARTESIAN_POS buildingCartPos = GfxIsometricToCartesian(&buildingIsoPos);
-            bool buildingDrawn = false;
+			TYPE_CARTESIAN_POS buildingCartPos = GfxIsometricToCartesian(&buildingIsoPos);
+			bool buildingDrawn = false;
 
-            // Define new coordinates for building.
+			// Define new coordinates for building.
 
-            GameBuildingSpr.x = buildingCartPos.x - GameBuildingData[CurrentBuilding].orig_x;
-            GameBuildingSpr.y = buildingCartPos.y - GameBuildingData[CurrentBuilding].orig_y;
+			GameBuildingSpr.x = buildingCartPos.x - GameBuildingData[CurrentBuilding].orig_x;
+			GameBuildingSpr.y = buildingCartPos.y - GameBuildingData[CurrentBuilding].orig_y;
 
-            GameBuildingSpr.u = orig_u + GameBuildingData[CurrentBuilding].u;
-            GameBuildingSpr.v = orig_v + GameBuildingData[CurrentBuilding].v;
-            GameBuildingSpr.w = GameBuildingData[CurrentBuilding].w;
-            GameBuildingSpr.h = GameBuildingData[CurrentBuilding].h;
+			GameBuildingSpr.u = orig_u + GameBuildingData[CurrentBuilding].u;
+			GameBuildingSpr.v = orig_v + GameBuildingData[CurrentBuilding].v;
+			GameBuildingSpr.w = GameBuildingData[CurrentBuilding].w;
+			GameBuildingSpr.h = GameBuildingData[CurrentBuilding].h;
 
-            CameraApplyCoordinatesToSprite(ptrPlayer, &GameBuildingSpr);
+			CameraApplyCoordinatesToSprite(ptrPlayer, &GameBuildingSpr);
 
-            for (k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
-            {
-                if (AircraftRenderOrder[k] == FLIGHT_DATA_INVALID_IDX)
-                {
-                    if (buildingDrawn == false)
-                    {
-                        GfxSortSprite(&GameBuildingSpr);
+			for (k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
+			{
+				if (AircraftRenderOrder[k] == FLIGHT_DATA_INVALID_IDX)
+				{
+					if (buildingDrawn == false)
+					{
+						GfxSortSprite(&GameBuildingSpr);
 
-                        GameBuildingSpr.u = orig_u;
-                        GameBuildingSpr.v = orig_v;
+						GameBuildingSpr.u = orig_u;
+						GameBuildingSpr.v = orig_v;
 
-                        buildingDrawn = true;
-                    }
+						buildingDrawn = true;
+					}
 
-                    break;
-                }
+					break;
+				}
 
-                if (Aircraft_Y_Data[k] < buildingIsoPos.y)
-                {
-                    AircraftRender(ptrPlayer, AircraftRenderOrder[k]);
-                }
-                else
-                {
-                    if (buildingDrawn == false)
-                    {
-                        GfxSortSprite(&GameBuildingSpr);
+				if (Aircraft_Y_Data[k] < buildingIsoPos.y)
+				{
+					AircraftRender(ptrPlayer, AircraftRenderOrder[k]);
+				}
+				else
+				{
+					if (buildingDrawn == false)
+					{
+						GfxSortSprite(&GameBuildingSpr);
 
-                        GameBuildingSpr.u = orig_u;
-                        GameBuildingSpr.v = orig_v;
+						GameBuildingSpr.u = orig_u;
+						GameBuildingSpr.v = orig_v;
 
-                        buildingDrawn = true;
-                    }
+						buildingDrawn = true;
+					}
 
-                    AircraftRender(ptrPlayer, AircraftRenderOrder[k]);
-                }
-            }
-        }
+					AircraftRender(ptrPlayer, AircraftRenderOrder[k]);
+				}
+			}
+		}
 
-        if (columns < (GameLevelColumns - 1) )
-        {
-            columns++;
-        }
-        else
-        {
-            rows++;
-            columns = 0;
-        }
-    }
+		if (columns < (GameLevelColumns - 1) )
+		{
+			columns++;
+		}
+		else
+		{
+			rows++;
+			columns = 0;
+		}
+	}
 }
 
 /* *******************************************************************
@@ -1447,8 +1465,8 @@ void GameLoadLevel(void)
 	Serial_printf("Level size: %d\n",GameLevelColumns);
 
 	if (	(GameLevelColumns < MIN_MAP_COLUMNS)
-			||
-		(GameLevelColumns > MAX_MAP_COLUMNS)	)
+				||
+			(GameLevelColumns > MAX_MAP_COLUMNS)	)
 	{
 		Serial_printf("Invalid map size! Value: %d\n",GameLevelColumns);
 		return;
@@ -1462,9 +1480,11 @@ void GameLoadLevel(void)
 
 	Serial_printf("Game level title: %s\n",GameLevelTitle);
 
+	DEBUG_PRINT_VAR(GameLevelSize);
+
 	i += LEVEL_TITLE_SIZE;
 
-	memset(GameLevelBuffer,0,GAME_MAX_MAP_SIZE);
+	memset(GameLevelBuffer, 0, GAME_MAX_MAP_SIZE);
 
 	i = LEVEL_HEADER_SIZE;
 
@@ -1497,86 +1517,86 @@ void GameAircraftState(uint8_t i)
 	// is just the NULL character.
 	// Not an ideal solution, but the best one currently available.
 
-    if (FlightData.Finished[i] == false)
-    {
-        if (	(FlightData.Hours[i] == 0)
-                    &&
-            (FlightData.Minutes[i] == 0)
-                    &&
-            (FlightData.State[i] == STATE_IDLE)
-                    &&
-            (FlightData.RemainingTime[i] > 0)
-                    &&
-            (spawnMinTimeFlag == false)			)
-        {
-            if ( (FlightData.FlightDirection[i] == DEPARTURE)
-                                &&
-                (FlightData.Parking[i] != 0)				)
-            {
-                uint8_t j;
-                bool bParkingBusy = false;
+	if (FlightData.Finished[i] == false)
+	{
+		if (	(FlightData.Hours[i] == 0)
+					&&
+			(FlightData.Minutes[i] == 0)
+					&&
+			(FlightData.State[i] == STATE_IDLE)
+					&&
+			(FlightData.RemainingTime[i] > 0)
+					&&
+			(spawnMinTimeFlag == false)			)
+		{
+			if ( (FlightData.FlightDirection[i] == DEPARTURE)
+								&&
+				(FlightData.Parking[i] != 0)				)
+			{
+				uint8_t j;
+				bool bParkingBusy = false;
 
-                for (j = 0; j < FlightData.nAircraft; j++)
-                {
-                    if (AircraftFromFlightDataIndex(j)->State != STATE_IDLE)
-                    {
-                        uint16_t tile = AircraftGetTileFromFlightDataIndex(j);
-                        uint16_t* targets = AircraftGetTargets(j);
+				for (j = 0; j < FlightData.nAircraft; j++)
+				{
+					if (AircraftFromFlightDataIndex(j)->State != STATE_IDLE)
+					{
+						uint16_t tile = AircraftGetTileFromFlightDataIndex(j);
+						uint16_t* targets = AircraftGetTargets(j);
 
-                        if (tile == FlightData.Parking[i])
-                        {
-                            bParkingBusy = true;
-                        }
+						if (tile == FlightData.Parking[i])
+						{
+							bParkingBusy = true;
+						}
 
-                        if (SystemContains_u16(FlightData.Parking[i], targets, AIRCRAFT_MAX_TARGETS) != false)
-                        {
-                            bParkingBusy = true;
-                        }
-                    }
-                }
+						if (SystemContains_u16(FlightData.Parking[i], targets, AIRCRAFT_MAX_TARGETS) != false)
+						{
+							bParkingBusy = true;
+						}
+					}
+				}
 
-                if (bParkingBusy == false)
-                {
-                    FlightData.State[i] = STATE_PARKED;
+				if (bParkingBusy == false)
+				{
+					FlightData.State[i] = STATE_PARKED;
 
-                    GameAircraftCreatedFlag = true;
+					GameAircraftCreatedFlag = true;
 
-                    // Create notification request for incoming aircraft
-                    GameGuiBubbleShow();
+					// Create notification request for incoming aircraft
+					GameGuiBubbleShow();
 
-                    target[0] = FlightData.Parking[i];
+					target[0] = FlightData.Parking[i];
 
-                    Serial_printf("Target assigned = %d\n", target[0]);
+					Serial_printf("Target assigned = %d\n", target[0]);
 
-                    if (AircraftAddNew(&FlightData, i, target) == false)
-                    {
-                        Serial_printf("Exceeded maximum aircraft number!\n");
-                        return;
-                    }
-                }
-            }
-            else if (FlightData.FlightDirection[i] == ARRIVAL)
-            {
-                Serial_printf("Flight %d set to STATE_APPROACH.\n", i);
-                FlightData.State[i] = STATE_APPROACH;
-                GameAircraftCreatedFlag = true;
+					if (AircraftAddNew(&FlightData, i, target) == false)
+					{
+						Serial_printf("Exceeded maximum aircraft number!\n");
+						return;
+					}
+				}
+			}
+			else if (FlightData.FlightDirection[i] == ARRIVAL)
+			{
+				Serial_printf("Flight %d set to STATE_APPROACH.\n", i);
+				FlightData.State[i] = STATE_APPROACH;
+				GameAircraftCreatedFlag = true;
 
-                SfxPlaySound(&ApproachSnds[SystemRand(SOUND_M1_INDEX, MAX_RADIO_CHATTER_SOUNDS - 1)]);
+				SfxPlaySound(&ApproachSnds[SystemRand(SOUND_M1_INDEX, MAX_RADIO_CHATTER_SOUNDS - 1)]);
 
-                // Create notification request for incoming aircraft
-                GameGuiBubbleShow();
-            }
-        }
+				// Create notification request for incoming aircraft
+				GameGuiBubbleShow();
+			}
+		}
 
-        if ( (FlightData.State[i] != STATE_IDLE)
-                            &&
-            (FlightData.RemainingTime[i] == 0)	)
-        {
-            // Player(s) lost a flight!
-            GameRemoveFlight(i, false);
-            dprintf("Flight %d lost\n", i);
-        }
-    }
+		if ( (FlightData.State[i] != STATE_IDLE)
+							&&
+			(FlightData.RemainingTime[i] == 0)	)
+		{
+			// Player(s) lost a flight!
+			GameRemoveFlight(i, false);
+			dprintf("Flight %d lost\n", i);
+		}
+	}
 }
 
 /* ******************************************************************************************
@@ -1612,8 +1632,8 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 	TYPE_ISOMETRIC_POS tileIsoPos;
 	TYPE_CARTESIAN_POS tileCartPos;
 
-    //uint16_t init_timer_value = 0;
-    //uint16_t end_timer_value = 0;
+	//uint16_t init_timer_value = 0;
+	//uint16_t end_timer_value = 0;
 
 	// Prepare runway to be painted in blue if player is on runway selection mode
 	if (ptrPlayer->SelectRunway != false)
@@ -1642,11 +1662,11 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 		// | | | |  | | | |     | | V Tile, bit 4
 		// | |            |     | V Tile, bit 5
 		// |              |     V Tile, bit 6
-        //                |     Tile mirror flag
+		//                |     Tile mirror flag
 
 		uint8_t CurrentTile = (uint8_t)(GameLevelBuffer[i] & 0x00FF);
 
-        // Isometric -> Cartesian conversion
+		// Isometric -> Cartesian conversion
 		tileIsoPos.x = columns << (TILE_SIZE_BIT_SHIFT);
 		tileIsoPos.y = rows << (TILE_SIZE_BIT_SHIFT);
 		tileIsoPos.z = 0;
@@ -1692,16 +1712,16 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 		ptrTileset->w = TILE_SIZE;
 		ptrTileset->h = TILE_SIZE_H;
 
-        ptrTileset->x = tileCartPos.x;
+		ptrTileset->x = tileCartPos.x;
 		ptrTileset->y = tileCartPos.y;
 
 		// Set coordinate origin to left upper corner
 		ptrTileset->x -= TILE_SIZE >> 1;
 		//ptrTileset->y -= TILE_SIZE_H >> 2;
 
-        CameraApplyCoordinatesToSprite(ptrPlayer, ptrTileset);
+		CameraApplyCoordinatesToSprite(ptrPlayer, ptrTileset);
 
-        if (columns < (GameLevelColumns - 1) )
+		if (columns < (GameLevelColumns - 1) )
 		{
 			columns++;
 		}
@@ -1711,10 +1731,10 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 			columns = 0;
 		}
 
-        if (GfxIsSpriteInsideScreenArea(ptrTileset) == false)
-        {
-            continue;
-        }
+		if (GfxIsSpriteInsideScreenArea(ptrTileset) == false)
+		{
+			continue;
+		}
 
 		ptrTileset->r = NORMAL_LUMINANCE;
 		ptrTileset->g = NORMAL_LUMINANCE;
@@ -1771,9 +1791,9 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 									||
 							(CurrentTile == TILE_RWY_HOLDING_POINT_2)	)	)
 			{
-                ptrTileset->r = NORMAL_LUMINANCE >> 2;
-                ptrTileset->g = rwy_sine;
-                ptrTileset->b = NORMAL_LUMINANCE >> 2;
+				ptrTileset->r = NORMAL_LUMINANCE >> 2;
+				ptrTileset->g = rwy_sine;
+				ptrTileset->b = NORMAL_LUMINANCE >> 2;
 			}
 			else if (	(ptrPlayer->SelectTaxiwayParking != false)
 									&&
@@ -1781,13 +1801,9 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 									||
 							(CurrentTile == TILE_PARKING_2)	)	)
 			{
-                //init_timer_value = GetRCnt(2);
-
-                //end_timer_value = GetRCnt(2);
-
-                ptrTileset->r = NORMAL_LUMINANCE >> 2;
-                ptrTileset->g = rwy_sine;
-                ptrTileset->b = NORMAL_LUMINANCE >> 2;
+				ptrTileset->r = NORMAL_LUMINANCE >> 2;
+				ptrTileset->g = rwy_sine;
+				ptrTileset->b = NORMAL_LUMINANCE >> 2;
 			}
 		}
 
@@ -1821,11 +1837,11 @@ void GameRenderLevel(TYPE_PLAYER* ptrPlayer)
 		}
 	}
 
-    /*dprintf("GameRenderLevel execution time = %d\t"
-            "end_timer_value = 0x%04X\tinit_timer_value = 0x%04X\n",
-            end_timer_value - init_timer_value,
-            end_timer_value,
-            init_timer_value                                );*/
+	/*dprintf("GameRenderLevel execution time = %d\t"
+			"end_timer_value = 0x%04X\tinit_timer_value = 0x%04X\n",
+			end_timer_value - init_timer_value,
+			end_timer_value,
+			init_timer_value                                );*/
 }
 
 /* *******************************************************************
@@ -1871,17 +1887,17 @@ void GameSetTime(uint8_t hour, uint8_t minutes)
 
 void GameActiveAircraft(uint8_t i)
 {
-    // Reset iterator when i == 0.
+	// Reset iterator when i == 0.
 
-    if (i == 0)
-    {
-        FlightData.ActiveAircraft = 0;
-    }
+	if (i == 0)
+	{
+		FlightData.ActiveAircraft = 0;
+	}
 
-    if (FlightData.State[i] != STATE_IDLE)
-    {
-        FlightData.ActiveAircraft++;
-    }
+	if (FlightData.State[i] != STATE_IDLE)
+	{
+		FlightData.ActiveAircraft++;
+	}
 }
 
 /* ******************************************************************************************
@@ -1956,10 +1972,10 @@ void GameStateLockTarget(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 
 	if (ptrPlayer->LockTarget != false)
 	{
-        if (ptrPlayer->LockedAircraft != FLIGHT_DATA_INVALID_IDX)
-        {
-            CameraMoveToIsoPos(ptrPlayer, AircraftGetIsoPos(ptrPlayer->LockedAircraft) );
-        }
+		if (ptrPlayer->LockedAircraft != FLIGHT_DATA_INVALID_IDX)
+		{
+			CameraMoveToIsoPos(ptrPlayer, AircraftGetIsoPos(ptrPlayer->LockedAircraft) );
+		}
 	}
 
 	if (ptrPlayer->PadKeySinglePress_Callback(PAD_SQUARE) != false)
@@ -2064,7 +2080,7 @@ void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrF
 
 				target_tile = GameLevelBuffer[ptrPlayer->Waypoints[ptrPlayer->LastWaypointIdx]];
 
-                SfxPlaySound(&BeepSnd);
+				SfxPlaySound(&BeepSnd);
 
 				switch(target_tile)
 				{
@@ -2179,7 +2195,7 @@ void GameStateSelectTaxiwayParking(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptr
 						target_tile,
 						TILE_PARKING);
 
-                SfxPlaySound(&BeepSnd);
+				SfxPlaySound(&BeepSnd);
 
 				if (	(target_tile == TILE_PARKING)
 								||
@@ -2250,7 +2266,7 @@ void GameStateSelectRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightDa
 		ptrPlayer->LockTarget = false;
 		ptrPlayer->LockedAircraft = FLIGHT_DATA_INVALID_IDX;
 
-        GameGetSelectedRunwayArray(GameRwy[ptrPlayer->SelectedRunway], ptrPlayer->RwyArray, sizeof(ptrPlayer->RwyArray));
+		GameGetSelectedRunwayArray(GameRwy[ptrPlayer->SelectedRunway], ptrPlayer->RwyArray, sizeof(ptrPlayer->RwyArray));
 
 		CameraMoveToIsoPos(ptrPlayer, IsoPos);
 
@@ -2329,12 +2345,14 @@ void GameStateSelectRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightDa
 
 void GameGetRunwayArray(void)
 {
-	uint8_t i;
+	uint16_t i;
 	uint8_t j = 0;
 
 	for (i = 0; i < GameLevelSize; i++)
 	{
-		if (GameLevelBuffer[i] == TILE_RWY_START_1)
+        uint8_t tileNr = GameLevelBuffer[i] & ~TILE_MIRROR_FLAG;
+
+		if (tileNr == TILE_RWY_START_1)
 		{
 			if (SystemContains_u16(i, GameLevelBuffer, GAME_MAX_RUNWAYS) == false)
 			{
@@ -2421,7 +2439,7 @@ void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 					case STATE_READY_FOR_TAKEOFF:
 						ptrFlightData->State[AircraftIdx] = STATE_TAKEOFF;
 						GameCreateTakeoffWaypoints(ptrPlayer, ptrFlightData, AircraftIdx);
-                        SfxPlaySound(&TakeoffSnd);
+						SfxPlaySound(&TakeoffSnd);
 					break;
 
 					case STATE_HOLDING_RWY:
@@ -2455,21 +2473,21 @@ void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 				}
 			}
 		}
-        else if (ptrPlayer->PadKeySinglePress_Callback(PAD_L1) != false)
-        {
-            FL_STATE* ptrAircraftState = &FlightData.State[ptrPlayer->FlightDataSelectedAircraft];
+		else if (ptrPlayer->PadKeySinglePress_Callback(PAD_L1) != false)
+		{
+			FL_STATE* ptrAircraftState = &FlightData.State[ptrPlayer->FlightDataSelectedAircraft];
 
-            if (*ptrAircraftState == STATE_TAXIING)
-            {
-                *ptrAircraftState = STATE_USER_STOPPED;
-            }
-            else if (   (*ptrAircraftState == STATE_USER_STOPPED)
-                                            ||
-                        (*ptrAircraftState == STATE_AUTO_STOPPED)   )
-            {
-                *ptrAircraftState = STATE_TAXIING;
-            }
-        }
+			if (*ptrAircraftState == STATE_TAXIING)
+			{
+				*ptrAircraftState = STATE_USER_STOPPED;
+			}
+			else if (   (*ptrAircraftState == STATE_USER_STOPPED)
+											||
+						(*ptrAircraftState == STATE_AUTO_STOPPED)   )
+			{
+				*ptrAircraftState = STATE_TAXIING;
+			}
+		}
 	}
 }
 
@@ -2514,14 +2532,14 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t s
 	static uint8_t i = 0;
 	static RWY_DIR dir;
 
-    if (sz != (GAME_MAX_RWY_LENGTH * sizeof(uint16_t) ))
-    {
-        Serial_printf("GameGetSelectedRunwayArray: size %d is different"
-                " than expected (%d bytes). Returning...\n",
-                sz,
-                (GAME_MAX_RWY_LENGTH * sizeof(uint16_t) ) );
-        return;
-    }
+	if (sz != (GAME_MAX_RWY_LENGTH * sizeof(uint16_t) ))
+	{
+		Serial_printf("GameGetSelectedRunwayArray: size %d is different"
+				" than expected (%d bytes). Returning...\n",
+				sz,
+				(GAME_MAX_RWY_LENGTH * sizeof(uint16_t) ) );
+		return;
+	}
 
 	if (rwyHeader != 0)
 	{
@@ -2530,7 +2548,7 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t s
 		// a runway header on first tile), it is used to determine
 		// when to start creating the array.
 
-        // Part one: determine runway direction and call the function again with rwyHeader == 0.
+		// Part one: determine runway direction and call the function again with rwyHeader == 0.
 
 		memset(rwyArray, 0, sz);
 		last_tile = rwyHeader;
@@ -2540,23 +2558,27 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t s
 		{
 			case TILE_RWY_START_1:
 				dir = RWY_DIR_EAST;
-				break;
+            break;
 			case TILE_RWY_START_2:
 				dir = RWY_DIR_WEST;
-				break;
+            break;
+
 			case TILE_RWY_START_1 | TILE_MIRROR_FLAG:
 				dir = RWY_DIR_SOUTH;
+            break;
+
 			case TILE_RWY_START_2 | TILE_MIRROR_FLAG:
 				dir = RWY_DIR_NORTH;
+            break;
+
 			default:
 				Serial_printf("Unknown direction for tile %d\n",rwyHeader);
-				return;
-			break;
+            return;
 		}
 	}
 	else
 	{
-        // Part two: append tiles to array until runway end is found.
+		// Part two: append tiles to array until runway end is found.
 
 		if (	(GameLevelBuffer[last_tile] == TILE_RWY_START_1)
 						||
@@ -2572,11 +2594,11 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t s
 		}
 	}
 
-    //DEBUG_PRINT_VAR(i);
+	//DEBUG_PRINT_VAR(i);
 
 	rwyArray[i++] = last_tile;
 
-    //DEBUG_PRINT_VAR(rwyArray[i -1]);
+	//DEBUG_PRINT_VAR(rwyArray[i -1]);
 
 	switch(dir)
 	{
@@ -2632,7 +2654,16 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 
 	if (ptrFlightData->State[aircraftIndex] == STATE_APPROACH)
 	{
-        uint16_t rwyArray[GAME_MAX_RWY_LENGTH];
+        uint8_t j;
+		uint16_t rwyArray[GAME_MAX_RWY_LENGTH];
+
+        // TODO: Algorithm is not correct. If TILE_RWY_EXIT is placed further,
+        // but returns a match earlier than other rwyExitTiles[], invalid targets
+        // are returned to aircraft. We should check this before proceeding.
+        uint8_t rwyExitTiles[] = {  TILE_RWY_EXIT,
+                                    TILE_RWY_EXIT | TILE_MIRROR_FLAG,
+                                    TILE_RWY_EXIT_2,
+                                    TILE_RWY_EXIT_2 | TILE_MIRROR_FLAG  };
 
 		ptrFlightData->State[aircraftIndex] = STATE_FINAL;
 		GameScore += SCORE_REWARD_FINAL;
@@ -2642,22 +2673,38 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 		for (i = 0; i < GAME_MAX_RWY_LENGTH; i++)
 		{
 			rwyTiles[i] = GameLevelBuffer[rwyArray[i]];
+            dprintf("rwyTiles[%d] = 0x%02X\n", i, rwyTiles[i]);
 		}
 
-		i = SystemIndexOf_U8((uint8_t)TILE_RWY_EXIT, rwyTiles, 0, GAME_MAX_RWY_LENGTH);
+        for (j = 0; j < (sizeof(rwyExitTiles) / sizeof(rwyExitTiles[0])); j++)
+        {
+            i = SystemIndexOf_U8(rwyExitTiles[j], rwyTiles, 0, GAME_MAX_RWY_LENGTH);
+            DEBUG_PRINT_VAR(i);
+
+            if (i != -1)
+            {
+                dprintf("Success!\n");
+                uint8_t nextPos = i + 1;
+
+                for (j = 0; j < (sizeof(rwyExitTiles) / sizeof(rwyExitTiles[0])); j++)
+                {
+                    i = SystemIndexOf_U8(rwyExitTiles[j], rwyTiles, nextPos, GAME_MAX_RWY_LENGTH);
+                    DEBUG_PRINT_VAR(i);
+
+                    if (i != -1)
+                    {
+                        break;
+                    }
+                }
+
+                break;
+            }
+        }
 
 		if (i == -1)
 		{
-			Serial_printf("ERROR: Could not find TILE_RWY_EXIT for runway header %d.\n", assignedRwy);
-			return;
-		}
-
-		i = SystemIndexOf_U8((uint8_t)TILE_RWY_EXIT, rwyTiles, i + 1, GAME_MAX_RWY_LENGTH);
-
-		if (i == -1)
-		{
-			Serial_printf("ERROR: Could not find second TILE_RWY_EXIT for runway header %d.\n", assignedRwy);
-			return;
+            Serial_printf("ERROR: Could not find TILE_RWY_EXIT or TILE_RWY_EXIT_2 for runway header %d.\n", assignedRwy);
+            return;
 		}
 
 		rwyExit = rwyArray[i];
@@ -2665,7 +2712,7 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 		targets[0] = assignedRwy;
 		targets[1] = rwyExit;
 
-		if ( AircraftAddNew(ptrFlightData,
+		if (AircraftAddNew(ptrFlightData,
 							aircraftIndex,
 							targets	) == false)
 		{
@@ -2673,7 +2720,7 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 			return;
 		}
 
-        SfxPlaySound(&TowerFinalSnds[SystemRand(SOUND_M1_INDEX, MAX_RADIO_CHATTER_SOUNDS - 1)]);
+		SfxPlaySound(&TowerFinalSnds[SystemRand(SOUND_M1_INDEX, MAX_RADIO_CHATTER_SOUNDS - 1)]);
 	}
 	else if (ptrFlightData->State[aircraftIndex] == STATE_HOLDING_RWY)
 	{
@@ -3044,28 +3091,28 @@ void GamePlayerAddWaypoint_Ex(TYPE_PLAYER* ptrPlayer, uint16_t tile)
 
 bool GameWaypointCheckExisting(TYPE_PLAYER* ptrPlayer, uint16_t temp_tile)
 {
-    if (SystemContains_u16(temp_tile, ptrPlayer->Waypoints, PLAYER_MAX_WAYPOINTS) == false)
-    {
-        /*for (i = 0; i < FlightData.nAircraft; i++)
-        {
-            if ( (ptrFlightData->State[i] != STATE_IDLE)
-                            &&
-                (AircraftMoving(i) == false)			)
-            {
-                if (temp_tile == AircraftGetTileFromFlightDataIndex(i))
-                {
-                    return false;	// Check pending!
-                }
-            }
-        }*/
+	if (SystemContains_u16(temp_tile, ptrPlayer->Waypoints, PLAYER_MAX_WAYPOINTS) == false)
+	{
+		/*for (i = 0; i < FlightData.nAircraft; i++)
+		{
+			if ( (ptrFlightData->State[i] != STATE_IDLE)
+							&&
+				(AircraftMoving(i) == false)			)
+			{
+				if (temp_tile == AircraftGetTileFromFlightDataIndex(i))
+				{
+					return false;	// Check pending!
+				}
+			}
+		}*/
 
-        GamePlayerAddWaypoint_Ex(ptrPlayer, temp_tile);
+		GamePlayerAddWaypoint_Ex(ptrPlayer, temp_tile);
 
-        return false;
-    }
+		return false;
+	}
 
-    // temp_tile is already included on ptrPlayer->Waypoints!
-    return true;
+	// temp_tile is already included on ptrPlayer->Waypoints!
+	return true;
 }
 
 /* ****************************************************************************************
@@ -3163,9 +3210,9 @@ bool GamePathToTile(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 			}
 
 			if (GameWaypointCheckExisting(ptrPlayer, temp_tile) != false)
-            {
+			{
 				return false;	// Tile is already included in the list of temporary tiles?
-            }
+			}
 		}
 
 		while ( (y_diff--) > 0)
@@ -3181,9 +3228,9 @@ bool GamePathToTile(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 			}
 
 			if (GameWaypointCheckExisting(ptrPlayer, temp_tile) != false)
-            {
+			{
 				return false;	// Tile is already included in the list of temporary tiles?
-            }
+			}
 		}
 	}
 	else
@@ -3200,10 +3247,10 @@ bool GamePathToTile(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 				temp_tile -= GameLevelColumns;
 			}
 
-            if (GameWaypointCheckExisting(ptrPlayer, temp_tile) != false)
-            {
+			if (GameWaypointCheckExisting(ptrPlayer, temp_tile) != false)
+			{
 				return false;	// Tile is already included in the list of temporary tiles?
-            }
+			}
 		}
 
 		while ( (x_diff--) > 0)
@@ -3219,9 +3266,9 @@ bool GamePathToTile(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 			}
 
 			if (GameWaypointCheckExisting(ptrPlayer, temp_tile) != false)
-            {
+			{
 				return false;	// Tile is already included in the list of temporary tiles?
-            }
+			}
 		}
 	}
 
@@ -3461,7 +3508,7 @@ void GameStateUnboarding(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 
 			Serial_printf("ptrPlayer->UnboardingSequenceIdx = %d\n", ptrPlayer->UnboardingSequenceIdx);
 
-            SfxPlaySound(&BeepSnd);
+			SfxPlaySound(&BeepSnd);
 		}
 		else if (ptrPlayer->PadLastKeySinglePressed_Callback() != 0)
 		{
@@ -3579,7 +3626,7 @@ void GameCreateTakeoffWaypoints(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 		(GameLevelBuffer[currentTile] != TILE_RWY_START_2);
 		currentTile -= rwyStep	)
 	{
-        // Calculate new currentTile value until conditions are invalid.
+		// Calculate new currentTile value until conditions are invalid.
 	}
 
 	for (i = 0; i < GAME_MAX_RUNWAYS; i++)
@@ -3766,29 +3813,29 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 		TYPE_PLAYER* ptrPlayer = &PlayerData[i];
 		uint8_t j;
 
-        if (ptrPlayer->Active == false)
-        {
-            continue;
-        }
+		if (ptrPlayer->Active == false)
+		{
+			continue;
+		}
 
-        if (idx >= FlightData.nAircraft)
-        {
-            Serial_printf("GameRemoveFlight: index %d exceeds max index %d!\n", idx, FlightData.nAircraft);
-            return;
-        }
+		if (idx >= FlightData.nAircraft)
+		{
+			Serial_printf("GameRemoveFlight: index %d exceeds max index %d!\n", idx, FlightData.nAircraft);
+			return;
+		}
 
-        if ((FlightData.FlightDirection[idx] & ptrPlayer->FlightDirection) == 0)
-        {
-            continue;
-        }
+		if ((FlightData.FlightDirection[idx] & ptrPlayer->FlightDirection) == 0)
+		{
+			continue;
+		}
 
 		for (j = 0; j < ptrPlayer->ActiveAircraft; j++)
 		{
 			if (ptrPlayer->ActiveAircraftList[j] == idx)
-            {
-                if (FlightData.State[idx] != STATE_IDLE)
-                {
-                    uint8_t k;
+			{
+				if (FlightData.State[idx] != STATE_IDLE)
+				{
+					uint8_t k;
 
 					memset(ptrPlayer->UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS);
 					ptrPlayer->UnboardingSequenceIdx = 0;
@@ -3796,24 +3843,24 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 					for (k = 0; k < GAME_MAX_RUNWAYS; k++)
 					{
 						uint16_t* targets = AircraftGetTargets(idx);
-                        uint16_t rwyArray[GAME_MAX_RWY_LENGTH] = {0};
+						uint16_t rwyArray[GAME_MAX_RWY_LENGTH] = {0};
 
 						if (SystemContains_u16(GameUsedRwy[k], targets, AIRCRAFT_MAX_TARGETS) != false)
 						{
 							GameUsedRwy[k] = 0;
 						}
-                        else
-                        {
-                            // GameRwyArray is filled with runway tiles.
-                            GameGetSelectedRunwayArray(GameUsedRwy[k], rwyArray, GAME_MAX_RWY_LENGTH * sizeof(uint16_t) );
+						else
+						{
+							// GameRwyArray is filled with runway tiles.
+							GameGetSelectedRunwayArray(GameUsedRwy[k], rwyArray, GAME_MAX_RWY_LENGTH * sizeof(uint16_t) );
 
-                            if (SystemContains_u16(  AircraftGetTileFromFlightDataIndex(idx),
-                                                    rwyArray,
-                                                    sizeof(rwyArray) / sizeof(rwyArray[0]) ) != false)
-                            {
-                                GameUsedRwy[k] = 0;
-                            }
-                        }
+							if (SystemContains_u16(  AircraftGetTileFromFlightDataIndex(idx),
+													rwyArray,
+													sizeof(rwyArray) / sizeof(rwyArray[0]) ) != false)
+							{
+								GameUsedRwy[k] = 0;
+							}
+						}
 					}
 
 					if (FlightData.State[idx] != STATE_APPROACH)
@@ -3821,19 +3868,19 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 						if (AircraftRemove(idx) == false)
 						{
 							Serial_printf("Something went wrong when removing aircraft!\n");
-                            return;
+							return;
 						}
 					}
-                    else
-                    {
-                        // STATE_APPROACH is the only state which is not linked to a TYPE_AIRCRAFT_DATA instance.
-                    }
+					else
+					{
+						// STATE_APPROACH is the only state which is not linked to a TYPE_AIRCRAFT_DATA instance.
+					}
 
-                    if (ptrPlayer->LockedAircraft == idx)
-                    {
-                        ptrPlayer->LockTarget = false;
-                        ptrPlayer->LockedAircraft = FLIGHT_DATA_INVALID_IDX;
-                    }
+					if (ptrPlayer->LockedAircraft == idx)
+					{
+						ptrPlayer->LockTarget = false;
+						ptrPlayer->LockedAircraft = FLIGHT_DATA_INVALID_IDX;
+					}
 
 					if (successful != false)
 					{
@@ -3844,12 +3891,12 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 						GameScore = (GameScore < LOST_FLIGHT_PENALTY)? 0 : (GameScore - LOST_FLIGHT_PENALTY);
 					}
 
-                    if (ptrPlayer->SelectedAircraft != 0)
+					if (ptrPlayer->SelectedAircraft != 0)
 					{
-                        if (ptrPlayer->SelectedAircraft >= j)
-                        {
-                            ptrPlayer->SelectedAircraft--;
-                        }
+						if (ptrPlayer->SelectedAircraft >= j)
+						{
+							ptrPlayer->SelectedAircraft--;
+						}
 					}
 
 					FlightData.Passengers[idx] = 0;
@@ -3925,18 +3972,18 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightD
 
 		if (ptrPlayer->ActiveAircraft > 1)
 		{
-            dprintf("currentFlightDataIdx = %d, lastFlightDataIdx = %d\n",
-                    currentFlightDataIdx,
-                    lastFlightDataIdx   );
+			dprintf("currentFlightDataIdx = %d, lastFlightDataIdx = %d\n",
+					currentFlightDataIdx,
+					lastFlightDataIdx   );
 			if (currentFlightDataIdx != lastFlightDataIdx)
 			{
 				for (ptrPlayer->SelectedAircraft = 0; ptrPlayer->SelectedAircraft < FlightData.nAircraft; ptrPlayer->SelectedAircraft++)
 				{
 					if (ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft] == lastFlightDataIdx)
 					{
-                        dprintf("Recalculated ptrPlayer->SelectedAircraft from %d to %d.\n",
-                                currentFlightDataIdx,
-                                ptrPlayer->SelectedAircraft   );
+						dprintf("Recalculated ptrPlayer->SelectedAircraft from %d to %d.\n",
+								currentFlightDataIdx,
+								ptrPlayer->SelectedAircraft   );
 						break;
 					}
 				}
@@ -3944,7 +3991,7 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightD
 		}
 	}
 
-    ptrPlayer->FlightDataSelectedAircraft = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
+	ptrPlayer->FlightDataSelectedAircraft = ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft];
 }
 
 /* *******************************************************************************************
@@ -3969,18 +4016,18 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightD
 
 void GameRemainingAircraft(uint8_t i)
 {
-    // Reset iterator when starting from first element.
+	// Reset iterator when starting from first element.
 
 
-    if (i == 0)
-    {
-        FlightData.nRemainingAircraft = FlightData.nAircraft;
-    }
+	if (i == 0)
+	{
+		FlightData.nRemainingAircraft = FlightData.nAircraft;
+	}
 
-    if (FlightData.Finished[i] != false)
-    {
-        FlightData.nRemainingAircraft--;
-    }
+	if (FlightData.Finished[i] != false)
+	{
+		FlightData.nRemainingAircraft--;
+	}
 }
 
 /* *******************************************************************************************
@@ -4005,15 +4052,15 @@ void GameRemainingAircraft(uint8_t i)
 
 void GameFinished(uint8_t i)
 {
-    if (i == 0)
-    {
-        GameFinishedFlag = true;
-    }
+	if (i == 0)
+	{
+		GameFinishedFlag = true;
+	}
 
-    if (FlightData.Finished[i] == false)
-    {
-        GameFinishedFlag = false;
-    }
+	if (FlightData.Finished[i] == false)
+	{
+		GameFinishedFlag = false;
+	}
 }
 
 /* *******************************************************************************************
@@ -4080,13 +4127,13 @@ void GameAircraftCollision(uint8_t AircraftIdx)
 
 void GameStopFlight(uint8_t AircraftIdx)
 {
-    FL_STATE* ptrState = &FlightData.State[AircraftIdx];
+	FL_STATE* ptrState = &FlightData.State[AircraftIdx];
 
-    if (*ptrState == STATE_TAXIING)
-    {
-        // Only allow auto stop under taxi
-        *ptrState = STATE_AUTO_STOPPED;
-    }
+	if (*ptrState == STATE_TAXIING)
+	{
+		// Only allow auto stop under taxi
+		*ptrState = STATE_AUTO_STOPPED;
+	}
 }
 
 /* *******************************************************************************************
@@ -4108,11 +4155,11 @@ void GameStopFlight(uint8_t AircraftIdx)
 
 void GameResumeFlightFromAutoStop(uint8_t AircraftIdx)
 {
-    FL_STATE* ptrState = &FlightData.State[AircraftIdx];
+	FL_STATE* ptrState = &FlightData.State[AircraftIdx];
 
-    if (*ptrState == STATE_AUTO_STOPPED)
-    {
-        // Only recovery to STATE_TAXIING is allowed.
-        *ptrState = STATE_TAXIING;
-    }
+	if (*ptrState == STATE_AUTO_STOPPED)
+	{
+		// Only recovery to STATE_TAXIING is allowed.
+		*ptrState = STATE_TAXIING;
+	}
 }
