@@ -1199,3 +1199,21 @@ void SystemDevMenu(void)
                         u16_0_01seconds_cnt, GetRCnt(2) );
     }
 }
+
+void SystemGetFileBasename(const char* fileName, char* str, size_t sz)
+{
+    size_t i;
+    size_t j = 0;
+    size_t len = strlen(fileName);
+
+    memset(str, 0, sz);
+
+    for (i = (len - 1); fileName[i] != '\\'; i--);
+
+    i++; // Skip '\\' character.
+
+    for (; fileName[i] != ';'; i++)
+    {
+        str[j++] = fileName[i];
+    }
+}

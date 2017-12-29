@@ -130,6 +130,10 @@ void SystemCalculateSine(void);
 
 unsigned char SystemGetSineValue(void);
 
+// Fills str with only file name and extension given input file path.
+// For example: "FOLDER\\FOLDER\\MYFILE.EXT;1" -> "MYFILE.EXT"
+void SystemGetFileBasename(const char* fileName, char* str, size_t sz);
+
 /* **************************************
  * 	Global Variables					*
  * **************************************/
