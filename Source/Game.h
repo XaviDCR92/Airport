@@ -21,6 +21,19 @@
 #define TILE_SIZE_BIT_SHIFT 6
 
 /* *************************************
+ * 	Structs and enums
+ * *************************************/
+
+typedef enum t_rwydir
+{
+    RWY_DIR_EAST = 0,
+    RWY_DIR_WEST,
+    RWY_DIR_NORTH,
+    RWY_DIR_SOUTH,
+    RWY_INVALID_DIR,
+}RWY_DIR;
+
+/* *************************************
  * 	Global variables
  * *************************************/
 
@@ -48,4 +61,6 @@ void		GameCalculateRemainingAircraft(void);
 void		GameAircraftCollision(uint8_t AircraftIdx);
 void        GameStopFlight(uint8_t AicraftIdx);
 void        GameResumeFlightFromAutoStop(uint8_t AircraftIdx);
+RWY_DIR     GameGetRunwayDirection(uint16_t rwyHeader);
+
 #endif //GAME_HEADER__

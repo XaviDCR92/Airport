@@ -141,16 +141,47 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 
 	if (ptrFlightData->FlightDirection[FlightDataIndex] == ARRIVAL)
 	{
-		ptrAircraft->IsoPos.x = 0;
+        RWY_DIR rwyDir = GameGetRunwayDirection(ptrAircraft->Target[0]);
+        // Calculate direction automatically.
 
-		ptrAircraft->IsoPos.y = targets[0] / level_columns;
-		ptrAircraft->IsoPos.y <<= TILE_SIZE_BIT_SHIFT;
-		ptrAircraft->IsoPos.y += TILE_SIZE >> 1; // Adjust to tile center
-		ptrAircraft->IsoPos.y = fix16_from_int(ptrAircraft->IsoPos.y);
+        switch (rwyDir)
+        {
+            case RWY_DIR_EAST:
+                ptrAircraft->IsoPos.x = 0;
 
-		ptrAircraft->IsoPos.z = targets[0] % level_columns;
-		ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 1;
-		ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
+                ptrAircraft->IsoPos.y = targets[0] / level_columns;
+                ptrAircraft->IsoPos.y <<= TILE_SIZE_BIT_SHIFT;
+                ptrAircraft->IsoPos.y += TILE_SIZE >> 1; // Adjust to tile center
+                ptrAircraft->IsoPos.y = fix16_from_int(ptrAircraft->IsoPos.y);
+
+                ptrAircraft->IsoPos.z = targets[0] % level_columns;
+                ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 1;
+                ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
+
+                ptrAircraft->Direction = AIRCRAFT_DIR_EAST;
+            break;
+
+            case RWY_DIR_SOUTH:
+                ptrAircraft->IsoPos.x = targets[0] % level_columns;
+                ptrAircraft->IsoPos.x <<= TILE_SIZE_BIT_SHIFT;
+                ptrAircraft->IsoPos.x += TILE_SIZE >> 1; // Adjust to tile center
+                ptrAircraft->IsoPos.x = fix16_from_int(ptrAircraft->IsoPos.x);
+
+                ptrAircraft->IsoPos.y = 0;
+
+                ptrAircraft->IsoPos.z = targets[0] / level_columns;
+                ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 1;
+                ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
+
+                ptrAircraft->Direction = AIRCRAFT_DIR_SOUTH;
+            break;
+
+            case RWY_INVALID_DIR:
+                // Fall through
+            default:
+                Serial_printf("Invalid runway direction %d for inbound flight.\n", rwyDir);
+            return false;
+        }
 	}
 	else if (ptrFlightData->FlightDirection[FlightDataIndex] == DEPARTURE)
 	{
@@ -161,8 +192,6 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 
 	ptrAircraft->State = ptrFlightData->State[FlightDataIndex];
     AircraftFlightDataIdx_HashTable[FlightDataIndex] = AircraftIndex;
-
-	ptrAircraft->Direction = AIRCRAFT_DIR_NORTH; // Default to north direction
 
 	Serial_printf("\nAircraft Data:\n");
 	Serial_printf("\tTargets:");

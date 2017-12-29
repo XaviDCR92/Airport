@@ -2186,7 +2186,7 @@ void GameStateSelectTaxiwayParking(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptr
 					ptrPlayer->LastWaypointIdx = i;
 				}
 
-				target_tile = GameLevelBuffer[ptrPlayer->Waypoints[ptrPlayer->LastWaypointIdx]];
+				target_tile = GameLevelBuffer[ptrPlayer->Waypoints[ptrPlayer->LastWaypointIdx]] & ~(TILE_MIRROR_FLAG);
 
 				Serial_printf("ptrPlayer->LastWaypointIdx = %d\n",
 						ptrPlayer->LastWaypointIdx);
@@ -2199,11 +2199,7 @@ void GameStateSelectTaxiwayParking(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptr
 
 				if (	(target_tile == TILE_PARKING)
 								||
-					(target_tile == (TILE_PARKING | TILE_MIRROR_FLAG))
-								||
-					(target_tile == TILE_PARKING_2)
-								||
-					(target_tile == (TILE_PARKING_2 | TILE_MIRROR_FLAG) ) )
+                        (target_tile == TILE_PARKING_2) )
 				{
 					// TODO: Assign path to aircraft
 					AircraftFromFlightDataIndexAddTargets(ptrPlayer->FlightDataSelectedAircraft, ptrPlayer->Waypoints);
@@ -2226,6 +2222,10 @@ void GameStateSelectTaxiwayParking(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptr
 					ptrFlightData->State[ptrPlayer->FlightDataSelectedAircraft] = STATE_TAXIING;
 					GameScore += SCORE_REWARD_TAXIING;
 				}
+                else
+                {
+                    Serial_printf("Tile %d cannot be used as end point.\n", target_tile);
+                }
 			}
 		}
 	}
@@ -2493,6 +2493,40 @@ void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 
 /* **************************************************************************************************
  *
+ * @name: RWY_DIR GameGetRunwayDirection(uint16_t rwyHeader)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Depending on runway header, runway direction is returned.
+ *
+ * **************************************************************************************************/
+RWY_DIR GameGetRunwayDirection(uint16_t rwyHeader)
+{
+    switch(GameLevelBuffer[rwyHeader])
+    {
+        case TILE_RWY_START_1:
+            return RWY_DIR_EAST;
+
+        case TILE_RWY_START_2:
+            return RWY_DIR_WEST;
+
+        case TILE_RWY_START_1 | TILE_MIRROR_FLAG:
+            return RWY_DIR_SOUTH;
+
+        case TILE_RWY_START_2 | TILE_MIRROR_FLAG:
+            return RWY_DIR_NORTH;
+
+        default:
+            Serial_printf("Unknown direction for tile %d\n",rwyHeader);
+            break;
+    }
+
+    return RWY_INVALID_DIR;
+}
+
+/* **************************************************************************************************
+ *
  * @name: void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t sz)
  *
  * @author: Xavier Del Campo
@@ -2517,27 +2551,18 @@ void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
  * @remarks:
  *
  * **************************************************************************************************/
-
 void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t sz)
 {
-	typedef enum t_rwydir
-	{
-		RWY_DIR_EAST = 0,
-		RWY_DIR_WEST,
-		RWY_DIR_NORTH,
-		RWY_DIR_SOUTH,
-	}RWY_DIR;
-
 	static uint16_t last_tile = 0;
 	static uint8_t i = 0;
 	static RWY_DIR dir;
 
 	if (sz != (GAME_MAX_RWY_LENGTH * sizeof(uint16_t) ))
 	{
-		Serial_printf("GameGetSelectedRunwayArray: size %d is different"
-				" than expected (%d bytes). Returning...\n",
-				sz,
-				(GAME_MAX_RWY_LENGTH * sizeof(uint16_t) ) );
+		Serial_printf(  "GameGetSelectedRunwayArray: size %d is different"
+                        " than expected (%d bytes). Returning...\n",
+                        sz,
+                        (GAME_MAX_RWY_LENGTH * sizeof(uint16_t) ) );
 		return;
 	}
 
@@ -2554,39 +2579,24 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t s
 		last_tile = rwyHeader;
 		i = 0;
 
-		switch(GameLevelBuffer[rwyHeader])
-		{
-			case TILE_RWY_START_1:
-				dir = RWY_DIR_EAST;
-            break;
-			case TILE_RWY_START_2:
-				dir = RWY_DIR_WEST;
-            break;
+        dir = GameGetRunwayDirection(rwyHeader);
 
-			case TILE_RWY_START_1 | TILE_MIRROR_FLAG:
-				dir = RWY_DIR_SOUTH;
-            break;
-
-			case TILE_RWY_START_2 | TILE_MIRROR_FLAG:
-				dir = RWY_DIR_NORTH;
-            break;
-
-			default:
-				Serial_printf("Unknown direction for tile %d\n",rwyHeader);
+        if (dir == RWY_INVALID_DIR)
+        {
             return;
-		}
+        }
 	}
 	else
 	{
 		// Part two: append tiles to array until runway end is found.
 
 		if (	(GameLevelBuffer[last_tile] == TILE_RWY_START_1)
-						||
-			(GameLevelBuffer[last_tile] == TILE_RWY_START_2)
-						||
-			(GameLevelBuffer[last_tile] == (TILE_RWY_START_1 | TILE_MIRROR_FLAG) )
-						||
-			(GameLevelBuffer[last_tile] == (TILE_RWY_START_2 | TILE_MIRROR_FLAG) )	)
+                            ||
+                (GameLevelBuffer[last_tile] == TILE_RWY_START_2)
+                            ||
+                (GameLevelBuffer[last_tile] == (TILE_RWY_START_1 | TILE_MIRROR_FLAG) )
+                            ||
+                (GameLevelBuffer[last_tile] == (TILE_RWY_START_2 | TILE_MIRROR_FLAG) )	)
 		{
 			// Runway end found
 			rwyArray[i++] = last_tile;
@@ -2604,13 +2614,25 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t s
 	{
 		case RWY_DIR_EAST:
 			last_tile++;
-			break;
+        break;
+
 		case RWY_DIR_WEST:
 			last_tile--;
+        break;
+
 		case RWY_DIR_NORTH:
 			last_tile -= GameLevelColumns;
+        break;
+
 		case RWY_DIR_SOUTH:
 			last_tile += GameLevelColumns;
+        break;
+
+        case RWY_INVALID_DIR:
+            // Fall through
+        default:
+            Serial_printf("Invalid runway direction.\n");
+        return;
 	}
 
 	GameGetSelectedRunwayArray(0, rwyArray, sz);
@@ -2642,8 +2664,8 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 {
 	uint16_t assignedRwy = GameRwy[ptrPlayer->SelectedRunway];
 	uint8_t aircraftIndex = ptrPlayer->FlightDataSelectedAircraft;
-	uint16_t rwyExit;
-	uint32_t i;
+	uint16_t rwyExit = 0;
+	uint8_t i;
 	uint16_t targets[AIRCRAFT_MAX_TARGETS] = {0};
 	uint8_t rwyTiles[GAME_MAX_RWY_LENGTH] = {0};
 
@@ -2655,6 +2677,7 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 	if (ptrFlightData->State[aircraftIndex] == STATE_APPROACH)
 	{
         uint8_t j;
+        bool firstEntryPointFound = false;
 		uint16_t rwyArray[GAME_MAX_RWY_LENGTH];
 
         // TODO: Algorithm is not correct. If TILE_RWY_EXIT is placed further,
@@ -2676,43 +2699,37 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
             dprintf("rwyTiles[%d] = 0x%02X\n", i, rwyTiles[i]);
 		}
 
-        for (j = 0; j < (sizeof(rwyExitTiles) / sizeof(rwyExitTiles[0])); j++)
+        for (i = 0; (i < GAME_MAX_RWY_LENGTH) && (rwyExit == 0); i++)
         {
-            i = SystemIndexOf_U8(rwyExitTiles[j], rwyTiles, 0, GAME_MAX_RWY_LENGTH);
-            DEBUG_PRINT_VAR(i);
-
-            if (i != -1)
+            for (j = 0; j < (sizeof(rwyExitTiles) / sizeof(rwyExitTiles[0])); j++)
             {
-                dprintf("Success!\n");
-                uint8_t nextPos = i + 1;
-
-                for (j = 0; j < (sizeof(rwyExitTiles) / sizeof(rwyExitTiles[0])); j++)
+                if (rwyTiles[i] == rwyExitTiles[j])
                 {
-                    i = SystemIndexOf_U8(rwyExitTiles[j], rwyTiles, nextPos, GAME_MAX_RWY_LENGTH);
-                    DEBUG_PRINT_VAR(i);
-
-                    if (i != -1)
+                    if (firstEntryPointFound == false)
                     {
-                        break;
+                        firstEntryPointFound = true;
                     }
-                }
+                    else
+                    {
+                        rwyExit = rwyArray[i];
+                    }
 
-                break;
+                    break;
+                }
             }
         }
 
-		if (i == -1)
-		{
+        if (rwyExit == 0)
+        {
             Serial_printf("ERROR: Could not find TILE_RWY_EXIT or TILE_RWY_EXIT_2 for runway header %d.\n", assignedRwy);
             return;
-		}
+        }
 
-		rwyExit = rwyArray[i];
-
+        // Create two new targets for the recently created aircraft.
 		targets[0] = assignedRwy;
 		targets[1] = rwyExit;
 
-		if (AircraftAddNew(ptrFlightData,
+		if (AircraftAddNew( ptrFlightData,
 							aircraftIndex,
 							targets	) == false)
 		{
@@ -2725,7 +2742,6 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 	else if (ptrFlightData->State[aircraftIndex] == STATE_HOLDING_RWY)
 	{
 		TYPE_RWY_ENTRY_DATA rwyEntryData;
-		uint8_t i;
 
 		GameGetRunwayEntryTile(aircraftIndex, &rwyEntryData);
 
@@ -3143,11 +3159,17 @@ bool GameWaypointCheckExisting(TYPE_PLAYER* ptrPlayer, uint16_t temp_tile)
 bool GamePathToTile(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	uint8_t AcceptedTiles[] = {	TILE_ASPHALT_WITH_BORDERS,
-								TILE_PARKING, TILE_RWY_MID,
-								TILE_RWY_EXIT, TILE_TAXIWAY_CORNER_GRASS,
-								TILE_TAXIWAY_CORNER_GRASS_2, TILE_TAXIWAY_GRASS,
+								TILE_PARKING,
+                                TILE_RWY_MID,
+								TILE_RWY_EXIT,
+                                TILE_TAXIWAY_CORNER_GRASS,
+								TILE_TAXIWAY_CORNER_GRASS_2,
+                                TILE_TAXIWAY_GRASS,
 								TILE_TAXIWAY_INTERSECT_GRASS,
-								TILE_RWY_HOLDING_POINT, TILE_RWY_HOLDING_POINT_2 };
+                                TILE_TAXIWAY_4WAY_CROSSING,
+                                TILE_PARKING_2,
+								TILE_RWY_HOLDING_POINT,
+                                TILE_RWY_HOLDING_POINT_2 };
 
 	uint8_t i;
 	uint8_t j;
