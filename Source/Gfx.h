@@ -51,7 +51,7 @@ void GfxDrawScene_Fast(void);
 bool GfxReadyForDMATransfer(void);
 
 // Fills a GsSprite structure with information from a TIM file.
-bool GfxSpriteFromFile(char* fname, GsSprite * spr);
+bool GfxSpriteFromFile(char* fname, GsSprite* spr);
 
 // Reportedly, loads CLUT data from a TIM image (image data is discarded)
 bool GfxCLUTFromFile(char* fname);
@@ -60,14 +60,14 @@ bool GfxCLUTFromFile(char* fname);
 bool GfxIsInsideScreenArea(short x, short y, short w, short h);
 
 // Function overload for GsSprite structures.
-bool GfxIsSpriteInsideScreenArea(GsSprite * spr);
+bool GfxIsSpriteInsideScreenArea(GsSprite* spr);
 
 // Used to know whether GPU operation can be done.
 bool GfxIsGPUBusy(void);
 
 // Draws a sprite on screen. First, it checks whether sprite is inside
 // screen limits.
-void GfxSortSprite(GsSprite * spr);
+void GfxSortSprite(GsSprite* spr);
 
 uint8_t GfxGetGlobalLuminance(void);
 
@@ -97,7 +97,7 @@ TYPE_ISOMETRIC_POS GfxCartesianToIsometric(TYPE_CARTESIAN_POS * ptrCartPos);
 
 // Fills GsSprite structure pointed to by "spr" with texture page and U/V
 // offset data given a position in VRAM.
-bool GfxTPageOffsetFromVRAMPosition(GsSprite * spr, short x, short y);
+bool GfxTPageOffsetFromVRAMPosition(GsSprite* spr, short x, short y);
 
 void GfxSetSplitScreen(uint8_t playerIndex);
 

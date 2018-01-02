@@ -21,6 +21,14 @@
 /* *************************************
  * 	Structs and enums
  * *************************************/
+
+typedef struct t_gameConfiguration
+{
+    bool TwoPlayers;
+    const char* LVLPath;
+    const char* PLTPath;
+}TYPE_GAME_CONFIGURATION;
+
 /* *************************************
  * 	Global variables
  * *************************************/
@@ -29,7 +37,8 @@ extern bool GameStartupFlag;
 /* *************************************
  * 	Global prototypes
  * *************************************/
-void 		Game(bool two_players);
+
+void 		Game(TYPE_GAME_CONFIGURATION* pGameCfg);
 void 		GameSetTime(uint8_t hour, uint8_t minutes);
 bool		GameTwoPlayersActive(void);
 uint8_t 	GameGetLevelColumns(void);

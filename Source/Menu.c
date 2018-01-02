@@ -27,6 +27,19 @@
  * 	Structs and enums					*
  * *************************************/
 
+typedef enum t_levelId
+{
+    LEVEL1 = 0,
+    LEVEL2,
+    MAX_LEVELS = LEVEL2
+}LEVEL_ID;
+
+typedef struct t_lvlpltdata
+{
+    LEVEL_ID levelID;
+    const char** fileNames[];
+}TYPE_LVL_PLT_DATA;
+
 typedef enum
 {
 	PLAY_OPTIONS_LEVEL,
@@ -133,6 +146,9 @@ static TYPE_CHEAT StackCheckCheat;
 static TYPE_CHEAT DevMenuCheat;
 static TYPE_CHEAT SerialCheat;
 static volatile bool BcnGWSpr_set;
+static LEVEL_ID SelectedLevel;
+static uint8_t SelectedPlt;
+static bool isLevelSelected;
 
 static const char* MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
                                         "cdrom:\\DATA\\SOUNDS\\BELL.VAG;1"		,
@@ -149,18 +165,15 @@ static const char* MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
 #endif // NO_INTRO
                                                                                 };
 
-enum
-{
-    LEVEL1,
-    LEVEL2
-};
-
 static const char* MainMenuLevelList[] = {  [LEVEL1] = "cdrom:\\DATA\\LEVELS\\LEVEL1.LVL;1"	,
                                             [LEVEL2] = "cdrom:\\DATA\\LEVELS\\LEVEL2.LVL;1"	};
 
-static const char* MainMenuLevelPltList[][] = { [LEVEL1] = {"cdrom:\\DATA\\LEVELS\\LEVEL1.PLT;1"},
-                                                [LEVEL2] = {"cdrom:\\DATA\\LEVELS\\LEVEL2.PLT;1"}   };
+static const char* MainMenuLevel1Plt[] = {"cdrom:\\DATA\\LEVELS\\LEVEL1.PLT;1", "cdrom:\\DATA\\LEVELS\\EASY.PLT;1", NULL};
+static const char* MainMenuLevel2Plt[] = {"cdrom:\\DATA\\LEVELS\\LEVEL2.PLT;1", NULL};
 
+static const char** MainMenuPltList[] = {[LEVEL1] = MainMenuLevel1Plt, [LEVEL2] = MainMenuLevel2Plt};
+
+static TYPE_GAME_CONFIGURATION GameCfg;
 
 static void* MainMenuDest[] = {     (GsSprite*)&MenuSpr			,
 									(SsVag*)&BellSnd			,
@@ -211,6 +224,7 @@ void OptionsMenu(void)
 void OnePlayerMenu(void)
 {
     menuLevel = LEVEL_LIST_LEVEL;
+    GameCfg.TwoPlayers = false;
 	//EndAnimation();
 	//Game(false /* One Player Only */);
 }
@@ -218,6 +232,7 @@ void OnePlayerMenu(void)
 void TwoPlayerMenu(void)
 {
     menuLevel = LEVEL_LIST_LEVEL;
+    GameCfg.TwoPlayers = true;
 	//EndAnimation();
 	//Game(true /* Two players */);
 }
@@ -269,6 +284,8 @@ void MainMenuInit(void)
     MenuStarSpr.mx = MenuStarSpr.w >> 1;
     MenuStarSpr.my = MenuStarSpr.h >> 1;
     MenuStarSpr.rotate = 0;
+
+    SelectedLevel = LEVEL1;
 
     MenuCheatInit();
 
@@ -407,9 +424,21 @@ void MainMenuRenderLevelList(void)
     {
         LEVEL_LIST_TEXT_X = LEVEL_LIST_RECT_X + 8,
         LEVEL_LIST_TEXT_Y = LEVEL_LIST_RECT_Y + 8,
+
+        LEVEL_LIST_PLT_TEXT_X = LEVEL_LIST_PLT_RECT_X + 8,
+        LEVEL_LIST_PLT_TEXT_Y = LEVEL_LIST_PLT_RECT_Y + 8,
+    };
+
+    enum
+    {
+        LEVEL_LIST_SELECTION_RECT_X = LEVEL_LIST_TEXT_X,
+        LEVEL_LIST_SELECTION_RECT_Y = LEVEL_LIST_TEXT_Y,
+        LEVEL_LIST_SELECTION_RECT_W = LEVEL_LIST_RECT_W - 16,
+        LEVEL_LIST_SELECTION_RECT_H = 8,
     };
 
     GsGPoly4 levelListRect = {0};
+    GsGPoly4 levelListSelectionRect = {0};
     uint8_t i;
 
     levelListRect.x[0] = LEVEL_LIST_RECT_X;
@@ -446,6 +475,33 @@ void MainMenuRenderLevelList(void)
 
     GsSortGPoly4(&levelListRect);
 
+    levelListSelectionRect.x[0] = LEVEL_LIST_SELECTION_RECT_X;
+    levelListSelectionRect.x[1] = LEVEL_LIST_SELECTION_RECT_X + LEVEL_LIST_SELECTION_RECT_W;
+    levelListSelectionRect.x[2] = levelListSelectionRect.x[0];
+    levelListSelectionRect.x[3] = levelListSelectionRect.x[1];
+
+    levelListSelectionRect.y[0] = LEVEL_LIST_SELECTION_RECT_Y + (short)(SelectedLevel << 3);
+    levelListSelectionRect.y[1] = levelListSelectionRect.y[0];
+    levelListSelectionRect.y[2] = LEVEL_LIST_SELECTION_RECT_Y + LEVEL_LIST_SELECTION_RECT_H + (short)(SelectedLevel << 3);
+    levelListSelectionRect.y[3] = levelListSelectionRect.y[2];
+
+    levelListSelectionRect.r[0] = LEVEL_LIST_RECT_B0;
+    levelListSelectionRect.r[1] = LEVEL_LIST_RECT_B1;
+    levelListSelectionRect.r[2] = LEVEL_LIST_RECT_B2;
+    levelListSelectionRect.r[3] = LEVEL_LIST_RECT_B3;
+
+    levelListSelectionRect.g[0] = LEVEL_LIST_RECT_B0;
+    levelListSelectionRect.g[1] = LEVEL_LIST_RECT_B1;
+    levelListSelectionRect.g[2] = LEVEL_LIST_RECT_B2;
+    levelListSelectionRect.g[3] = LEVEL_LIST_RECT_B3;
+
+    levelListSelectionRect.b[0] = LEVEL_LIST_RECT_B0;
+    levelListSelectionRect.b[1] = LEVEL_LIST_RECT_B1;
+    levelListSelectionRect.b[2] = LEVEL_LIST_RECT_B2;
+    levelListSelectionRect.b[3] = LEVEL_LIST_RECT_B3;
+
+    levelListSelectionRect.attribute |= ENABLE_TRANS | TRANS_MODE(0);
+
     for (i = 0; i < (sizeof(MainMenuLevelList) / sizeof(MainMenuLevelList[0])); i++)
     {
         char baseName[32];
@@ -456,15 +512,40 @@ void MainMenuRenderLevelList(void)
 
         FontPrintText(&SmallFont, LEVEL_LIST_TEXT_X, LEVEL_LIST_TEXT_Y + (i << 3), baseName);
 
-        for (j = 0; j < (sizeof(MainMenuLevelPltList[i]) / sizeof(MainMenuLevelPltList[i][0])); j++)
+        if (i == SelectedLevel)
         {
+            for (j = 0; j < (sizeof(MainMenuPltList) / sizeof(MainMenuPltList[0])); j++)
+            {
+                if (MainMenuPltList[i][j] != NULL)
+                {
+                    // Update "baseName" with file name + extension.
+                    SystemGetFileBasename(MainMenuPltList[i][j], baseName, sizeof(baseName) / sizeof(baseName[0]));
 
+                    FontPrintText(&SmallFont, LEVEL_LIST_PLT_TEXT_X, LEVEL_LIST_PLT_TEXT_Y + (j << 3), baseName);
+                }
+            }
         }
+    }
+
+    if (isLevelSelected == false)
+    {
+        GsSortGPoly4(&levelListSelectionRect);
+    }
+    else
+    {
+        levelListSelectionRect.y[0] = LEVEL_LIST_PLT_TEXT_Y + (short)(SelectedPlt << 3);
+        levelListSelectionRect.y[1] = levelListSelectionRect.y[0];
+        levelListSelectionRect.y[2] = LEVEL_LIST_PLT_TEXT_Y + LEVEL_LIST_SELECTION_RECT_H + (short)(SelectedPlt << 3);
+        levelListSelectionRect.y[3] = levelListSelectionRect.y[2];
+
+        GsSortGPoly4(&levelListSelectionRect);
     }
 }
 
 void MainMenuRestoreInitValues(void)
 {
+    uint8_t i;
+
 	menuLevel = PLAY_OPTIONS_LEVEL;
 	MainMenuMinimumBtn = PLAY_BUTTON_INDEX;
 
@@ -484,6 +565,16 @@ void MainMenuRestoreInitValues(void)
 	MainMenuBtn[TWO_PLAYER_BUTTON_INDEX].was_selected = false;
 	MainMenuBtn[TWO_PLAYER_BUTTON_INDEX].timer = 0;
 
+    SelectedLevel = LEVEL1;
+    SelectedPlt = 0;
+
+    memset(&GameCfg, 0, sizeof(TYPE_GAME_CONFIGURATION));
+
+    for (i = 0; i < MAIN_MENU_BUTTONS_MAX; i++)
+    {
+        MainMenuBtn[i].was_selected = false;
+    }
+
 	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
 
     SfxPlayTrack(INTRO_TRACK);
@@ -493,7 +584,7 @@ void MainMenuButtonHandler(void)
 {
 	static uint8_t btn_selected = PLAY_BUTTON_INDEX;
 	static uint8_t previous_btn_selected = 0;
-	uint8_t max_buttons;
+	uint8_t max_buttons = 0;
 
 	if (PadOneAnyKeyPressed() != false)
 	{
@@ -538,6 +629,56 @@ void MainMenuButtonHandler(void)
 
 		break;
 
+        case LEVEL_LIST_LEVEL:
+            if (PadOneKeySinglePress(PAD_UP) != false)
+            {
+                if (isLevelSelected == false)
+                {
+                    if (SelectedLevel > 0)
+                    {
+                        SelectedLevel--;
+                        SelectedPlt = 0;
+                    }
+                }
+                else
+                {
+                    if (SelectedPlt > 0)
+                    {
+                        SelectedPlt--;
+                    }
+                }
+            }
+            else if (PadOneKeySinglePress(PAD_DOWN) != false)
+            {
+                if (isLevelSelected == false)
+                {
+                    if (SelectedLevel < MAX_LEVELS)
+                    {
+                        SelectedLevel++;
+                        SelectedPlt = 0;
+                    }
+                }
+                else
+                {
+                    if (MainMenuPltList[SelectedLevel][SelectedPlt + 1] != NULL)
+                    {
+                        SelectedPlt++;
+                    }
+                }
+            }
+            else if (PadOneKeySinglePress(PAD_TRIANGLE) != false)
+            {
+                if (isLevelSelected == true)
+                {
+                    isLevelSelected = false;
+                }
+                else
+                {
+                    MainMenuRestoreInitValues();
+                }
+            }
+        break;
+
 		default:
 			max_buttons = 0;
 		break;
@@ -578,13 +719,31 @@ void MainMenuButtonHandler(void)
 
 	if (PadOneKeySinglePress(PAD_CROSS) )
 	{
-        if(0)MainMenuRestoreInitValues();
-        MainMenuBtn[btn_selected].f();
-
-		if (menuLevel == ONE_TWO_PLAYERS_LEVEL)
+        if (menuLevel == LEVEL_LIST_LEVEL)
 		{
-			btn_selected = PLAY_BUTTON_INDEX;
+            if (isLevelSelected == false)
+            {
+                isLevelSelected = true;
+            }
+            else
+            {
+                GameCfg.LVLPath = MainMenuLevelList[SelectedLevel];
+                GameCfg.PLTPath = MainMenuPltList[SelectedLevel][SelectedPlt];
+
+                EndAnimation();
+
+                // Start gameplay!
+                Game(&GameCfg);
+
+                MainMenuRestoreInitValues();
+                btn_selected = PLAY_BUTTON_INDEX;
+                isLevelSelected = false;
+            }
 		}
+        else
+        {
+            MainMenuBtn[btn_selected].f();
+        }
 	}
 
 	MainMenuBtn[btn_selected].selected = true;

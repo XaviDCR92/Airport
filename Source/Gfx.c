@@ -309,7 +309,7 @@ void GfxDrawScene_Slow(void)
 
 /* **********************************************************************
  *
- * @name: void GfxSortSprite(GsSprite * spr)
+ * @name: void GfxSortSprite(GsSprite* spr)
  *
  * @author: Xavier Del Campo
  *
@@ -323,7 +323,7 @@ void GfxDrawScene_Slow(void)
  *  if you need to skip this check.
  *
  * **********************************************************************/
-void GfxSortSprite(GsSprite * spr)
+void GfxSortSprite(GsSprite* spr)
 {
 	uint8_t aux_r = spr->r;
 	uint8_t aux_g = spr->g;
@@ -423,7 +423,7 @@ void GfxSortSprite(GsSprite * spr)
 
 /* **********************************************************************
  *
- * @name: void GfxSortSprite(GsSprite * spr)
+ * @name: void GfxSortSprite(GsSprite* spr)
  *
  * @author: Xavier Del Campo
  *
@@ -512,7 +512,7 @@ bool GfxIsGPUBusy(void)
 
 /* **********************************************************************
  *
- * @name: bool GfxSpriteFromFile(char* fname, GsSprite * spr)
+ * @name: bool GfxSpriteFromFile(char* fname, GsSprite* spr)
  *
  * @author: Xavier Del Campo
  *
@@ -524,7 +524,7 @@ bool GfxIsGPUBusy(void)
  *  false if an error happened, true otherwise.
  *
  * **********************************************************************/
-bool GfxSpriteFromFile(char* fname, GsSprite * spr)
+bool GfxSpriteFromFile(char* fname, GsSprite* spr)
 {
 	GsImage gsi;
 
@@ -611,7 +611,7 @@ bool GfxIsInsideScreenArea(short x, short y, short w, short h)
 
 /* **********************************************************************
  *
- * @name: bool GfxIsSpriteInsideScreenArea(GsSprite * spr)
+ * @name: bool GfxIsSpriteInsideScreenArea(GsSprite* spr)
  *
  * @author: Xavier Del Campo
  *
@@ -619,7 +619,7 @@ bool GfxIsInsideScreenArea(short x, short y, short w, short h)
  *  true if sprite is inside screen area, false otherwise.
  *
  * **********************************************************************/
-bool GfxIsSpriteInsideScreenArea(GsSprite * spr)
+bool GfxIsSpriteInsideScreenArea(GsSprite* spr)
 {
 	return GfxIsInsideScreenArea(spr->x, spr->y, spr->w, spr->h);
 }
@@ -809,7 +809,7 @@ bool Gfx2HzFlash(void)
 	return five_hundred_ms_show;
 }
 
-bool GfxTPageOffsetFromVRAMPosition(GsSprite * spr, short x, short y)
+bool GfxTPageOffsetFromVRAMPosition(GsSprite* spr, short x, short y)
 {
 	if (	(x >= VRAM_W) || (x < 0) || (y >= VRAM_H) || (y < 0) )
 	{

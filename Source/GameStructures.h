@@ -9,6 +9,7 @@
 #define GAME_MAX_CHARACTERS 8
 #define GAME_MAX_PARKING 32
 #define GAME_MAX_RWY_LENGTH 16
+#define GAME_MAX_MAP_SIZE 0x400
 #define CHEAT_ARRAY_SIZE 16
 #define AIRCRAFT_MAX_TARGETS 48
 #define PLAYER_MAX_WAYPOINTS AIRCRAFT_MAX_TARGETS
@@ -77,6 +78,15 @@ typedef struct t_cartpos
 	short x;
 	short y;
 }TYPE_CARTESIAN_POS;
+
+typedef struct t_tileData
+{
+    bool ShowTile;
+    TYPE_CARTESIAN_POS CartPos;
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+}TYPE_TILE_DATA;
 
 typedef struct t_flightData
 {
@@ -192,14 +202,20 @@ typedef struct
 	uint8_t UnboardingSequenceIdx;
 	// Show passengers left
 	uint8_t PassengersLeftSelectedAircraft;
+    // Lookup tables defined on GameRenderTerrainPrecalculations() to be later used on
+    // GameRenderTerrain().
+    TYPE_TILE_DATA TileData[GAME_MAX_MAP_SIZE];
+    // Player camera instance.
+    TYPE_CAMERA Camera;
+    // Array of tiles which will change their RGB values when displayed under certain player states.
+    uint16_t RwyArray[GAME_MAX_RWY_LENGTH];
 
+    // Pad callbacks.
 	bool	(*PadKeyPressed_Callback)(unsigned short);
 	bool	(*PadKeyReleased_Callback)(unsigned short);
 	bool	(*PadKeySinglePress_Callback)(unsigned short);
 	bool	(*PadDirectionKeyPressed_Callback)(void);
 	unsigned short	(*PadLastKeySinglePressed_Callback)(void);
-	TYPE_CAMERA Camera;
-    uint16_t RwyArray[GAME_MAX_RWY_LENGTH];
 }TYPE_PLAYER;
 
 typedef enum t_fontflags

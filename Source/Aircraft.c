@@ -65,7 +65,7 @@ static void* GameFileDest[] = { (GsSprite*)&ArrowSpr                    };
 static uint8_t AircraftFlightDataIdx_HashTable[GAME_MAX_AIRCRAFT];
 
 static const fix16_t AircraftSpeedsTable[] = {	[AIRCRAFT_SPEED_IDLE] = 0,
-												[AIRCRAFT_SPEED_GROUND] = 0x6666,
+												[AIRCRAFT_SPEED_GROUND] = 0x9999,
 												[AIRCRAFT_SPEED_TAKEOFF] = 0x20000,
 												[AIRCRAFT_SPEED_FINAL] = 0x10000,
 												[AIRCRAFT_SPEED_FINAL_Z] = 0x4000	};

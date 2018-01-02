@@ -15,8 +15,9 @@
  * *************************************/
 void CameraInit(TYPE_PLAYER* ptrPlayer);
 void CameraHandler(TYPE_PLAYER* ptrPlayer);
-void CameraApplyCoordinatesToSprite(TYPE_PLAYER* ptrPlayer, GsSprite * spr);
-void CameraApplyCoordinatesToRectangle(TYPE_PLAYER* ptrPlayer, GsRectangle * rect);
+void CameraApplyCoordinatesToSprite(TYPE_PLAYER* ptrPlayer, GsSprite* spr);
+void CameraApplyCoordinatesToRectangle(TYPE_PLAYER* ptrPlayer, GsRectangle* rect);
+void CameraApplyCoordinatesToCartesianPos(TYPE_PLAYER* ptrPlayer, TYPE_CARTESIAN_POS* pos);
 TYPE_ISOMETRIC_POS CameraGetIsoPos(TYPE_PLAYER* ptrPlayer);
 void CameraMoveToIsoPos(TYPE_PLAYER* ptrPlayer, TYPE_ISOMETRIC_POS IsoPos);
 

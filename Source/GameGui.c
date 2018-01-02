@@ -301,6 +301,23 @@ void GameGuiInit(void)
 
     ShowAircraftPassengersTimer = TimerCreate(20, true, GameGuiClearPassengersLeft);
 
+    // Prepare RGB data and (X,Y) coordinates for aircraft
+    // data list request rectangle.
+    AircraftDataGPoly4.r[0] = AIRCRAFT_DATA_GSGPOLY4_R0;
+    AircraftDataGPoly4.r[1] = AIRCRAFT_DATA_GSGPOLY4_R1;
+    AircraftDataGPoly4.r[2] = AIRCRAFT_DATA_GSGPOLY4_R2;
+    AircraftDataGPoly4.r[3] = AIRCRAFT_DATA_GSGPOLY4_R3;
+
+    AircraftDataGPoly4.g[0] = AIRCRAFT_DATA_GSGPOLY4_G0;
+    AircraftDataGPoly4.g[1] = AIRCRAFT_DATA_GSGPOLY4_G1;
+    AircraftDataGPoly4.g[2] = AIRCRAFT_DATA_GSGPOLY4_G2;
+    AircraftDataGPoly4.g[3] = AIRCRAFT_DATA_GSGPOLY4_G3;
+
+    AircraftDataGPoly4.b[0] = AIRCRAFT_DATA_GSGPOLY4_B0;
+    AircraftDataGPoly4.b[1] = AIRCRAFT_DATA_GSGPOLY4_B1;
+    AircraftDataGPoly4.b[2] = AIRCRAFT_DATA_GSGPOLY4_B2;
+    AircraftDataGPoly4.b[3] = AIRCRAFT_DATA_GSGPOLY4_B3;
+
     slowScore = 0;
 
     GameGuiBubbleShowFlag = false;
@@ -461,23 +478,6 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 
     if (ptrPlayer->ShowAircraftData != false)
     {
-        // Prepare RGB data and (X,Y) coordinates for aircraft
-        // data list request rectangle.
-        AircraftDataGPoly4.r[0] = AIRCRAFT_DATA_GSGPOLY4_R0;
-        AircraftDataGPoly4.r[1] = AIRCRAFT_DATA_GSGPOLY4_R1;
-        AircraftDataGPoly4.r[2] = AIRCRAFT_DATA_GSGPOLY4_R2;
-        AircraftDataGPoly4.r[3] = AIRCRAFT_DATA_GSGPOLY4_R3;
-
-        AircraftDataGPoly4.g[0] = AIRCRAFT_DATA_GSGPOLY4_G0;
-        AircraftDataGPoly4.g[1] = AIRCRAFT_DATA_GSGPOLY4_G1;
-        AircraftDataGPoly4.g[2] = AIRCRAFT_DATA_GSGPOLY4_G2;
-        AircraftDataGPoly4.g[3] = AIRCRAFT_DATA_GSGPOLY4_G3;
-
-        AircraftDataGPoly4.b[0] = AIRCRAFT_DATA_GSGPOLY4_B0;
-        AircraftDataGPoly4.b[1] = AIRCRAFT_DATA_GSGPOLY4_B1;
-        AircraftDataGPoly4.b[2] = AIRCRAFT_DATA_GSGPOLY4_B2;
-        AircraftDataGPoly4.b[3] = AIRCRAFT_DATA_GSGPOLY4_B3;
-
         AircraftDataGPoly4.attribute |= ENABLE_TRANS | TRANS_MODE(0);
 
         if (GameTwoPlayersActive() != false)

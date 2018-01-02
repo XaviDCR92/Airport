@@ -40,16 +40,22 @@ void CameraInit(TYPE_PLAYER* ptrPlayer)
     Camera_Max_Y_Offset = GameGetLevelColumns() * TILE_SIZE_H;
 }
 
-void CameraApplyCoordinatesToSprite(TYPE_PLAYER* ptrPlayer, GsSprite * spr)
+void CameraApplyCoordinatesToSprite(TYPE_PLAYER* ptrPlayer, GsSprite* spr)
 {
 	spr->x += (short)ptrPlayer->Camera.X_Offset;
 	spr->y += (short)ptrPlayer->Camera.Y_Offset;
 }
 
-void CameraApplyCoordinatesToRectangle(TYPE_PLAYER* ptrPlayer, GsRectangle * rect)
+void CameraApplyCoordinatesToRectangle(TYPE_PLAYER* ptrPlayer, GsRectangle* rect)
 {
 	rect->x += (short)ptrPlayer->Camera.X_Offset;
 	rect->y += (short)ptrPlayer->Camera.Y_Offset;
+}
+
+void CameraApplyCoordinatesToCartesianPos(TYPE_PLAYER* ptrPlayer, TYPE_CARTESIAN_POS* pos)
+{
+    pos->x += (short)ptrPlayer->Camera.X_Offset;
+    pos->y += (short)ptrPlayer->Camera.Y_Offset;
 }
 
 void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer)
