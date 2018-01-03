@@ -220,7 +220,6 @@ static GsSprite GameMouseSpr;
 static GsSprite GameBuildingSpr;
 static GsSprite CityBg1Spr;
 
-
 static uint16_t GameRwy[GAME_MAX_RUNWAYS];
 static TYPE_FLIGHT_DATA FlightData;
 static uint16_t GameUsedRwy[GAME_MAX_RUNWAYS];
@@ -303,7 +302,6 @@ bool GameFinishedFlag;
  * @remarks:
  *
  * ***************************************************************************************/
-
 void Game(TYPE_GAME_CONFIGURATION* pGameCfg)
 {
 	TwoPlayersActive = pGameCfg->TwoPlayers;
@@ -346,7 +344,6 @@ void Game(TYPE_GAME_CONFIGURATION* pGameCfg)
  *  True if game has to be exitted, false otherwise.
  *
  * ***************************************************************************************/
-
 bool GameExit(void)
 {
 	//Serial_printf("GameFinishedFlag...\n");
@@ -388,7 +385,6 @@ bool GameExit(void)
  * @remarks:
  *
  * ***************************************************************************************/
-
 bool GamePause(void)
 {
 	TYPE_PLAYER* ptrPlayer;
@@ -440,7 +436,6 @@ bool GamePause(void)
  *  Tilesets and buildings are only loaded on first game. Then, only PLT is loaded.
  *
  * ***************************************************************************************/
-
 void GameInit(TYPE_GAME_CONFIGURATION* pGameCfg)
 {
 	uint8_t i;
@@ -602,7 +597,6 @@ void GameInit(TYPE_GAME_CONFIGURATION* pGameCfg)
  *
  *
  * ***************************************************************************************/
-
 void GameBuildingsInit(void)
 {
 	enum
@@ -739,7 +733,6 @@ void GameBuildingsInit(void)
  *  See PSX_PollPad(), defined on psx.h, and Pad module for further information.
  *
  * ***************************************************************************************/
-
 void GameEmergencyMode(void)
 {
 	uint8_t i;
@@ -841,7 +834,6 @@ void GameEmergencyMode(void)
  * @remarks:
  *
  * ***************************************************************************************/
-
 void GameGetAircraftTilemap(uint8_t i)
 {
 	uint16_t tileNr;
@@ -886,7 +878,6 @@ void GameGetAircraftTilemap(uint8_t i)
  *  for all CPU-intensive tasks.
  *
  * ***************************************************************************************/
-
 void GameCalculations(void)
 {
 	uint8_t i;
@@ -938,7 +929,6 @@ void GameCalculations(void)
  * @remarks:
  *
  * ***************************************************************************************/
-
 void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	ptrPlayer->SelectedTile = 0;	// Reset selected tile if no states
@@ -954,6 +944,11 @@ void GamePlayerHandler(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 		TYPE_ISOMETRIC_POS IsoPos = AircraftGetIsoPos(GameAircraftCollisionIdx);
 		CameraMoveToIsoPos(ptrPlayer, IsoPos);
 	}
+
+    if (System1SecondTick() != false)
+    {
+        GameGuiCalculateNextAircraftTime(ptrPlayer, ptrFlightData);
+    }
 
 	GameStateUnboarding(ptrPlayer, ptrFlightData);
 	GameStateLockTarget(ptrPlayer, ptrFlightData);
@@ -1080,8 +1075,6 @@ void GameGraphics(void)
 		GfxIncreaseGlobalLuminance(1);
 	}
 
-	//~ GsSortCls(0,0,GfxGetGlobalLuminance() >> 1);
-
 	while (GsIsDrawing());
 
 	for (i = 0; i < MAX_PLAYERS ; i++)
@@ -1113,6 +1106,8 @@ void GameGraphics(void)
 			GameRenderBuildingAircraft(ptrPlayer);
 
 			GameGuiAircraftList(ptrPlayer, &FlightData);
+
+            GameGuiShowPassengersLeft(ptrPlayer);
 
 			GameDrawMouse(ptrPlayer);
 
@@ -1709,7 +1704,6 @@ void GameRenderTerrainPrecalculations(TYPE_PLAYER* ptrPlayer)
                                     TILE_SIZE,
                                     TILE_SIZE_H ) == false)
         {
-            ptrPlayer->TileData[i].ShowTile = false;
             continue;
         }
 
@@ -4061,18 +4055,12 @@ void GameActiveAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightD
 
 		if (ptrPlayer->ActiveAircraft > 1)
 		{
-			dprintf("currentFlightDataIdx = %d, lastFlightDataIdx = %d\n",
-					currentFlightDataIdx,
-					lastFlightDataIdx   );
 			if (currentFlightDataIdx != lastFlightDataIdx)
 			{
 				for (ptrPlayer->SelectedAircraft = 0; ptrPlayer->SelectedAircraft < FlightData.nAircraft; ptrPlayer->SelectedAircraft++)
 				{
 					if (ptrPlayer->ActiveAircraftList[ptrPlayer->SelectedAircraft] == lastFlightDataIdx)
 					{
-						dprintf("Recalculated ptrPlayer->SelectedAircraft from %d to %d.\n",
-								currentFlightDataIdx,
-								ptrPlayer->SelectedAircraft   );
 						break;
 					}
 				}

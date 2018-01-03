@@ -51,15 +51,18 @@ typedef enum t_aircraftSpeeds
 static TYPE_AIRCRAFT_DATA AircraftData[GAME_MAX_AIRCRAFT];
 static uint8_t AircraftIndex;
 static GsSprite AircraftSpr;
-static GsSprite ArrowSpr;
+static GsSprite UpDownArrowSpr;
+static GsSprite LeftRightArrowSpr;
 static TYPE_ISOMETRIC_POS AircraftCenterIsoPos;
 static TYPE_CARTESIAN_POS AircraftCenterPos;
 static char* AircraftLiveryNamesTable[] = {"PHX", NULL};
 static AIRCRAFT_LIVERY AircraftLiveryTable[] = {AIRCRAFT_LIVERY_0, AIRCRAFT_LIVERY_UNKNOWN};
 
-static const char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\ARROW.TIM;1"    };
+static const char* GameFileList[] = {	"cdrom:\\DATA\\SPRITES\\UDNARROW.TIM;1",
+                                        "cdrom:\\DATA\\SPRITES\\LFRARROW.TIM;1"    };
 
-static void* GameFileDest[] = { (GsSprite*)&ArrowSpr                    };
+static void* GameFileDest[] = { (GsSprite*)&UpDownArrowSpr,
+                                (GsSprite*)&LeftRightArrowSpr       };
 
 // Used to quickly link FlightData indexes against AircraftData indexes.
 static uint8_t AircraftFlightDataIdx_HashTable[GAME_MAX_AIRCRAFT];
@@ -503,38 +506,68 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx)
 
         if (GfxIsSpriteInsideScreenArea(&AircraftSpr) == false)
         {
+            bool showLRArrow = false;
+            bool showUPDNArrow = false;
             // When aircraft can't be shown on screen,
             // show an arrow indicating its position.
 
             if (AircraftSpr.x < 0)
             {
-                ArrowSpr.x = 0;
+                LeftRightArrowSpr.x = 0;
+                LeftRightArrowSpr.attribute |= H_FLIP;
+                showLRArrow = true;
             }
             else if (AircraftSpr.x > X_SCREEN_RESOLUTION)
             {
-                ArrowSpr.x = X_SCREEN_RESOLUTION - ArrowSpr.w;
-                ArrowSpr.mx = ArrowSpr.w >> 1;
-                ArrowSpr.my = ArrowSpr.h >> 1;
+                LeftRightArrowSpr.x = X_SCREEN_RESOLUTION - (LeftRightArrowSpr.w << 1);
+                LeftRightArrowSpr.attribute &= ~(H_FLIP);
+                showLRArrow = true;
             }
-            else
+            else if (AircraftSpr.y < 0)
             {
-                ArrowSpr.x = AircraftSpr.x;
-            }
-
-            if (AircraftSpr.y < 0)
-            {
-                ArrowSpr.y = 0;
+                UpDownArrowSpr.y = 0;
+                UpDownArrowSpr.attribute &= ~(V_FLIP);
+                showUPDNArrow = true;
             }
             else if (AircraftSpr.y > Y_SCREEN_RESOLUTION)
             {
-                ArrowSpr.y = Y_SCREEN_RESOLUTION;
-            }
-            else
-            {
-                ArrowSpr.y = AircraftSpr.y;
+                UpDownArrowSpr.y = Y_SCREEN_RESOLUTION - (UpDownArrowSpr.h);
+                UpDownArrowSpr.attribute |= V_FLIP;
+                showUPDNArrow = true;
             }
 
-            GfxSortSprite(&ArrowSpr);
+            if (showLRArrow != false)
+            {
+                LeftRightArrowSpr.y = AircraftSpr.y;
+
+                // First, saturate calculated Y values to {0, Y_SCREEN_RESOLUTION - LeftRightArrowSpr.h}.
+                if (LeftRightArrowSpr.y < 0)
+                {
+                    LeftRightArrowSpr.y = 0;
+                }
+                else if (LeftRightArrowSpr.y > (Y_SCREEN_RESOLUTION - LeftRightArrowSpr.h) )
+                {
+                    LeftRightArrowSpr.y = (Y_SCREEN_RESOLUTION - LeftRightArrowSpr.h);
+                }
+
+                GfxSortSprite(&LeftRightArrowSpr);
+            }
+            else if (showUPDNArrow != false)
+            {
+                UpDownArrowSpr.x = AircraftSpr.x;
+
+                // First, saturate calculated Y values to {0, Y_SCREEN_RESOLUTION - UpDownArrowSpr.h}.
+                if (UpDownArrowSpr.x < 0)
+                {
+                    UpDownArrowSpr.x = 0;
+                }
+                else if (UpDownArrowSpr.x > (X_SCREEN_RESOLUTION - (UpDownArrowSpr.w << 1) ) )
+                {
+                    UpDownArrowSpr.x = (UpDownArrowSpr.w << 1);
+                }
+
+                GfxSortSprite(&UpDownArrowSpr);
+            }
         }
 
     }

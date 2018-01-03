@@ -81,7 +81,7 @@ typedef struct t_cartpos
 
 typedef struct t_tileData
 {
-    bool ShowTile;
+	bool ShowTile;
     TYPE_CARTESIAN_POS CartPos;
     unsigned char r;
     unsigned char g;
@@ -209,6 +209,8 @@ typedef struct
     TYPE_CAMERA Camera;
     // Array of tiles which will change their RGB values when displayed under certain player states.
     uint16_t RwyArray[GAME_MAX_RWY_LENGTH];
+    // Remaining time for next aircraft (if any).
+    uint16_t NextAircraftTime;
 
     // Pad callbacks.
 	bool	(*PadKeyPressed_Callback)(unsigned short);

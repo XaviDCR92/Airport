@@ -367,6 +367,46 @@ bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer)
     return false;
 }
 
+
+/* ******************************************************************************************************
+ *
+ * @name: void GameGuiCalculateNextAircraftTime(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
+ *
+ * @author: Xavier Del Campo
+ *
+ * @brief:
+ *  Updates ptrPlayer->NextAircraftTime with next aircraft remaining time.
+ *
+ * ******************************************************************************************************/
+void GameGuiCalculateNextAircraftTime(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
+{
+    uint8_t i;
+    uint16_t minRemainingTime = 0;
+
+    for (i = 0; i < GAME_MAX_AIRCRAFT; i++)
+    {
+        if (    (ptrFlightData->State[i] == STATE_IDLE)
+                                &&
+                (   (ptrPlayer->FlightDirection & ptrFlightData->FlightDirection[i]) != 0)
+                                &&
+                (   (ptrFlightData->Hours[i] != 0)
+                                    ||
+                    (ptrFlightData->Minutes[i] != 0)    )   )
+        {
+            uint16_t seconds = (ptrFlightData->Hours[i] * 60) + (ptrFlightData->Minutes[i]);
+
+            if (    (minRemainingTime == 0)
+                                ||
+                    (seconds < minRemainingTime)    )
+            {
+                minRemainingTime = seconds;
+            }
+        }
+    }
+
+    ptrPlayer->NextAircraftTime = minRemainingTime;
+}
+
 /* **********************************************************************************************
  *
  * @name: void GameGuiActiveAircraftPage(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
@@ -470,6 +510,14 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 
     enum
     {
+        GAME_GUI_NEXT_AIRCRAFT_TIME_X = GAME_GUI_REMAINING_AIRCRAFT_X,
+        GAME_GUI_NEXT_AIRCRAFT_TIME_Y = GAME_GUI_REMAINING_AIRCRAFT_Y + 8,
+        GAME_GUI_NEXT_AIRCRAFT_TIME_X_2PLAYER = GAME_GUI_REMAINING_AIRCRAFT_X_2PLAYER - 6,
+        GAME_GUI_NEXT_AIRCRAFT_TIME_Y_2PLAYER = GAME_GUI_REMAINING_AIRCRAFT_Y_2PLAYER + 8,
+    };
+
+    enum
+    {
         AIRCRAFT_STOP_X = 128,
         AIRCRAFT_STOP_TEXT_X = AIRCRAFT_STOP_X + 32,
         AIRCRAFT_STOP_Y = AIRCRAFT_LOCK_TARGET_Y,
@@ -514,6 +562,12 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
                             GAME_GUI_REMAINING_AIRCRAFT_Y_2PLAYER,
                             "Rem. aircraft: %d",
                             ptrFlightData->nRemainingAircraft       );
+
+            FontPrintText(  &SmallFont,
+                            GAME_GUI_NEXT_AIRCRAFT_TIME_X_2PLAYER,
+                            GAME_GUI_NEXT_AIRCRAFT_TIME_Y_2PLAYER,
+                            "Next aircraft: %d sec",
+                            ptrPlayer->NextAircraftTime             );
         }
         else
         {
@@ -522,6 +576,12 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
                             GAME_GUI_REMAINING_AIRCRAFT_Y,
                             "Remaining aircraft: %d",
                             ptrFlightData->nRemainingAircraft       );
+
+            FontPrintText(  &SmallFont,
+                            GAME_GUI_NEXT_AIRCRAFT_TIME_X,
+                            GAME_GUI_NEXT_AIRCRAFT_TIME_Y,
+                            "Next aircraft: %d sec",
+                            ptrPlayer->NextAircraftTime             );
         }
 
         if (ptrPlayer->ActiveAircraft != 0)

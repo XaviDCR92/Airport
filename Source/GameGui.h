@@ -38,5 +38,7 @@ void GameGuiAircraftList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData
 bool GameGuiFinishedDialog(TYPE_PLAYER* ptrPlayer);
 void GameGuiAircraftCollision(TYPE_PLAYER* ptrPlayer);
 void GameGuiBubbleShow(void);
+void GameGuiShowPassengersLeft(TYPE_PLAYER* ptrPlayer);
+void GameGuiCalculateNextAircraftTime(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData);
 
 #endif //GAME_GUI_HEADER__
