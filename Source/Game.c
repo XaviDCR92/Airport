@@ -3968,6 +3968,9 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 					if (successful != false)
 					{
 						GameScore += SCORE_REWARD_FINISH_FLIGHT;
+
+                        // Add punctuation
+                        GameScore += FlightData.RemainingTime[idx] << 1;
 					}
 					else
 					{

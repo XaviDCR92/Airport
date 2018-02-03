@@ -87,6 +87,8 @@ static bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* ptrAicraft, TYPE_AIRCRAFT_DATA
 
 void AircraftInit(void)
 {
+    static bool firstLoad = true;
+
 	bzero(AircraftData, GAME_MAX_AIRCRAFT * sizeof(TYPE_AIRCRAFT_DATA));
 	AircraftIndex = 0;
 
@@ -113,10 +115,15 @@ void AircraftInit(void)
             AIRCRAFT_INVALID_IDX,
             sizeof(AircraftFlightDataIdx_HashTable)    );
 
-    LoadMenu(   GameFileList,
+    if (firstLoad != false)
+    {
+        firstLoad = false;
+
+        LoadMenu(   GameFileList,
                 GameFileDest,
                 sizeof(GameFileList) / sizeof(GameFileList[0]),
                 sizeof(GameFileDest) / sizeof(GameFileDest[0])  );
+    }
 }
 
 bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
