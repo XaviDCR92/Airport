@@ -27,7 +27,7 @@ CDROM_ROOT=$(PROJECT_DIR)/cdimg
 BIN_TARGET_PATH = $(PROJECT_DIR)/Bin
 
 #Uncomment this DEFINE below to use Airport together with OpenSend + QPSXSerial toolchain.
-DEFINE +=  -DSERIAL_INTERFACE
+#DEFINE +=  -DSERIAL_INTERFACE
 
 # PSXSDK tools definitions
 # ELF2EXE:

@@ -1062,7 +1062,7 @@ void GameGraphics(void)
 
 	SystemAcknowledgeFrame();
 
-	while ( (SystemRefreshNeeded() == false) || (GfxIsGPUBusy() != false) );
+	while ( (SystemRefreshNeeded() == false) || (GfxReadyForDMATransfer() == false) );
 
 	if (TwoPlayersActive != false)
 	{
@@ -1074,8 +1074,6 @@ void GameGraphics(void)
 		// Fading from black effect on startup.
 		GfxIncreaseGlobalLuminance(1);
 	}
-
-	while (GsIsDrawing());
 
 	for (i = 0; i < MAX_PLAYERS ; i++)
 	{
