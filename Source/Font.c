@@ -16,6 +16,21 @@
 #define FONT_DEFAULT_INIT_CHAR '!'
 
 /* *************************************
+ * 	Structs and enums
+ * *************************************/
+
+enum
+{
+	// We will use the most significant bit
+	// for internal purposes.
+
+	SQUARE_BTN_8BIT = 128,
+	CROSS_BTN_8BIT,
+	CIRCLE_BTN_8BIT,
+	TRIANGLE_BTN_8BIT
+};
+
+/* *************************************
  * 	Local Prototypes
  * *************************************/
 
@@ -88,6 +103,11 @@ void FontSetSize(TYPE_FONT * ptrFont, short size)
 	ptrFont->spr.h = ptrFont->char_h;
 }
 
+void FontSetMaxCharPerLine(TYPE_FONT* ptrFont, uint8_t max)
+{
+	ptrFont->max_ch_wrap = max;
+}
+
 void FontSetSpacing(TYPE_FONT* ptrFont, short spacing)
 {
     ptrFont->char_spacing = spacing;
@@ -101,7 +121,7 @@ void FontCyclic(void)
 void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 {
 	uint16_t i;
-	uint16_t line_count = 0;
+	uint8_t line_count = 0;
 	int result;
 	short orig_x = x;
 
@@ -133,7 +153,7 @@ void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 
 	for (i = 0; i < result ; i++)
 	{
-		char _ch = _internal_text[i];
+		unsigned char _ch = _internal_text[i];
 
 		if (_ch == '\0')
 		{
@@ -144,13 +164,73 @@ void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 		switch(_ch)
 		{
 			case ' ':
-				x += ptrFont->char_w;
+			{
+				bool linefeed_needed = false;
+
+				// Check if the next word fits on the same line
+				if ( (ptrFont->flags & FONT_WRAP_LINE) && (ptrFont->max_ch_wrap != 0) )
+				{
+					uint16_t j;
+					uint8_t aux_line_count = line_count;
+
+					for (j = i + 1; j < result; j++)
+					{
+						if (_internal_text[j] != ' ')
+						{
+							if (++aux_line_count >= ptrFont->max_ch_wrap)
+							{
+								line_count = 0;
+								x = orig_x;
+								y += ptrFont->char_h;
+								linefeed_needed = true;
+								break;
+							}
+						}
+						else
+						{
+							break;
+						}
+					}
+				}
+
+				if (linefeed_needed == false)
+				{
+					x += ptrFont->char_w;
+				}
+
 				continue;
+			}
 			case '\n':
 				x = orig_x;
 				y += ptrFont->char_h;
 			break;
+
+			case SQUARE_BTN_8BIT:
+				GfxDrawButton(x, y, PAD_SQUARE);
+
+				x += BUTTON_SIZE;
+			break;
+
+			case CIRCLE_BTN_8BIT:
+				GfxDrawButton(x, y, PAD_CIRCLE);
+
+				x += BUTTON_SIZE;
+			break;
+
+			case TRIANGLE_BTN_8BIT:
+				GfxDrawButton(x, y, PAD_TRIANGLE);
+
+				x += BUTTON_SIZE;
+			break;
+
+			case CROSS_BTN_8BIT:
+				GfxDrawButton(x, y, PAD_CROSS);
+
+				x += BUTTON_SIZE;
+			break;
+
 			default:
+
 				if ( (ptrFont->flags & FONT_WRAP_LINE) && (ptrFont->max_ch_wrap != 0) )
 				{
 					if (++line_count >= ptrFont->max_ch_wrap)

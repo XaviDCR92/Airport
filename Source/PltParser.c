@@ -5,12 +5,14 @@
 #include "PltParser.h"
 #include "System.h"
 #include "Game.h"
+#include "Message.h"
 
 /* *************************************
  * 	Defines
  * *************************************/
 
-#define LINE_MAX_CHARACTERS 100
+#define LINE_MAX_CHARACTERS MAX_MESSAGE_STR_SIZE
+#define MESSAGE_HEADER_STR	"MESSAGE"
 
 /* **************************************
  * 	Structs and enums					*
@@ -28,22 +30,12 @@ static void PltParserResetBuffers(TYPE_FLIGHT_DATA* ptrFlightData);
 
 bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 {
-    enum
-    {
-        DEPARTURE_ARRIVAL_INDEX = 0,
-        FLIGHT_NUMBER_INDEX,
-        PASSENGERS_INDEX,
-        HOURS_MINUTES_INDEX,
-        PARKING_INDEX,
-        REMAINING_TIME_INDEX
-    };
-
-    enum
-    {
-        PLT_HOUR_MINUTE_CHARACTERS = 2,
-        PLT_FIRST_LINE_CHARACTERS = 5,
-        PLT_COLON_POSITION = 2
-    };
+	enum
+	{
+		PLT_HOUR_MINUTE_CHARACTERS = 2,
+		PLT_FIRST_LINE_CHARACTERS = 5,
+		PLT_COLON_POSITION = 2
+	};
 
 	uint8_t i;
 	uint8_t j;
@@ -138,6 +130,15 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 		}
 		else
 		{
+			typedef enum t_lineType
+			{
+				MESSAGE_INFO,
+				AIRCRAFT_DATA
+			}TYPE_LINE;
+
+			TYPE_LINE tLine = AIRCRAFT_DATA; // Default value
+			TYPE_MESSAGE_DATA tMessage = {0};
+
 			// File header (initial game time) has already been read
 			strncpy(lineBuffer, buffer, LINE_MAX_CHARACTERS);
 
@@ -151,6 +152,25 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 			{
 				switch(i)
 				{
+					enum
+					{
+						DEPARTURE_ARRIVAL_INDEX = 0,
+						FLIGHT_NUMBER_INDEX,
+						PASSENGERS_INDEX,
+						HOURS_MINUTES_INDEX,
+						PARKING_INDEX,
+						REMAINING_TIME_INDEX
+					};
+
+					enum
+					{
+						MESSAGE_HEADER_INDEX = 0,
+						MESSAGE_TIMEOUT_INDEX,
+						MESSAGE_STR_INDEX
+					};
+
+					//case MESSAGE_HEADER_INDEX:
+						// Fall through
 					case DEPARTURE_ARRIVAL_INDEX:
 
 						if (strncmp(lineBufferPtr,"DEPARTURE",strlen("DEPARTURE") ) == 0)
@@ -163,21 +183,69 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 							ptrFlightData->FlightDirection[aircraftIndex] = ARRIVAL;
 							Serial_printf("Aircraft %d set to ARRIVAL.\n",aircraftIndex);
 						}
+						else if (strncmp(lineBufferPtr, MESSAGE_HEADER_STR, strlen(MESSAGE_HEADER_STR) ) == 0)
+						{
+							tLine = MESSAGE_INFO;
+						}
 						else
 						{
 							Serial_printf("Flight direction is not correct!\n");
 						}
 					break;
 
+					//case MESSAGE_TIMEOUT_INDEX:
+						// Fall through
 					case FLIGHT_NUMBER_INDEX:
-						strncpy(ptrFlightData->strFlightNumber[aircraftIndex],lineBufferPtr,GAME_MAX_CHARACTERS);
-						ptrFlightData->strFlightNumber[aircraftIndex][GAME_MAX_CHARACTERS - 1] = '\0';
-						Serial_printf("Aircraft %d flight number set to %s.\n",aircraftIndex,ptrFlightData->strFlightNumber[aircraftIndex]);
+
+						if (tLine == MESSAGE_INFO)
+						{
+							uint8_t Hours;
+							uint8_t Minutes;
+
+							if (	strlen(lineBufferPtr) != strlen("HH:MM") )
+							{
+								Serial_printf("Hour minute format is not correct! Read %s\n", lineBufferPtr);
+								break;
+							}
+
+							// Copy hour
+							strHour[0] = lineBufferPtr[0];
+							strHour[1] = lineBufferPtr[1];
+							// Copy minutes
+							strMinutes[0] = lineBufferPtr[3];
+							strMinutes[1] = lineBufferPtr[4];
+
+							Hours = (uint8_t)atoi(strHour);
+							Minutes = (uint8_t)atoi(strMinutes);
+
+							tMessage.Timeout = (uint32_t)(Hours * 60) + Minutes;
+
+							Serial_printf("Message timeout: %d seconds.\n", tMessage.Timeout);
+						}
+						else
+						{
+							strncpy(ptrFlightData->strFlightNumber[aircraftIndex],lineBufferPtr,GAME_MAX_CHARACTERS);
+							ptrFlightData->strFlightNumber[aircraftIndex][GAME_MAX_CHARACTERS - 1] = '\0';
+							Serial_printf("Aircraft %d flight number set to %s.\n",aircraftIndex,ptrFlightData->strFlightNumber[aircraftIndex]);
+						}
+
 					break;
 
+					// case MESSAGE_STR_INDEX:
+						// Fall through
 					case PASSENGERS_INDEX:
-						ptrFlightData->Passengers[aircraftIndex] = atoi(lineBufferPtr);
-						Serial_printf("Aircraft %d passengers set to %d.\n",aircraftIndex,ptrFlightData->Passengers[aircraftIndex]);
+						if (tLine == MESSAGE_INFO)
+						{
+							strncpy(tMessage.strMessage, lineBufferPtr, MAX_MESSAGE_STR_SIZE);
+							MessageCreate(&tMessage);
+
+							bzero(&tMessage, sizeof(tMessage));
+						}
+						else
+						{
+							ptrFlightData->Passengers[aircraftIndex] = atoi(lineBufferPtr);
+							Serial_printf("Aircraft %d passengers set to %d.\n",aircraftIndex,ptrFlightData->Passengers[aircraftIndex]);
+						}
 					break;
 
 					case PARKING_INDEX:
@@ -210,8 +278,8 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 						ptrFlightData->Minutes[aircraftIndex] = (uint8_t)atoi(strMinutes);
 
 						Serial_printf("Aircraft %d time set to %.2d:%.2d.\n",	aircraftIndex,
-																		ptrFlightData->Hours[aircraftIndex],
-																		ptrFlightData->Minutes[aircraftIndex]	);
+																				ptrFlightData->Hours[aircraftIndex],
+																				ptrFlightData->Minutes[aircraftIndex]	);
 					break;
 
 					case REMAINING_TIME_INDEX:
@@ -228,8 +296,11 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 				i++;
 			}
 
-			ptrFlightData->State[aircraftIndex] = STATE_IDLE;
-			aircraftIndex++;
+			if (tLine == AIRCRAFT_DATA)
+			{
+				ptrFlightData->State[aircraftIndex] = STATE_IDLE;
+				aircraftIndex++;
+			}
 		}
 
 		buffer = strtok_r(NULL,"\n",&pltBufferSavePtr);

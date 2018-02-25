@@ -23,6 +23,7 @@
 #define GFX_2HZ_FLASH			(1<<8)
 #define FULL_LUMINANCE			0xFF
 #define ROTATE_BIT_SHIFT        12 // 4096 = 2^12
+#define BUTTON_SIZE				16
 
 /* *************************************
  * 	Global prototypes
@@ -30,7 +31,7 @@
 
 void GfxInitDrawEnv(void);
 void GfxInitDispEnv(void);
-void GfxSetPrimitiveList(void);
+void GfxSetDefaultPrimitiveList(void);
 
 // Renders new scene. Use this function unless you know what you are doing!
 void GfxDrawScene(void);

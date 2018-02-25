@@ -104,7 +104,7 @@ void SystemInit(void)
 	//Set VBlank Handler for screen refresh
 	SetVBlankHandler(&ISR_SystemDefaultVBlank);
 	//Set Primitive List
-	GfxSetPrimitiveList();
+	GfxSetDefaultPrimitiveList();
 	// Init memory card
 	MemCardInit();
 	//Initial value for system_busy

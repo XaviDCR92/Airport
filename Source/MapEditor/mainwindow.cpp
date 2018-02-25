@@ -4,6 +4,8 @@
 #include <QGraphicsPixmapItem>
 #include <QInputDialog>
 
+#define DEFAULT_AIRPORT_NAME    QByteArray("Default Airport\0")
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -11,13 +13,13 @@ MainWindow::MainWindow(QWidget *parent) :
     selected_item(-1)
 {
     ui->setupUi(this);
-
-    ui->centralWidget->setWindowTitle("Airport Map Editor");
+    this->setWindowTitle(APP_NAME + " " + APP_VERSION_STRING);
 
     connect(ui->LoadMap_Btn,            SIGNAL(released()),                 this,   SLOT(onLoadMap()));
     connect(ui->CreateMap_Btn,          SIGNAL(released()),                 this,   SLOT(onCreateMap()));
     connect(ui->saveMap_Btn,            SIGNAL(released()),                 this,   SLOT(onSaveMap(void)));
     connect(ui->showNumbers_Checkbox,   SIGNAL(stateChanged(int)),          this,   SLOT(onShowNumbers(int)));
+    connect(ui->airportName_Label,      SIGNAL(textChanged(QString)),       this,   SLOT(onAirportNameModified(QString)));
 
     connect(gscene,                     SIGNAL(positionClicked(QPointF)),   this,   SLOT(onMapItemClicked(QPointF)));
     connect(gscene,                     SIGNAL(noItemSelected(void)),       this,   SLOT(onNoItemSelected(void)));
@@ -161,14 +163,17 @@ void MainWindow::onCreateMap(void)
         data.append((char)0x18);
     }
 
-    data.append("Default airport");
+    data.append(DEFAULT_AIRPORT_NAME);
+
+    for (int i = 0x04 + DEFAULT_AIRPORT_NAME.count(); i < 0x1C; i++)
+    {
+        data.append('\0');
+    }
 
     for (int i = (data.count() - 1); i < DATA_HEADER_SIZE; i++)
     {
         data.append(0xFF);
     }
-
-    qDebug() << data.count();
 
     int size_int = size.toInt(&ok, 10);
 
@@ -243,7 +248,13 @@ void MainWindow::onProcessMapFile(QByteArray data)
         return;
     }
 
-    ds.skipRawData(0x3B);
+    char airportName[0x1A];
+
+    ds.readRawData(airportName, sizeof(airportName) / sizeof(airportName[0]));
+
+    ui->airportName_Label->setText(QString(airportName));
+
+    ds.skipRawData(0x3B - 0x1A);
 
     gscene->clear();
     gscene->clearFocus();
@@ -414,6 +425,26 @@ void MainWindow::loadTilesetData(void)
             }
 
             tilesetFile.endGroup();
+        }
+    }
+}
+
+void MainWindow::onAirportNameModified(QString name)
+{
+    if (map_buffer.isEmpty() == true)
+    {
+        return;
+    }
+
+    for (int i = 0x04, j = 0; i < 0x1C; i++)
+    {
+        if (j < name.count() )
+        {
+            map_buffer[i] = name.at(j++).toLatin1();
+        }
+        else
+        {
+            map_buffer[i] = '\0';
         }
     }
 }

@@ -9,6 +9,9 @@
 #include "mygraphicsscene.h"
 #include "ui_mainwindow.h"
 
+#define APP_NAME                    QString("Airport Map Editor")
+#define APP_VERSION_STRING          QString("0.2")
+
 #define TILE_SIZE           64
 #define DATA_HEADER_SIZE    0x3F
 #define TILE_MIRROR_FLAG    ((char) 0x80)
@@ -38,15 +41,16 @@ private:
     int selected_item;
     QHash<int, QString> tilesetData;
 
-protected slots:
+private slots:
     void onLoadMap(void);
     void onCreateMap(void);
-    void onProcessMapFile(QByteArray data);
+    void onProcessMapFile(QByteArray);
     void onMapItemClicked(QPointF);
     void onNoItemSelected(void);
     void onListItemSelected(void);
     void onSaveMap(void);
     void onShowNumbers(int);
+    void onAirportNameModified(QString);
 };
 
 #endif // MAINWINDOW_H

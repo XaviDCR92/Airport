@@ -27,6 +27,7 @@ void FontSetInitChar(TYPE_FONT * ptrFont, char c);
 void FontSetFlags(TYPE_FONT * ptrFont, FONT_FLAGS flags);
 void FontCyclic(void);
 void FontSetSpacing(TYPE_FONT* ptrFont, short spacing);
+void FontSetMaxCharPerLine(TYPE_FONT* ptrFont, uint8_t max);
 
 /* *************************************
  * 	Global variables

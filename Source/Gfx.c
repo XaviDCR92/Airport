@@ -26,8 +26,6 @@
 
 enum
 {
-	BUTTON_SIZE = 16,
-
 	BUTTON_CROSS_U = 48,
 	BUTTON_CROSS_V = 0,
 
@@ -82,7 +80,7 @@ GsSprite PSXButtons;
 /* *************************************
  * 	Local Prototypes
  * *************************************/
-
+void GfxSetPrimitiveList(unsigned int* ptrList);
 
 
 /* *************************************
@@ -95,6 +93,9 @@ static GsDrawEnv DrawEnv;
 static GsDispEnv DispEnv;
 // Primitive list (it contains all the graphical data for the GPU)
 static unsigned int prim_list[PRIMITIVE_LIST_SIZE];
+
+//Primitive list double buffering
+static unsigned int prim_list2[PRIMITIVE_LIST_SIZE];
 // Tells other modules whether data is being loaded to GPU
 static volatile bool gfx_busy;
 // Dictates (R,G,B) brigthness to all sprites silently
@@ -213,9 +214,14 @@ void GfxInitDispEnv(void)
  *  used internally by PSXSDK).
  *
  * **********************************************************************/
-void GfxSetPrimitiveList(void)
+void GfxSetPrimitiveList(unsigned int* ptrList)
 {
-	GsSetList(prim_list);
+	GsSetList(ptrList);
+}
+
+void GfxSetDefaultPrimitiveList(void)
+{
+	GfxSetPrimitiveList(prim_list);
 }
 
 /* **********************************************************************
@@ -278,11 +284,17 @@ bool GfxReadyForDMATransfer(void)
  * **********************************************************************/
 void GfxDrawScene(void)
 {
-    while (	(SystemRefreshNeeded() == false)
-				||
+	static unsigned int* ptrPrimList = prim_list;
+
+	ptrPrimList = ((void*)ptrPrimList == (void*)&prim_list)? prim_list2 : prim_list;
+
+	while (	(SystemRefreshNeeded() == false)
+						||
 			(GfxIsGPUBusy() != false)		);
 
 	GfxDrawScene_Fast();
+
+	GfxSetPrimitiveList(ptrPrimList);
 
 	SystemCyclicHandler();
 }

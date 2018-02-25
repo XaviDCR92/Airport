@@ -50,7 +50,7 @@ SRC_DIR = .
 OBJECTS = $(addprefix $(OBJ_DIR)/,	main.o System.o Menu.o Gfx.o Pad.o MainMenuBtnAni.o			\
 									LoadMenu.o GameGui.o Sfx.o Camera.o EndAnimation.o			\
 									PSXSDKIntro.o PltParser.o Game.o Font.o MemCard.o			\
-									Aircraft.o Serial.o Timer.o)
+									Aircraft.o Serial.o Timer.o Message.o)
 
 # Source dependencies:
 DEPS = $(OBJECTS:.o=.d)
@@ -76,7 +76,7 @@ SOUND_OBJECTS = $(addprefix $(OBJ_SOUNDS_DIR)/,	BELL.VAG		\
 # Level objects:
 SRC_LEVELS_DIR = $(PROJECT_DIR)/Levels
 OBJ_LEVELS_DIR = $(CDROM_ROOT)/DATA/LEVELS
-LEVEL_OBJECTS = $(addprefix $(OBJ_LEVELS_DIR)/, LEVEL1.LVL LEVEL2.LVL LEVEL2.PLT LEVEL1.PLT EASY.PLT)
+LEVEL_OBJECTS = $(addprefix $(OBJ_LEVELS_DIR)/, LEVEL1.LVL LEVEL2.LVL LEVEL2.PLT LEVEL1.PLT EASY.PLT TUTORIA1.PLT)
 
 # Sprite objects:
 BMP2TIM = bmp2tim

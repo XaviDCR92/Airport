@@ -12,6 +12,7 @@
 #include "EndAnimation.h"
 #include "Sfx.h"
 #include "Pad.h"
+#include "Message.h"
 
 /* *************************************
  * 	Defines
@@ -444,6 +445,9 @@ void GameInit(TYPE_GAME_CONFIGURATION* pGameCfg)
 
 	GameStartupFlag = true;
 
+	// Has to be initialized before loading *.PLT files inside LoadMenu().
+	MessageInit();
+
 	if (firstLoad != false)
 	{
 		firstLoad = false;
@@ -782,7 +786,7 @@ void GameEmergencyMode(void)
 
 			for (i = 0; i < MAX_PLAYERS; i++)
 			{
-				if (disconnected_players & (1<<i) )
+				if (disconnected_players & (1 << i) )
 				{
 					FontPrintText(  &SmallFont,
 									PAD_DISCONNECTED_TEXT_X,
@@ -803,11 +807,11 @@ void GameEmergencyMode(void)
 				if (PadXConnected[i]() == false)
 				{
 					enabled = true;
-					disconnected_players |= 1<<i;
+					disconnected_players |= 1 << i;
 				}
 				else
 				{
-					disconnected_players &= ~(1<<i);
+					disconnected_players &= ~(1 << i);
 				}
 			}
 		}
@@ -896,6 +900,7 @@ void GameCalculations(void)
 		GameGetAircraftTilemap(i);
 	}
 
+	MessageHandler();
 	AircraftHandler();
 	GameGuiCalculateSlowScore();
 
@@ -1057,12 +1062,11 @@ void GameClockFlights(uint8_t i)
 
 void GameGraphics(void)
 {
-	int i;
+	uint8_t i;
 	bool split_screen = false;
 
-	SystemAcknowledgeFrame();
-
-	while ( (SystemRefreshNeeded() == false) || (GfxReadyForDMATransfer() == false) );
+	// Caution: blocking function!
+	MessageRender();
 
 	if (TwoPlayersActive != false)
 	{
@@ -1113,8 +1117,8 @@ void GameGraphics(void)
 
 			if (split_screen != false)
 			{
-				GfxDrawScene_NoSwap();
-				while (GfxIsGPUBusy() != false);
+				//~ GfxDrawScene_NoSwap();
+				//~ while (GsIsDrawing() != false);
 			}
 		}
 	}
@@ -1136,7 +1140,7 @@ void GameGraphics(void)
 
 	if (split_screen != false)
 	{
-		GfxDrawScene_NoSwap();
+		//~ GfxDrawScene_NoSwap();
 	}
 
 	GfxDrawScene();
@@ -2739,8 +2743,6 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 	// Remember that ptrPlayer->SelectedAircraft contains an index to
 	// be used with ptrFlightData.
 
-	Serial_printf("aircraftIndex = %d\n",aircraftIndex);
-
 	if (ptrFlightData->State[aircraftIndex] == STATE_APPROACH)
 	{
         uint8_t j;
@@ -2763,7 +2765,6 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 		for (i = 0; i < GAME_MAX_RWY_LENGTH; i++)
 		{
 			rwyTiles[i] = GameLevelBuffer[rwyArray[i]];
-            dprintf("rwyTiles[%d] = 0x%02X\n", i, rwyTiles[i]);
 		}
 
         for (i = 0; (i < GAME_MAX_RWY_LENGTH) && (rwyExit == 0); i++)
@@ -2816,36 +2817,9 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 		targets[0] = rwyEntryData.rwyEntryTile;
 		targets[1] = targets[0] + rwyEntryData.rwyStep;
 
-		Serial_printf("Added the following targets = ");
-
-		for (i = 0; i < (sizeof(targets) / sizeof(targets[0])); i++)
-		{
-			Serial_printf("%d ", targets[i]);
-		}
-
-		Serial_printf("\n");
-
 		AircraftAddTargets(AircraftFromFlightDataIndex(aircraftIndex), targets);
 
 		ptrFlightData->State[aircraftIndex] = STATE_ENTERING_RWY;
-
-		/*uint16_t i;
-
-
-		i = rwyEntryData.rwyEntryTile;
-
-		DEBUG_PRINT_VAR(rwyEntryData.rwyEntryTile);
-		DEBUG_PRINT_VAR(rwyEntryData.rwyStep);
-
-		while (GameLevelBuffer[i] != TILE_RWY_START_1)
-		{
-			if (i > rwyEntryData.rwyStep)
-			{
-				i -= rwyEntryData.rwyStep;
-			}
-		}
-
-		GameGetSelectedRunwayArray(i);*/
 	}
 }
 
@@ -2905,11 +2879,9 @@ short GameGetYFromTile_short(uint16_t tile)
 
 	tile /= GameLevelColumns;
 
-	//retVal = (fix16_t)(tile << TILE_SIZE_BIT_SHIFT);
 	retVal = (tile << TILE_SIZE_BIT_SHIFT);
 
 	// Always point to tile center
-	//retVal += TILE_SIZE >> 1;
 	retVal += TILE_SIZE >> 1;
 
 	return retVal;
@@ -3804,14 +3776,10 @@ void GameGetRunwayEntryTile(uint8_t aircraftIdx, TYPE_RWY_ENTRY_DATA* ptrRwyEntr
 								&&
 				((i - ptrRwyEntry->rwyStep) < GameLevelSize ) )
 		{
-            DEBUG_PRINT_VAR(i);
 			i -= ptrRwyEntry->rwyStep;
 		}
 
 		ptrRwyEntry->rwyHeader = i;
-
-        DEBUG_PRINT_VAR(ptrRwyEntry->rwyHeader);
-        DEBUG_PRINT_VAR(ptrRwyEntry->rwyEntryTile);
 	}
 	else
 	{

@@ -20,7 +20,7 @@
  * 	Defines								*
  * *************************************/
 
-#define BUTTON_SIZE 64
+#define MAIN_MENU_BUTTON_SIZE 64
 #define SELECTED_BUTTON_LUMINANCE 0xC0
 
 /* **************************************
@@ -168,7 +168,11 @@ static const char* MainMenuFiles[] = {	"cdrom:\\DATA\\SPRITES\\MAINMENU.TIM;1"	,
 static const char* MainMenuLevelList[] = {  [LEVEL1] = "cdrom:\\DATA\\LEVELS\\LEVEL1.LVL;1"	,
                                             [LEVEL2] = "cdrom:\\DATA\\LEVELS\\LEVEL2.LVL;1"	};
 
-static const char* MainMenuLevel1Plt[] = {"cdrom:\\DATA\\LEVELS\\LEVEL1.PLT;1", "cdrom:\\DATA\\LEVELS\\EASY.PLT;1", NULL};
+static const char* MainMenuLevel1Plt[] = {	"cdrom:\\DATA\\LEVELS\\TUTORIA1.PLT;1",
+											"cdrom:\\DATA\\LEVELS\\LEVEL1.PLT;1",
+											"cdrom:\\DATA\\LEVELS\\EASY.PLT;1",
+											NULL};
+
 static const char* MainMenuLevel2Plt[] = {"cdrom:\\DATA\\LEVELS\\LEVEL2.PLT;1", NULL};
 
 static const char** MainMenuPltList[] = {[LEVEL1] = MainMenuLevel1Plt, [LEVEL2] = MainMenuLevel2Plt};
@@ -751,8 +755,8 @@ void MainMenuButtonHandler(void)
 
 void MainMenuDrawButton(TYPE_MMBtn * btn)
 {
-	MenuSpr.w = BUTTON_SIZE;
-	MenuSpr.h = BUTTON_SIZE;
+	MenuSpr.w = MAIN_MENU_BUTTON_SIZE;
+	MenuSpr.h = MAIN_MENU_BUTTON_SIZE;
 
 	if ( (btn->timer) < (MainMenuBtnAni_sz - 1) )
 	{
