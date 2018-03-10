@@ -31,7 +31,7 @@ typedef enum t_levelId
 {
     LEVEL1 = 0,
     LEVEL2,
-    MAX_LEVELS = LEVEL2
+    MAX_LEVELS
 }LEVEL_ID;
 
 typedef struct t_lvlpltdata
@@ -252,8 +252,8 @@ void MainMenuInit(void)
 
 	LoadMenu(	MainMenuFiles,
                 MainMenuDest,
-				sizeof(MainMenuFiles) / sizeof(char*) ,
-				sizeof(MainMenuDest) / sizeof(void*) );
+				sizeof (MainMenuFiles) / sizeof (char*) ,
+				sizeof (MainMenuDest) / sizeof (void*) );
 
 	MainMenuBtn[PLAY_BUTTON_INDEX].offset_u = PLAY_BUTTON_U_OFFSET;
 	MainMenuBtn[PLAY_BUTTON_INDEX].offset_v = PLAY_BUTTON_Y_OFFSET;
@@ -300,7 +300,7 @@ void MenuCheatInit(void)
 {
     TestCheat.Callback = &MenuTestCheat;
 	memset(TestCheat.Combination,0,CHEAT_ARRAY_SIZE);
-	//memcpy(myarray, (int [5]){a,b,c,d,e}, 5*sizeof(int));
+	//memcpy(myarray, (int [5]){a,b,c,d,e}, 5*sizeof (int));
 
 	memcpy(	TestCheat.Combination,
 			(unsigned short[CHEAT_ARRAY_SIZE])
@@ -308,7 +308,7 @@ void MenuCheatInit(void)
 				PAD_TRIANGLE, PAD_TRIANGLE, 0 , 0 ,
 				0, 0, 0, 0,
 				0, 0, 0, 0	} ,
-            sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
+            sizeof (unsigned short) * CHEAT_ARRAY_SIZE);
 
 	PadAddCheat(&TestCheat);
 
@@ -321,7 +321,7 @@ void MenuCheatInit(void)
 				PAD_L1, PAD_R1, 0 , 0 ,
 				0, 0, 0, 0,
 				0, 0, 0, 0	} ,
-            sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
+            sizeof (unsigned short) * CHEAT_ARRAY_SIZE);
 
 	PadAddCheat(&StackCheckCheat);
 
@@ -334,7 +334,7 @@ void MenuCheatInit(void)
 				PAD_CIRCLE, PAD_CIRCLE, PAD_TRIANGLE , PAD_TRIANGLE ,
 				PAD_L1, PAD_L1, PAD_R1, PAD_R1,
 				PAD_L2, PAD_L2, PAD_R2, PAD_R2	} ,
-            sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
+            sizeof (unsigned short) * CHEAT_ARRAY_SIZE);
 
     PadAddCheat(&DevMenuCheat);
 
@@ -347,7 +347,7 @@ void MenuCheatInit(void)
 				PAD_CIRCLE, PAD_CIRCLE, PAD_CIRCLE , PAD_CIRCLE ,
 				0, 0, 0, 0,
 				0, 0, 0, 0	} ,
-            sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
+            sizeof (unsigned short) * CHEAT_ARRAY_SIZE);
 
     PadAddCheat(&SerialCheat);
 }
@@ -443,7 +443,7 @@ void MainMenuRenderLevelList(void)
 
     GsGPoly4 levelListRect = {0};
     GsGPoly4 levelListSelectionRect = {0};
-    uint8_t i;
+    LEVEL_ID i;
 
     levelListRect.x[0] = LEVEL_LIST_RECT_X;
     levelListRect.x[1] = LEVEL_LIST_RECT_X + LEVEL_LIST_RECT_W;
@@ -506,26 +506,34 @@ void MainMenuRenderLevelList(void)
 
     levelListSelectionRect.attribute |= ENABLE_TRANS | TRANS_MODE(0);
 
-    for (i = 0; i < (sizeof(MainMenuLevelList) / sizeof(MainMenuLevelList[0])); i++)
+    for (i = LEVEL1; i < MAX_LEVELS; i++)
     {
         char baseName[32];
-        uint8_t j;
+        const size_t maxLength = sizeof (baseName) / sizeof (baseName[0]);
 
         // Update "baseName" with file name + extension.
-        SystemGetFileBasename(MainMenuLevelList[i], baseName, sizeof(baseName) / sizeof(baseName[0]));
+        SystemGetFileBasename(MainMenuLevelList[i], baseName, maxLength);
 
         FontPrintText(&SmallFont, LEVEL_LIST_TEXT_X, LEVEL_LIST_TEXT_Y + (i << 3), baseName);
 
         if (i == SelectedLevel)
         {
-            for (j = 0; j < (sizeof(MainMenuPltList) / sizeof(MainMenuPltList[0])); j++)
+			const char** ptrPltLevelArray;
+			size_t j;
+
+            for (ptrPltLevelArray = MainMenuPltList[i], j = 0; *ptrPltLevelArray != NULL; ptrPltLevelArray++, j++)
             {
-                if (MainMenuPltList[i][j] != NULL)
+				const char* strPltLevel = *ptrPltLevelArray;
+
+                if (strPltLevel != NULL)
                 {
                     // Update "baseName" with file name + extension.
-                    SystemGetFileBasename(MainMenuPltList[i][j], baseName, sizeof(baseName) / sizeof(baseName[0]));
+                    SystemGetFileBasename(strPltLevel, baseName, maxLength);
 
-                    FontPrintText(&SmallFont, LEVEL_LIST_PLT_TEXT_X, LEVEL_LIST_PLT_TEXT_Y + (j << 3), baseName);
+                    FontPrintText(	&SmallFont,
+									LEVEL_LIST_PLT_TEXT_X,
+									LEVEL_LIST_PLT_TEXT_Y + (j << 3),
+									baseName	);
                 }
             }
         }
@@ -572,7 +580,7 @@ void MainMenuRestoreInitValues(void)
     SelectedLevel = LEVEL1;
     SelectedPlt = 0;
 
-    memset(&GameCfg, 0, sizeof(TYPE_GAME_CONFIGURATION));
+    memset(&GameCfg, 0, sizeof (TYPE_GAME_CONFIGURATION));
 
     for (i = 0; i < MAIN_MENU_BUTTONS_MAX; i++)
     {
@@ -656,7 +664,7 @@ void MainMenuButtonHandler(void)
             {
                 if (isLevelSelected == false)
                 {
-                    if (SelectedLevel < MAX_LEVELS)
+                    if (SelectedLevel < (MAX_LEVELS - 1))
                     {
                         SelectedLevel++;
                         SelectedPlt = 0;

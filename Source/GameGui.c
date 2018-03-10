@@ -266,8 +266,8 @@ void GameGuiInit(void)
 
         LoadMenu(   GameFileList,
                     GameFileDest,
-                    sizeof(GameFileList) / sizeof(char*),
-                    sizeof(GameFileDest) /sizeof(void*) );
+                    sizeof (GameFileList) / sizeof (char*),
+                    sizeof (GameFileDest) /sizeof (void*) );
     }
 
     PauseRect.x[0] = PAUSE_DIALOG_X;

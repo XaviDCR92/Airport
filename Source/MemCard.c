@@ -173,7 +173,7 @@ void MemCardInit(void)
 		}
 	}
 
-	bzero((TYPE_MEMCARD_ERRORS*)&MemCardErrors, sizeof(TYPE_MEMCARD_ERRORS) );
+	bzero((TYPE_MEMCARD_ERRORS*)&MemCardErrors, sizeof (TYPE_MEMCARD_ERRORS) );
 }
 
 void ISR_MemCardDataHandling(void)
@@ -290,7 +290,7 @@ void ISR_MemCardDataHandling(void)
 
 void MemCardResetBlockData(TYPE_BLOCK_DATA * ptrBlockData)
 {
-	bzero((TYPE_BLOCK_DATA*)ptrBlockData, sizeof(TYPE_BLOCK_DATA));
+	bzero((TYPE_BLOCK_DATA*)ptrBlockData, sizeof (TYPE_BLOCK_DATA));
 
 	ptrBlockData->BlockCount = FIRST_OR_ONLY_BLOCK;
 
@@ -545,7 +545,7 @@ bool MemCardGetIconFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 				Serial_printf("\tIcon %d out of %d\n",i, ptrBlockData->IconNumber);
 				buffer_contents = 0;
 				sector = initial_sector + i;
-				memset(DataBuffer, 0, MEMCARD_SECTOR_SIZE * sizeof(uint8_t) );
+				memset(DataBuffer, 0, MEMCARD_SECTOR_SIZE * sizeof (uint8_t) );
 
 				if (MemCardReadSector(ptrBlockData, sector) == false)
 				{
@@ -946,8 +946,8 @@ TYPE_BLOCK_DATA * MemCardShowMap(void)
 		return false;
 	}
 
-	bzero((GsRectangle*)&MemCardMapDialog, sizeof(GsRectangle));
-	bzero((GsRectangle*)&emptyBlockRect, sizeof(GsRectangle));
+	bzero((GsRectangle*)&MemCardMapDialog, sizeof (GsRectangle));
+	bzero((GsRectangle*)&emptyBlockRect, sizeof (GsRectangle));
 
 	emptyBlockRect.attribute |= ENABLE_TRANS | TRANS_MODE(1);
 

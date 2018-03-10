@@ -30,7 +30,7 @@ static uint8_t MessageIdx;
 
 void MessageInit(void)
 {
-	bzero(tMessageFIFO, sizeof(tMessageFIFO));
+	bzero(tMessageFIFO, sizeof (tMessageFIFO));
 	MessageIdx = NO_MESSAGE;
 }
 
@@ -44,7 +44,7 @@ bool MessageCreate(TYPE_MESSAGE_DATA* ptrMessage)
 
 		if (m->used == false)
 		{
-			memcpy(m, ptrMessage, sizeof(TYPE_MESSAGE_DATA));
+			memcpy(m, ptrMessage, sizeof (TYPE_MESSAGE_DATA));
 
 			m->used = true;
 

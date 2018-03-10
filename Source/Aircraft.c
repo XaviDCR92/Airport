@@ -89,7 +89,7 @@ void AircraftInit(void)
 {
     static bool firstLoad = true;
 
-	bzero(AircraftData, GAME_MAX_AIRCRAFT * sizeof(TYPE_AIRCRAFT_DATA));
+	bzero(AircraftData, GAME_MAX_AIRCRAFT * sizeof (TYPE_AIRCRAFT_DATA));
 	AircraftIndex = 0;
 
 	AircraftSpr.x = 0;
@@ -113,7 +113,7 @@ void AircraftInit(void)
 
     memset( AircraftFlightDataIdx_HashTable,
             AIRCRAFT_INVALID_IDX,
-            sizeof(AircraftFlightDataIdx_HashTable)    );
+            sizeof (AircraftFlightDataIdx_HashTable)    );
 
     if (firstLoad != false)
     {
@@ -121,8 +121,8 @@ void AircraftInit(void)
 
         LoadMenu(   GameFileList,
                 GameFileDest,
-                sizeof(GameFileList) / sizeof(GameFileList[0]),
-                sizeof(GameFileDest) / sizeof(GameFileDest[0])  );
+                sizeof (GameFileList) / sizeof (GameFileList[0]),
+                sizeof (GameFileDest) / sizeof (GameFileDest[0])  );
     }
 }
 
@@ -141,7 +141,7 @@ bool AircraftAddNew(	TYPE_FLIGHT_DATA* ptrFlightData,
 		return false;
 	}
 
-	memcpy(ptrAircraft->Target, targets, sizeof(uint16_t) * AIRCRAFT_MAX_TARGETS);
+	memcpy(ptrAircraft->Target, targets, sizeof (uint16_t) * AIRCRAFT_MAX_TARGETS);
 
 	ptrAircraft->TargetIdx = 0;
 	ptrAircraft->Livery = AircraftLiveryFromFlightNumber(ptrFlightData->strFlightNumber[FlightDataIndex]);
@@ -237,7 +237,7 @@ AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char* strFlightNumber)
 	int32_t liveryIndex;
 	char strLivery[4];
 
-	memset(strLivery, 0, 4 * sizeof(char) );
+	memset(strLivery, 0, 4 * sizeof (char) );
 
 	strncpy(strLivery, strFlightNumber, 3);
 
@@ -795,7 +795,7 @@ TYPE_ISOMETRIC_POS AircraftGetIsoPos(uint8_t FlightDataIdx)
 
 void AircraftAddTargets(TYPE_AIRCRAFT_DATA* ptrAircraft, uint16_t* targets)
 {
-	memcpy(ptrAircraft->Target, targets, sizeof(uint16_t) * AIRCRAFT_MAX_TARGETS);
+	memcpy(ptrAircraft->Target, targets, sizeof (uint16_t) * AIRCRAFT_MAX_TARGETS);
 	ptrAircraft->TargetIdx = 0;
 }
 

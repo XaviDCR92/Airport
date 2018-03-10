@@ -454,14 +454,14 @@ void GameInit(TYPE_GAME_CONFIGURATION* pGameCfg)
 
 		LoadMenu(	GameFileList,
 					GameFileDest,
-					sizeof(GameFileList) / sizeof(char*),
-					sizeof(GameFileDest) /sizeof(void*)	);
+					sizeof (GameFileList) / sizeof (char*),
+					sizeof (GameFileDest) /sizeof (void*)	);
 	}
 
 	LoadMenu(   &pGameCfg->PLTPath,
 				GamePltDest,
-				sizeof(char),
-				sizeof(GamePltDest) / sizeof(GamePltDest[0]) );
+				sizeof (char),
+				sizeof (GamePltDest) / sizeof (GamePltDest[0]) );
 
 	GameLoadLevel(pGameCfg->LVLPath);
 
@@ -469,9 +469,9 @@ void GameInit(TYPE_GAME_CONFIGURATION* pGameCfg)
 
 	GameBuildingsInit();
 
-	memset(GameRwy, 0, GAME_MAX_RUNWAYS * sizeof(uint16_t) );
+	memset(GameRwy, 0, GAME_MAX_RUNWAYS * sizeof (uint16_t) );
 
-	memset(GameUsedRwy, 0, GAME_MAX_RUNWAYS * sizeof(uint16_t) );
+	memset(GameUsedRwy, 0, GAME_MAX_RUNWAYS * sizeof (uint16_t) );
 
 	PlayerData[PLAYER_ONE].Active = true;
 	PlayerData[PLAYER_ONE].PadKeyPressed_Callback = &PadOneKeyPressed;
@@ -490,8 +490,8 @@ void GameInit(TYPE_GAME_CONFIGURATION* pGameCfg)
     PlayerData[PLAYER_ONE].LockTarget = false;
     PlayerData[PLAYER_ONE].Unboarding = false;
 
-	memset(PlayerData[PLAYER_ONE].UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS * sizeof(unsigned short) );
-    memset(PlayerData[PLAYER_ONE].TileData, 0, GAME_MAX_MAP_SIZE * sizeof(TYPE_TILE_DATA));
+	memset(PlayerData[PLAYER_ONE].UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS * sizeof (unsigned short) );
+    memset(PlayerData[PLAYER_ONE].TileData, 0, GAME_MAX_MAP_SIZE * sizeof (TYPE_TILE_DATA));
 
 	PlayerData[PLAYER_TWO].Active = TwoPlayersActive? true : false;
 
@@ -513,8 +513,8 @@ void GameInit(TYPE_GAME_CONFIGURATION* pGameCfg)
         PlayerData[PLAYER_TWO].LockTarget = false;
         PlayerData[PLAYER_TWO].Unboarding = false;
 
-		memset(PlayerData[PLAYER_TWO].UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS * sizeof(unsigned short) );
-        memset(PlayerData[PLAYER_TWO].TileData, 0, GAME_MAX_MAP_SIZE * sizeof(TYPE_TILE_DATA));
+		memset(PlayerData[PLAYER_TWO].UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS * sizeof (unsigned short) );
+        memset(PlayerData[PLAYER_TWO].TileData, 0, GAME_MAX_MAP_SIZE * sizeof (TYPE_TILE_DATA));
 
 		// On 2-player mode, one player controls departure flights and
 		// other player controls arrival flights.
@@ -535,7 +535,7 @@ void GameInit(TYPE_GAME_CONFIGURATION* pGameCfg)
 		PlayerData[i].LockTarget = false;
 		PlayerData[i].SelectedAircraft = 0;
 		PlayerData[i].FlightDataPage = 0;
-		memset(&PlayerData[i].Waypoints, 0, sizeof(uint16_t) * PLAYER_MAX_WAYPOINTS);
+		memset(&PlayerData[i].Waypoints, 0, sizeof (uint16_t) * PLAYER_MAX_WAYPOINTS);
 		PlayerData[i].WaypointIdx = 0;
 		PlayerData[i].LastWaypointIdx = 0;
 	}
@@ -659,7 +659,7 @@ void GameBuildingsInit(void)
 		BUILDING_ATC_TOWER_ORIGIN_Y = 20,
 	};
 
-	memset(GameBuildingData, 0, sizeof(TYPE_BUILDING_DATA) );
+	memset(GameBuildingData, 0, sizeof (TYPE_BUILDING_DATA) );
 
 	GameBuildingData[BUILDING_GATE].IsoPos.x = BUILDING_GATE_OFFSET_X;
 	GameBuildingData[BUILDING_GATE].IsoPos.y = BUILDING_GATE_OFFSET_Y;
@@ -845,7 +845,7 @@ void GameGetAircraftTilemap(uint8_t i)
 
 	if (i == 0)
 	{
-		memset(GameAircraftTilemap, FLIGHT_DATA_INVALID_IDX, sizeof(GameAircraftTilemap) );
+		memset(GameAircraftTilemap, FLIGHT_DATA_INVALID_IDX, sizeof (GameAircraftTilemap) );
 	}
 
 	if (FlightData.State[i] == STATE_IDLE)
@@ -1276,7 +1276,7 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* ptrPlayer)
 		uint8_t AircraftRenderOrder[GAME_MAX_AIRCRAFT_PER_TILE];
 		short Aircraft_Y_Data[GAME_MAX_AIRCRAFT_PER_TILE];
 
-		memset(AircraftRenderOrder, FLIGHT_DATA_INVALID_IDX, sizeof(AircraftRenderOrder) );
+		memset(AircraftRenderOrder, FLIGHT_DATA_INVALID_IDX, sizeof (AircraftRenderOrder) );
 
 		for (j = 0; j < GAME_MAX_AIRCRAFT_PER_TILE; j++)
 		{
@@ -1284,7 +1284,7 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* ptrPlayer)
 			Aircraft_Y_Data[j] = 0x7FFF;
 		}
 
-		//memset(Aircraft_Y_Data, 0x7F, GAME_MAX_AIRCRAFT_PER_TILE * sizeof(short));
+		//memset(Aircraft_Y_Data, 0x7F, GAME_MAX_AIRCRAFT_PER_TILE * sizeof (short));
 
 		for (j = 0; j < GAME_MAX_AIRCRAFT_PER_TILE; j++)
 		{
@@ -1497,7 +1497,7 @@ void GameLoadLevel(const char* path)
 
 	i = LEVEL_HEADER_SIZE;
 
-	memcpy(GameLevelBuffer, &ptrBuffer[i], GameLevelSize * sizeof(uint16_t)); // 2 bytes per tile
+	memcpy(GameLevelBuffer, &ptrBuffer[i], GameLevelSize * sizeof (uint16_t)); // 2 bytes per tile
 }
 
 /* ******************************************************************************************
@@ -1612,7 +1612,7 @@ void GameInitTileUVTable(void)
 {
     uint16_t i;
 
-    memset(GameLevelBuffer_UVData, 0, sizeof(GameLevelBuffer_UVData));
+    memset(GameLevelBuffer_UVData, 0, sizeof (GameLevelBuffer_UVData));
 
     for (i = 0 ; i < GameLevelSize; i++)
 	{
@@ -2099,7 +2099,7 @@ void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrF
 			// State exit.
 			ptrPlayer->SelectTaxiwayRunway = false;
 			// Clear waypoints array.
-			memset(ptrPlayer->Waypoints, 0, sizeof(uint16_t) * PLAYER_MAX_WAYPOINTS);
+			memset(ptrPlayer->Waypoints, 0, sizeof (uint16_t) * PLAYER_MAX_WAYPOINTS);
 			ptrPlayer->WaypointIdx = 0;
 			ptrPlayer->LastWaypointIdx = 0;
 		}
@@ -2141,7 +2141,7 @@ void GameStateSelectTaxiwayRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrF
 						Serial_printf("\n");
 
 						// Clear waypoints array.
-						memset(ptrPlayer->Waypoints, 0, sizeof(uint16_t) * PLAYER_MAX_WAYPOINTS);
+						memset(ptrPlayer->Waypoints, 0, sizeof (uint16_t) * PLAYER_MAX_WAYPOINTS);
 
 						// Reset state and auxiliar variables
 						ptrPlayer->WaypointIdx = 0;
@@ -2206,7 +2206,7 @@ void GameStateSelectTaxiwayParking(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptr
 			// State exit.
 			ptrPlayer->SelectTaxiwayParking = false;
 			// Clear waypoints array.
-			memset(ptrPlayer->Waypoints, 0, sizeof(uint16_t) * PLAYER_MAX_WAYPOINTS);
+			memset(ptrPlayer->Waypoints, 0, sizeof (uint16_t) * PLAYER_MAX_WAYPOINTS);
 			ptrPlayer->WaypointIdx = 0;
 			ptrPlayer->LastWaypointIdx = 0;
 		}
@@ -2253,7 +2253,7 @@ void GameStateSelectTaxiwayParking(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptr
 
 					ptrPlayer->SelectTaxiwayParking = false;
 					// Clear waypoints array.
-					memset(ptrPlayer->Waypoints, 0, sizeof(uint16_t) * PLAYER_MAX_WAYPOINTS);
+					memset(ptrPlayer->Waypoints, 0, sizeof (uint16_t) * PLAYER_MAX_WAYPOINTS);
 					ptrPlayer->WaypointIdx = 0;
 					ptrPlayer->LastWaypointIdx = 0;
 
@@ -2303,7 +2303,7 @@ void GameStateSelectRunway(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightDa
 		ptrPlayer->LockTarget = false;
 		ptrPlayer->LockedAircraft = FLIGHT_DATA_INVALID_IDX;
 
-		GameGetSelectedRunwayArray(GameRwy[ptrPlayer->SelectedRunway], ptrPlayer->RwyArray, sizeof(ptrPlayer->RwyArray));
+		GameGetSelectedRunwayArray(GameRwy[ptrPlayer->SelectedRunway], ptrPlayer->RwyArray, sizeof (ptrPlayer->RwyArray));
 
 		CameraMoveToIsoPos(ptrPlayer, IsoPos);
 
@@ -2486,7 +2486,7 @@ void GameSelectAircraftFromList(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 						ptrPlayer->SelectRunway = true;
 						GameGetRunwayEntryTile(AircraftIdx, &rwyEntryData);
 
-						for (i = 0; GameRwy[i] != 0 && (i < (sizeof(GameRwy) / sizeof(GameRwy[0]))); i++)
+						for (i = 0; GameRwy[i] != 0 && (i < (sizeof (GameRwy) / sizeof (GameRwy[0]))); i++)
 						{
 							if (GameRwy[i] == rwyEntryData.rwyHeader)
 							{
@@ -2626,12 +2626,12 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t s
 	static uint8_t i = 0;
 	static DIRECTION dir;
 
-	if (sz != (GAME_MAX_RWY_LENGTH * sizeof(uint16_t) ))
+	if (sz != (GAME_MAX_RWY_LENGTH * sizeof (uint16_t) ))
 	{
 		Serial_printf(  "GameGetSelectedRunwayArray: size %d is different"
                         " than expected (%d bytes). Returning...\n",
                         sz,
-                        (GAME_MAX_RWY_LENGTH * sizeof(uint16_t) ) );
+                        (GAME_MAX_RWY_LENGTH * sizeof (uint16_t) ) );
 		return;
 	}
 
@@ -2760,7 +2760,7 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 		ptrFlightData->State[aircraftIndex] = STATE_FINAL;
 		GameScore += SCORE_REWARD_FINAL;
 
-		GameGetSelectedRunwayArray(assignedRwy, rwyArray, sizeof(rwyArray));
+		GameGetSelectedRunwayArray(assignedRwy, rwyArray, sizeof (rwyArray));
 
 		for (i = 0; i < GAME_MAX_RWY_LENGTH; i++)
 		{
@@ -2769,7 +2769,7 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFli
 
         for (i = 0; (i < GAME_MAX_RWY_LENGTH) && (rwyExit == 0); i++)
         {
-            for (j = 0; j < (sizeof(rwyExitTiles) / sizeof(rwyExitTiles[0])); j++)
+            for (j = 0; j < (sizeof (rwyExitTiles) / sizeof (rwyExitTiles[0])); j++)
             {
                 if (rwyTiles[i] == rwyExitTiles[j])
                 {
@@ -3331,18 +3331,18 @@ bool GamePathToTile(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 
 		if (SystemContains_u8(	GameLevelBuffer[ptrPlayer->Waypoints[i]],
 								AcceptedTiles,
-								sizeof(AcceptedTiles) ) == false)
+								sizeof (AcceptedTiles) ) == false)
 		{
 			// Now try again with mirrored tiles, just in case!
 
-			for (j = 0; j < (sizeof(AcceptedTiles) * sizeof(uint8_t) ); j++)
+			for (j = 0; j < (sizeof (AcceptedTiles) * sizeof (uint8_t) ); j++)
 			{
 				AcceptedTiles[j] |= TILE_MIRROR_FLAG;
 			}
 
 			if (SystemContains_u8(	GameLevelBuffer[ptrPlayer->Waypoints[i]],
 									AcceptedTiles,
-									sizeof(AcceptedTiles) ) == false)
+									sizeof (AcceptedTiles) ) == false)
 			{
 				// Both cases have failed. Return from function.
 				return false;
@@ -3350,7 +3350,7 @@ bool GamePathToTile(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlightData)
 
 			// Reverse mirror flag.
 
-			for (j = 0; j < (sizeof(AcceptedTiles) * sizeof(uint8_t) ); j++)
+			for (j = 0; j < (sizeof (AcceptedTiles) * sizeof (uint8_t) ); j++)
 			{
 				AcceptedTiles[j] &= ~(TILE_MIRROR_FLAG);
 			}
@@ -3588,7 +3588,7 @@ void GameGenerateUnboardingSequence(TYPE_PLAYER* ptrPlayer)
 	uint8_t i;
 	unsigned short keyTable[] = { PAD_CROSS, PAD_SQUARE, PAD_TRIANGLE };
 
-	memset(ptrPlayer->UnboardingSequence, 0, sizeof(ptrPlayer->UnboardingSequence) );
+	memset(ptrPlayer->UnboardingSequence, 0, sizeof (ptrPlayer->UnboardingSequence) );
 
 	ptrPlayer->UnboardingSequenceIdx = 0;
 
@@ -3597,7 +3597,7 @@ void GameGenerateUnboardingSequence(TYPE_PLAYER* ptrPlayer)
 	// Only medium level implemented. TODO: Implement other levels
 	for (i = 0; i < UNBOARDING_KEY_SEQUENCE_MEDIUM; i++)
 	{
-		uint8_t randIdx = SystemRand(0, (sizeof(keyTable) / sizeof(keyTable[0])) - 1);
+		uint8_t randIdx = SystemRand(0, (sizeof (keyTable) / sizeof (keyTable[0])) - 1);
 
 		ptrPlayer->UnboardingSequence[i] = keyTable[randIdx];
 
@@ -3901,11 +3901,11 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 						else
 						{
 							// GameRwyArray is filled with runway tiles.
-							GameGetSelectedRunwayArray(GameUsedRwy[k], rwyArray, GAME_MAX_RWY_LENGTH * sizeof(uint16_t) );
+							GameGetSelectedRunwayArray(GameUsedRwy[k], rwyArray, GAME_MAX_RWY_LENGTH * sizeof (uint16_t) );
 
 							if (SystemContains_u16(  AircraftGetTileFromFlightDataIndex(idx),
 													rwyArray,
-													sizeof(rwyArray) / sizeof(rwyArray[0]) ) != false)
+													sizeof (rwyArray) / sizeof (rwyArray[0]) ) != false)
 							{
 								GameUsedRwy[k] = 0;
 							}

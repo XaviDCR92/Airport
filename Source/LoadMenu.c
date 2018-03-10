@@ -126,8 +126,8 @@ void LoadMenuInit(void)
 		first_load = true;
 		LoadMenuLoadFileList(	LoadMenuFiles,
 								LoadMenuDest,
-								sizeof(LoadMenuFiles) / sizeof(char*),
-								sizeof(LoadMenuDest)	/ sizeof(void*));
+								sizeof (LoadMenuFiles) / sizeof (char*),
+								sizeof (LoadMenuDest)	/ sizeof (void*));
 	}
 
 	FontSetSize(&SmallFont, SMALL_FONT_SIZE);

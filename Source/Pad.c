@@ -459,7 +459,7 @@ void PadInit(void)
 	pad1_cheat_timer = TimerCreate(PAD_CHEAT_TIMEOUT,true /* Repeat flag */,&PadOneCleanCheatArray);
 	pad2_cheat_timer = TimerCreate(PAD_CHEAT_TIMEOUT,true /* Repeat flag */,&PadTwoCleanCheatArray);
 
-	memset(cheatsArray,0, sizeof(cheatsArray));
+	memset(cheatsArray,0, sizeof (cheatsArray));
 }
 
 void PadCheatHandler(uint8_t n_pad)
@@ -520,7 +520,7 @@ void PadCheatHandler(uint8_t n_pad)
 		}
 	}
 
-	for (i = 0; i < sizeof(available_keys) / sizeof(unsigned short); i++)
+	for (i = 0; i < sizeof (available_keys) / sizeof (unsigned short); i++)
 	{
 		if (pressed_callback(available_keys[i]) != false)
 		{
@@ -575,12 +575,12 @@ bool PadAddCheat(TYPE_CHEAT * cheat)
 
 void PadOneCleanCheatArray(void)
 {
-	memset(pad1_cheat_array,0,sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
+	memset(pad1_cheat_array,0,sizeof (unsigned short) * CHEAT_ARRAY_SIZE);
 }
 
 void PadTwoCleanCheatArray(void)
 {
-	memset(pad2_cheat_array,0,sizeof(unsigned short) * CHEAT_ARRAY_SIZE);
+	memset(pad2_cheat_array,0,sizeof (unsigned short) * CHEAT_ARRAY_SIZE);
 }
 
 unsigned short* PadGetPlayerOneCheatArray(void)

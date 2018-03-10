@@ -472,7 +472,7 @@ void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
 bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 {
 #ifdef SERIAL_INTERFACE
-	uint8_t fileSizeBuffer[sizeof(uint32_t)] = {0};
+	uint8_t fileSizeBuffer[sizeof (uint32_t)] = {0};
     uint32_t i;
 #else // SERIAL_INTERFACE
     FILE *f;
@@ -493,9 +493,9 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 #ifdef SERIAL_INTERFACE
     Serial_printf("#%s@", fname);
 
-    SerialRead(fileSizeBuffer, sizeof(uint32_t) );
+    SerialRead(fileSizeBuffer, sizeof (uint32_t) );
 
-    for (i = 0; i < sizeof(uint32_t); i++)
+    for (i = 0; i < sizeof (uint32_t); i++)
     {
         size |= fileSizeBuffer[i] << (i << 3); // (i << 3) == (i * 8)
     }
@@ -519,7 +519,7 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 
         SerialRead(file_buffer + i, bytes_to_read);
 
-        SerialWrite(ACK_BYTE_STRING, sizeof(uint8_t)); // Write ACK
+        SerialWrite(ACK_BYTE_STRING, sizeof (uint8_t)); // Write ACK
     }
 #else // SERIAL_INTERFACE
 
@@ -549,7 +549,7 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 
 	fseek(f, 0, SEEK_SET); //f->pos = 0;
 
-	fread(buffer, sizeof(char), size, f);
+	fread(buffer, sizeof (char), size, f);
 
 	fclose(f);
 
@@ -577,7 +577,7 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
  * ****************************************************************************************/
 bool SystemLoadFile(char*fname)
 {
-	return SystemLoadFileToBuffer(fname,file_buffer,sizeof(file_buffer));
+	return SystemLoadFileToBuffer(fname,file_buffer,sizeof (file_buffer));
 }
 
 /* ******************************************************************
@@ -605,7 +605,7 @@ uint8_t* SystemGetBufferAddress(void)
  * *****************************************************************/
 void SystemClearBuffer(void)
 {
-	memset(file_buffer, 0, sizeof(file_buffer));
+	memset(file_buffer, 0, sizeof (file_buffer));
 }
 
 /* ******************************************************************
@@ -1200,11 +1200,11 @@ void SystemDevMenu(void)
     }
 }
 
-void SystemGetFileBasename(const char* fileName, char* str, size_t sz)
+void SystemGetFileBasename(const char* fileName, char* str, const size_t sz)
 {
     size_t i;
     size_t j = 0;
-    size_t len = strlen(fileName);
+    const size_t len = strlen(fileName);
 
     memset(str, 0, sz);
 

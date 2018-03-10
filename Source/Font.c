@@ -209,24 +209,29 @@ void FontPrintText(TYPE_FONT * ptrFont, short x, short y, char* str, ...)
 				GfxDrawButton(x, y, PAD_SQUARE);
 
 				x += BUTTON_SIZE;
+
+				line_count += BUTTON_SIZE / ptrFont->char_w;
 			break;
 
 			case CIRCLE_BTN_8BIT:
 				GfxDrawButton(x, y, PAD_CIRCLE);
 
 				x += BUTTON_SIZE;
+				line_count += BUTTON_SIZE / ptrFont->char_w;
 			break;
 
 			case TRIANGLE_BTN_8BIT:
 				GfxDrawButton(x, y, PAD_TRIANGLE);
 
 				x += BUTTON_SIZE;
+				line_count += BUTTON_SIZE / ptrFont->char_w;
 			break;
 
 			case CROSS_BTN_8BIT:
 				GfxDrawButton(x, y, PAD_CROSS);
 
 				x += BUTTON_SIZE;
+				line_count += BUTTON_SIZE / ptrFont->char_w;
 			break;
 
 			default:

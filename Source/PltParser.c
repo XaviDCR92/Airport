@@ -239,7 +239,7 @@ bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 							strncpy(tMessage.strMessage, lineBufferPtr, MAX_MESSAGE_STR_SIZE);
 							MessageCreate(&tMessage);
 
-							bzero(&tMessage, sizeof(tMessage));
+							bzero(&tMessage, sizeof (tMessage));
 						}
 						else
 						{
@@ -431,13 +431,13 @@ uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)
 		{
 			// Set departure flight
 
-			memcpy(&PltBuffer[i], "DEPARTURE", sizeof("DEPARTURE") * sizeof(uint8_t) );
+			memcpy(&PltBuffer[i], "DEPARTURE", sizeof ("DEPARTURE") * sizeof (uint8_t) );
 			i += strlen("DEPARTURE");
 		}
 		else
 		{
 			// Set arrival flight
-			memcpy(&PltBuffer[i], "ARRIVAL", sizeof("ARRIVAL") * sizeof(uint8_t) );
+			memcpy(&PltBuffer[i], "ARRIVAL", sizeof ("ARRIVAL") * sizeof (uint8_t) );
 			i += strlen("ARRIVAL");
 		}
 	}
