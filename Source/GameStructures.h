@@ -49,7 +49,8 @@ typedef enum t_flstate
 	STATE_FINAL,
 	STATE_USER_STOPPED,
     STATE_AUTO_STOPPED,
-	STATE_LANDED
+	STATE_LANDED,
+	MAX_STATES
 }FL_STATE;
 
 typedef enum t_LevelDifficulty

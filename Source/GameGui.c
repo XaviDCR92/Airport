@@ -871,11 +871,11 @@ void GameGuiShowPassengersLeft(TYPE_PLAYER* ptrPlayer)
     {
         if (GameTwoPlayersActive() != false)
         {
-            FontPrintText(&SmallFont, 48, Y_SCREEN_RESOLUTION - 64, "%d left", ptrPlayer->PassengersLeftSelectedAircraft);
+            FontPrintText(&SmallFont, 48, Y_SCREEN_RESOLUTION - 64, "%d passengers left", ptrPlayer->PassengersLeftSelectedAircraft);
         }
         else
         {
-            FontPrintText(&SmallFont, 128, Y_SCREEN_RESOLUTION - 64, "%d left", ptrPlayer->PassengersLeftSelectedAircraft);
+            FontPrintText(&SmallFont, 128, Y_SCREEN_RESOLUTION - 64, "%d pax. left", ptrPlayer->PassengersLeftSelectedAircraft);
         }
     }
 }
@@ -936,6 +936,18 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlight
 
     for (i = init_flight ; i < ptrPlayer->ActiveAircraft ; i++)
     {
+		const char* const strAircraftArray[MAX_STATES] = {	[STATE_APPROACH]			=	"Approach",
+															[STATE_READY_FOR_TAKEOFF]	=	"Takeoff",
+															[STATE_LANDED]				=	"Landed",
+															[STATE_PARKED]				=	"Parked",
+															[STATE_UNBOARDING]			=	"Unboard",
+															[STATE_HOLDING_RWY]			=	"Holding",
+															[STATE_USER_STOPPED]		=	"Stopped",
+															[STATE_AUTO_STOPPED]		=	"Stopped"	};
+
+		FL_STATE aircraftState;
+		const char* strState;
+
         j = i - init_flight;
 
         if (j >= GAME_GUI_AIRCRAFT_DATA_MAX_PAGE)
@@ -971,70 +983,19 @@ void GameGuiShowAircraftData(TYPE_PLAYER* ptrPlayer, TYPE_FLIGHT_DATA* ptrFlight
 
         FontSetFlags(&SmallFont, FONT_2HZ_FLASH);
 
-        switch(ptrFlightData->State[ptrPlayer->ActiveAircraftList[i]])
+        aircraftState = ptrFlightData->State[ptrPlayer->ActiveAircraftList[i]];
+
+        strState = strAircraftArray[aircraftState];
+
+        if (strState != NULL)
         {
-            case STATE_APPROACH:
-                FontPrintText(  &SmallFont,
-                                AircraftDataDirection_X + AircraftDataState_X_Offset,
-                                AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-                                "Approach"  );
-            break;
-
-            case STATE_READY_FOR_TAKEOFF:
-                FontPrintText(  &SmallFont,
-                                AircraftDataDirection_X + AircraftDataState_X_Offset,
-                                AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-                                "Takeoff"   );
-            break;
-
-            case STATE_LANDED:
-                FontPrintText(  &SmallFont,
-                                AircraftDataDirection_X + AircraftDataState_X_Offset,
-                                AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-                                "Landed"    );
-            break;
-
-            case STATE_PARKED:
-                FontPrintText(  &SmallFont,
-                                AircraftDataDirection_X + AircraftDataState_X_Offset,
-                                AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-                                "Parked"    );
-            break;
-
-            case STATE_UNBOARDING:
-                FontPrintText(  &SmallFont,
-                                AircraftDataDirection_X + AircraftDataState_X_Offset,
-                                AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-                                "Unboard"   );
-            break;
-
-            case STATE_HOLDING_RWY:
-                FontPrintText(  &SmallFont,
-                                AircraftDataDirection_X + AircraftDataState_X_Offset,
-                                AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-                                "Holding"   );
-            break;
-
-            case STATE_USER_STOPPED:
-                // Fall through
-            case STATE_AUTO_STOPPED:
-                FontPrintText(  &SmallFont,
-                                AircraftDataDirection_X + AircraftDataState_X_Offset,
-                                AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-                                "Stopped"   );
-            break;
-
-            default:
-            break;
-        }
+			FontPrintText(  &SmallFont,
+							AircraftDataDirection_X + AircraftDataState_X_Offset,
+							AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
+							(char*)strState	);
+		}
 
         FontSetFlags(&SmallFont, FONT_NOFLAGS);
-
-        /*FontPrintText(    &SmallFont,
-                        AircraftDataPassengers_X,
-                        AircraftDataPassengers_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-                        "%d pax.",
-                        ptrFlightData->Passengers[ptrPlayer->ActiveAircraftList[i]] );*/
 
         FontPrintText(  &SmallFont,
                         AircraftDataRemainingTime_X,

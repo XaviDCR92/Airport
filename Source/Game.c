@@ -1266,13 +1266,13 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* ptrPlayer)
 	uint16_t tileNr;
 	uint8_t rows = 0;
 	uint8_t columns = 0;
-	uint8_t k;
 
 	for (tileNr = 0; tileNr < GameLevelSize; tileNr++)
 	{
 		// Building data is stored in GameLevelBuffer MSB. LSB is dedicated to tile data.
 		uint8_t CurrentBuilding = (uint8_t)(GameLevelBuffer[tileNr] >> 8);
 		uint8_t j;
+		uint8_t k;
 		uint8_t AircraftRenderOrder[GAME_MAX_AIRCRAFT_PER_TILE];
 		short Aircraft_Y_Data[GAME_MAX_AIRCRAFT_PER_TILE];
 
@@ -1283,8 +1283,6 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* ptrPlayer)
 			// Fill with 0x7FFF (maximum 16-bit positive value).
 			Aircraft_Y_Data[j] = 0x7FFF;
 		}
-
-		//memset(Aircraft_Y_Data, 0x7F, GAME_MAX_AIRCRAFT_PER_TILE * sizeof (short));
 
 		for (j = 0; j < GAME_MAX_AIRCRAFT_PER_TILE; j++)
 		{
@@ -1319,12 +1317,6 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* ptrPlayer)
 					break;
 				}
 			}
-
-			/*for (k = 0; k < GAME_MAX_AIRCRAFT_PER_TILE; k++)
-			{
-				Serial_printf("Aircraft_Y_Data[%d] = %d\n", k, Aircraft_Y_Data[k]);
-				Serial_printf("AircraftRenderOrder[%d] = %d\n", k, AircraftRenderOrder[k]);
-			}*/
 		}
 
 		if (CurrentBuilding == BUILDING_NONE)
@@ -1348,15 +1340,10 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* ptrPlayer)
 													.z = z_bldg_offset  };
 
 			// Isometric -> Cartesian conversion
-			//buildingIsoPos.x = (columns << (TILE_SIZE_BIT_SHIFT)) + x_bldg_offset;
-			//buildingIsoPos.y = (rows << (TILE_SIZE_BIT_SHIFT)) + y_bldg_offset;
-			//buildingIsoPos.z = z_bldg_offset;
-
 			TYPE_CARTESIAN_POS buildingCartPos = GfxIsometricToCartesian(&buildingIsoPos);
 			bool buildingDrawn = false;
 
 			// Define new coordinates for building.
-
 			GameBuildingSpr.x = buildingCartPos.x - GameBuildingData[CurrentBuilding].orig_x;
 			GameBuildingSpr.y = buildingCartPos.y - GameBuildingData[CurrentBuilding].orig_y;
 
