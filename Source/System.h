@@ -70,8 +70,7 @@ void SystemSetEmergencyMode(bool value);
 // Returns emergency mode flag state
 bool SystemGetEmergencyMode(void);
 
-// (Experimental)
-uint64_t SystemGetGlobalTimer(void);
+volatile uint64_t SystemGetGlobalTimer(void);
 
 // Returns whether critical section of code is being entered
 volatile bool SystemIsBusy(void);

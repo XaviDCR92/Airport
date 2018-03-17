@@ -118,16 +118,12 @@ void SystemInit(void)
 
 	SystemSetStackPattern();
 
-	//SetRCntHandler(&ISR_RootCounter2, 2, 0xA560);
-
-    Serial_printf("Begin SetRCntHandler\n");
-	SetRCntHandler(&ISR_RootCounter2, 2, 0xFFFF);
-    Serial_printf("End SetRCntHandler\n");
-
+	SetRCntHandler(&ISR_RootCounter2, 2, 0xA560);
     SystemEnableRCnt2Interrupt();
 }
 
 static volatile uint16_t u16_0_01seconds_cnt;
+static volatile uint16_t u16_0_01seconds_cnt_prev;
 
 /* *******************************************************************
  *
@@ -142,6 +138,12 @@ static volatile uint16_t u16_0_01seconds_cnt;
 void ISR_RootCounter2(void)
 {
     u16_0_01seconds_cnt++;
+
+    if ((int16_t)(u16_0_01seconds_cnt - 1000) >= (int16_t)(u16_0_01seconds_cnt_prev))
+    {
+		u16_0_01seconds_cnt_prev = u16_0_01seconds_cnt;
+		DEBUG_PRINT_VAR(u16_0_01seconds_cnt_prev);
+	}
 }
 
 /* *******************************************************************
@@ -335,14 +337,14 @@ void SystemIncreaseGlobalTimer(void)
 
 /* *******************************************************************
  *
- * @name: uint64_t SystemGetGlobalTimer(void)
+ * @name: volatile uint64_t SystemGetGlobalTimer(void)
  *
  * @author: Xavier Del Campo
  *
  * @brief: Returns internal global timer value.
  *
  * *******************************************************************/
-uint64_t SystemGetGlobalTimer(void)
+volatile uint64_t SystemGetGlobalTimer(void)
 {
 	return global_timer;
 }
@@ -525,6 +527,7 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 
     system_busy = true;
 
+	SystemDisableRCnt2Interrupt();
     SystemDisableVBlankInterrupt();
 
     f = fopen(fname, "r");
@@ -554,6 +557,7 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 	fclose(f);
 
     SystemEnableVBlankInterrupt();
+    SystemEnableRCnt2Interrupt();
 
     system_busy = false;
 
@@ -640,7 +644,7 @@ uint32_t SystemRand(uint32_t min, uint32_t max)
 {
     if (rand_seed == false)
     {
-        Serial_printf("Warning: calling rand() before srand()\n");
+        //~ Serial_printf("Warning: calling rand() before srand()\n");
     }
 
 	return rand() % (max - min + 1) + min;
@@ -1067,7 +1071,7 @@ void SystemEnableRCnt2Interrupt(void)
  * ****************************************************************************************/
 void SystemDisableRCnt2Interrupt(void)
 {
-    I_MASK &= ~(1<<6);
+    I_MASK &= ~(1 << 6);
 }
 
 /* ****************************************************************************************

@@ -14,6 +14,7 @@
 /* *************************************
  * 	Local Prototypes
  * *************************************/
+
 /* *************************************
  * 	Local Variables
  * *************************************/
@@ -79,7 +80,13 @@ bool SfxUploadSound(char* file_path, SsVag * vag)
 void SfxPlayTrack(MUSIC_TRACKS track)
 {
 #ifndef NO_CDDA
-	SsCdVol(0x7FFF - SfxCddaVolumeReduction,0x7FFF - SfxCddaVolumeReduction);
+	enum
+	{
+		CD_MAX_VOLUME = (uint16_t)0x7FFF
+	};
+
+	SsCdVol(CD_MAX_VOLUME - SfxCddaVolumeReduction,
+			CD_MAX_VOLUME - SfxCddaVolumeReduction);
 	SsEnableCd();
 	CdPlayTrack(track);
 	Serial_printf("Track number %d playing...\n",track);
@@ -89,20 +96,14 @@ void SfxPlayTrack(MUSIC_TRACKS track)
 void SfxStopMusic(void)
 {
 #ifndef NO_CDDA
-	uint64_t timer = SystemGetGlobalTimer();
 	uint16_t CDVol = 0x7FFF;
-	uint8_t time_step = 5;
 
-	while (CDVol > 0x3F)
+	while (CDVol > 0x003F)
 	{
-		CDVol>>=1;
-		SsCdVol(CDVol,CDVol);
-
-		while (SystemGetGlobalTimer() < (timer + time_step) );
-
-		timer = SystemGetGlobalTimer();
+		CDVol >>= 1;
+		SsCdVol(CDVol, CDVol);
 	}
 
 	CdSendCommand(CdlMute,0);
-#endif
+#endif // NO_CDDA
 }

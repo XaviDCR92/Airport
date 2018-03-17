@@ -48,8 +48,6 @@ static GsSprite EndAnimationDisplay;
 
 void EndAnimation(void)
 {
-	uint8_t randIndex = 0;
-
 	GfxSaveDisplayData(&EndAnimationDisplay);
 
 	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
@@ -61,7 +59,7 @@ void EndAnimation(void)
 	}
 	else
 	{
-		randIndex = rand() % (END_ANIMATION_MAX_RAND_VALUE + 1);
+		uint8_t randIndex = SystemRand(END_ANIMATION_SQUARES, END_ANIMATION_MAX_RAND_VALUE);
 
 		switch(randIndex)
 		{
@@ -81,14 +79,12 @@ void EndAnimation(void)
 			break;
 		}
 
-		SfxStopMusic();
+		//~ SfxStopMusic();
 	}
 }
 
 void EndAnimationFadeOut(void)
 {
-	uint8_t i;
-
 	while (1)
 	{
 		if ( GfxGetGlobalLuminance() > 0)
@@ -100,6 +96,8 @@ void EndAnimationFadeOut(void)
 		}
 		else
 		{
+			uint8_t i;
+
 			GsSortCls(0,0,0);
 
 			for (i = 0 ; i < 2 ; i++)
@@ -149,7 +147,10 @@ void EndAnimationLine(void)
 
 void EndAnimationSquares(void)
 {
-	uint16_t i, j, k;
+	uint16_t i;
+	uint16_t j;
+	uint16_t k;
+
 	uint16_t randInd = 0;
 	bool sqPos[END_ANIMATION_SQUARES_TOTAL];
 	uint16_t sqCounter = END_ANIMATION_SQUARES_TOTAL;
@@ -170,9 +171,6 @@ void EndAnimationSquares(void)
 		do
 		{
 			randInd = SystemRand(0,maxIndex);
-
-			/*Serial_printf("randInd = %d\t",randInd);
-			Serial_printf("sqPos[randInd] = %d\n", sqPos[randInd]);*/
 
 			if (sqPos[randInd] == false)
 			{
@@ -195,7 +193,6 @@ void EndAnimationSquares(void)
 					break;
 				}
 			}
-
 		}while (1);
 
 		GfxSortSprite(&EndAnimationDisplay);
@@ -223,7 +220,7 @@ void EndAnimationSquares(void)
 			for (k = 0 ; k < 2 ; k++)
 			{
 				// Draw two frames to ensure black display
-				GsSortCls(0,0,0);
+				GsSortCls(0, 0, 0);
 				GfxDrawScene_Slow();
 			}
 		}
