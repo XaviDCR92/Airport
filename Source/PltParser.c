@@ -401,7 +401,7 @@ uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)
 		return NULL;
 	}
 
-	SystemClearBuffer();
+	SystemClearFileBuffer();
 
 	// At this point, PltBuffer is filled with zeros. Start generating PLT file.
 

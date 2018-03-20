@@ -19,7 +19,7 @@
 // Calls PSXSDK init routines
 void SystemInit(void);
 
-// Sets default VSync (only sets flag to true and increases global_timer)
+// Sets default VSync (only sets VBlank flag)
 void ISR_SystemDefaultVBlank(void);
 
 // Calls srand() using current global_timer value as seed
@@ -42,9 +42,6 @@ uint8_t* SystemGetBufferAddress(void);
 
 // Tells whether srand() has been called using a pseudo-random value
 bool SystemIsRandSeedSet(void);
-
-// Stops program flow during X cycles
-void SystemWaitCycles(uint32_t cycles);
 
 // To be called from GfxDrawScene after each cycle
 void SystemRunTimers(void);
@@ -109,7 +106,7 @@ void SystemAcknowledgeFrame(void);
 
 void SystemCyclicHandler(void);
 
-void SystemClearBuffer(void);
+void SystemClearFileBuffer(void);
 
 void SystemEnableVBlankInterrupt(void);
 

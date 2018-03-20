@@ -25,6 +25,7 @@
 # PSX disk images
 *.bin
 *.cue
+*.iso
 
 # Shared objects (inc. Windows DLLs)
 *.dll

@@ -600,32 +600,16 @@ uint8_t* SystemGetBufferAddress(void)
 
 /* ******************************************************************
  *
- * @name	void SystemClearBuffer(void)
+ * @name	void SystemClearFileBuffer(void)
  *
  * @author: Xavier Del Campo
  *
  * @return:	Fills internal buffer with zeros
  *
  * *****************************************************************/
-void SystemClearBuffer(void)
+void SystemClearFileBuffer(void)
 {
 	memset(file_buffer, 0, sizeof (file_buffer));
-}
-
-/* ******************************************************************
- *
- * @name	void SystemWaitCycles(uint32_t cycles)
- *
- * @author: Xavier Del Campo
- *
- * @return:	halts program execution for n-"cycles"
- *
- * *****************************************************************/
-void SystemWaitCycles(uint32_t cycles)
-{
-	uint64_t currentTime = global_timer;
-
-	while (global_timer < (currentTime + cycles) );
 }
 
 /* ******************************************************************
