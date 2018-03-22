@@ -25,8 +25,8 @@ typedef enum t_musicTracks
 /* *************************************
  * 	Global prototypes
  * *************************************/
-void SfxPlaySound(SsVag * sound);
-bool SfxUploadSound(char* file_path, SsVag * vag);
+void SfxPlaySound(SsVag* sound);
+bool SfxUploadSound(char* file_path, SsVag* vag);
 void SfxPlayTrack(MUSIC_TRACKS track);
 void SfxStopMusic(void);
 

@@ -67,6 +67,11 @@ static unsigned char sine_counter;
  * *******************************************************************/
 void SystemInit(void)
 {
+	enum
+	{
+		RCNT2_100US_TICK_COUNTER = 0xA560
+	};
+
 	//Reset global timer
 	global_timer = 0;
 	//Reset 1 second timer
@@ -118,7 +123,9 @@ void SystemInit(void)
 
 	SystemSetStackPattern();
 
-	SetRCntHandler(&ISR_RootCounter2, 2, 0xA560);
+	// Configure root counter 2 so that ISR_RootCounter2
+	// is executed every 100 us.
+	SetRCntHandler(&ISR_RootCounter2, 2, RCNT2_100US_TICK_COUNTER);
     SystemEnableRCnt2Interrupt();
 }
 
