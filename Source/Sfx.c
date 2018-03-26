@@ -33,7 +33,9 @@ void SfxPlaySound(SsVag* sound)
 
 bool SfxUploadSound_Ex(char* file_path, SsVag* vag, uint8_t voiceIndex)
 {
+#ifdef PSXSDK_DEBUG
 	static size_t SPUBytesUsed;
+#endif // PSXSDK_DEBUG
 
 	if (voiceIndex >= NUMBER_OF_VOICES)
 	{
@@ -63,6 +65,8 @@ bool SfxUploadSound_Ex(char* file_path, SsVag* vag, uint8_t voiceIndex)
 
 	usedVoices[voiceIndex] = true;
 
+#ifdef PSXSDK_DEBUG
+
 	SPUBytesUsed += vag->data_size;
 
 	if (SPUBytesUsed != 0)
@@ -76,6 +80,8 @@ bool SfxUploadSound_Ex(char* file_path, SsVag* vag, uint8_t voiceIndex)
 
 		dprintf("SPU usage: %d%%\n", percentage);
 	}
+
+#endif // PSXSDK_DEBUG
 
 	return true;
 }

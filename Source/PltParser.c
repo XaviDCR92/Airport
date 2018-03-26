@@ -401,6 +401,12 @@ uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)
 		return NULL;
 	}
 
+#ifndef PSXSDK_DEBUG
+#	pragma message ("Remember to remove this")
+	printf("%d\n", minAircraftTime);
+	printf("%d\n", maxAircraftTime);
+#endif // PSXSDK_DEBUG
+
 	SystemClearFileBuffer();
 
 	// At this point, PltBuffer is filled with zeros. Start generating PLT file.

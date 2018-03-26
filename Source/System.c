@@ -139,7 +139,7 @@ static volatile uint16_t u16_0_01seconds_cnt_prev;
  * @author: Xavier Del Campo
  *
  * @brief:
- * 	Executed on RCnt2 ISR.
+ * 	Executed on RCnt2 ISR every 100 us.
  *
  * *******************************************************************/
 void ISR_RootCounter2(void)
@@ -149,7 +149,7 @@ void ISR_RootCounter2(void)
     if ((int16_t)(u16_0_01seconds_cnt - 1000) >= (int16_t)(u16_0_01seconds_cnt_prev))
     {
 		u16_0_01seconds_cnt_prev = u16_0_01seconds_cnt;
-		DEBUG_PRINT_VAR(u16_0_01seconds_cnt_prev);
+		//~ DEBUG_PRINT_VAR(u16_0_01seconds_cnt_prev);
 	}
 }
 
@@ -267,7 +267,7 @@ void SystemAcknowledgeFrame(void)
  * @author: Xavier Del Campo
  *
  * @brief:
- *  Creates a sine-line (more exactly, a parabola-like) effect and
+ *  Creates a sine-like (more exactly, a sawtooth-like) effect and
  *  stores its value into a variable.
  *
  * @remarks:
@@ -491,6 +491,8 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 	// Wait for possible previous operation from the GPU before entering this section.
 	while ( (SystemIsBusy() != false) || (GfxIsGPUBusy() != false) );
 
+	SystemDisableRCnt2Interrupt();
+
 	if (fname == NULL)
 	{
 		Serial_printf("SystemLoadFile: NULL fname!\n");
@@ -534,7 +536,6 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 
     system_busy = true;
 
-	SystemDisableRCnt2Interrupt();
     SystemDisableVBlankInterrupt();
 
     f = fopen(fname, "r");

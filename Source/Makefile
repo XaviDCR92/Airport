@@ -11,9 +11,9 @@ GNU_SIZE = mipsel-unknown-elf-size
 
 # Custom define flags for GCC
 DEFINE= -DFIXMATH_FAST_SIN -D_PAL_MODE_
-DEFINE += -DPSXSDK_DEBUG
-#DEFINE +=  -DNO_CDDA
-#DEFINE +=  -DNO_INTRO
+#DEFINE += -DPSXSDK_DEBUG
+DEFINE +=  -DNO_CDDA
+DEFINE +=  -DNO_INTRO
 
 # Compiler flags
 LIBS= -lfixmath
@@ -174,12 +174,10 @@ $(OBJ_LEVELS_DIR)/%.LVL: $(SRC_LEVELS_DIR)/%.LVL
 $(OBJ_LEVELS_DIR)/%.PLT: $(SRC_LEVELS_DIR)/%.PLT
 	cp $^ $@
 
-music: music_objects
-
 $(MUSIC_OBJ_DIR)/%.bin: $(MUSIC_SRC_DIR)/%.mp3
 	$(FFMPEG_DIR)/$(FFMPEG) -i $< $(FFMPEG_FLAGS) $@
 
 # ----------------------------------------
 # Phony targets
 # ----------------------------------------
-.PHONY: clean music
+.PHONY: clean run
