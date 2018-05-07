@@ -211,7 +211,7 @@ static const char* GameFileList[] = {   "cdrom:\\DATA\\SPRITES\\BUBBLE.TIM;1"   
                                         "cdrom:\\DATA\\SPRITES\\DEPARR.TIM;1"   ,
                                         "cdrom:\\DATA\\SPRITES\\PAGEUPDN.TIM;1" };
 
-static void* GameFileDest[] = {(GsSprite*)&BubbleSpr        ,
+static void* GameFileDest[] = {	(GsSprite*)&BubbleSpr     	,
                                 (TYPE_FONT*)&RadioFont      ,
                                 (GsSprite*)&DepArrSpr       ,
                                 (GsSprite*)&PageUpDownSpr   };
@@ -299,7 +299,7 @@ void GameGuiInit(void)
 
     PageUpDownSpr.w = AIRCRAFT_DATA_FLIGHT_PAGEUPDN_SIZE;
 
-    ShowAircraftPassengersTimer = TimerCreate(20, true, GameGuiClearPassengersLeft);
+    ShowAircraftPassengersTimer = TimerCreate( 20, true, GameGuiClearPassengersLeft);
 
     // Prepare RGB data and (X,Y) coordinates for aircraft
     // data list request rectangle.
@@ -327,7 +327,7 @@ void GameGuiInit(void)
 
 /* ***************************************************************************************
  *
- * @name: void GameGuiInit(void)
+ * @name: bool GameGuiPauseDialog(const TYPE_PLAYER* const ptrPlayer)
  *
  * @author: Xavier Del Campo
  *
@@ -339,7 +339,7 @@ void GameGuiInit(void)
  *  Blocking function!
  *
  * ***************************************************************************************/
-bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer)
+bool GameGuiPauseDialog(const TYPE_PLAYER* const ptrPlayer)
 {
     GfxSaveDisplayData(&SecondDisplay);
 

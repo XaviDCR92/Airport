@@ -388,7 +388,7 @@ bool GameExit(void)
  * ***************************************************************************************/
 bool GamePause(void)
 {
-	TYPE_PLAYER* ptrPlayer;
+	const TYPE_PLAYER* ptrPlayer;
 	uint8_t i;
 	bool pause_flag = false;
 

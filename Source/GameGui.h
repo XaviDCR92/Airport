@@ -25,7 +25,7 @@
  * *************************************/
 
 void GameGuiInit(void);
-bool GameGuiPauseDialog(TYPE_PLAYER* ptrPlayer);
+bool GameGuiPauseDialog(const TYPE_PLAYER* const ptrPlayer);
 bool GameGuiShowAircraftDataSpecialConditions(TYPE_PLAYER* ptrPlayer);
 void GameGuiBubble(TYPE_FLIGHT_DATA* ptrFlightData);
 void GameGuiClock(uint8_t hour, uint8_t min);
