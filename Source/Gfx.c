@@ -536,7 +536,7 @@ bool GfxIsGPUBusy(void)
  *  false if an error happened, true otherwise.
  *
  * **********************************************************************/
-bool GfxSpriteFromFile(char* fname, GsSprite* spr)
+bool GfxSpriteFromFile(const char* fname, GsSprite* spr)
 {
 	GsImage gsi;
 
@@ -572,7 +572,7 @@ bool GfxSpriteFromFile(char* fname, GsSprite* spr)
  *  false if an error happened, true otherwise.
  *
  * **********************************************************************/
-bool GfxCLUTFromFile(char* fname)
+bool GfxCLUTFromFile(const char* fname)
 {
 	GsImage gsi;
 

@@ -29,10 +29,10 @@ void SystemSetRandSeed(void);
 bool SystemRefreshNeeded(void);
 
 // Loads a file into system's internal buffer
-bool SystemLoadFile(char*fname);
+bool SystemLoadFile(const char*fname);
 
 // Loads a file into desired buffer
-bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer);
+bool SystemLoadFileToBuffer(const char* fname, uint8_t* buffer, uint32_t szBuffer);
 
 // Clears VSync flag after each frame
 void SystemDisableScreenRefresh(void);

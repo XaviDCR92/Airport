@@ -478,7 +478,7 @@ void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
  * @return:	true if file has been loaded successfully, false otherwise.
  *
  * ****************************************************************************************/
-bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
+bool SystemLoadFileToBuffer(const char* fname, uint8_t* buffer, uint32_t szBuffer)
 {
 #ifdef SERIAL_INTERFACE
 	uint8_t fileSizeBuffer[sizeof (uint32_t)] = {0};
@@ -501,8 +501,12 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 
 	memset(buffer,0,szBuffer);
 
+    static char completeFileName[256];
+
+    snprintf(completeFileName, sizeof (completeFileName), "cdrom:\\%s;1", fname);
+
 #ifdef SERIAL_INTERFACE
-    Serial_printf("#%s@", fname);
+    Serial_printf("#%s@", completeFileName);
 
     SerialRead(fileSizeBuffer, sizeof (uint32_t) );
 
@@ -538,7 +542,9 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 
     SystemDisableVBlankInterrupt();
 
-    f = fopen(fname, "r");
+    Serial_printf("Opening %s...\n", completeFileName);
+
+    f = fopen((char*)completeFileName, "r");
 
 	if (f == NULL)
 	{
@@ -571,7 +577,7 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
 
 #endif // SERIAL_INTERFACE
 
-	Serial_printf("File \"%s\" loaded successfully!\n",fname);
+	Serial_printf("File \"%s\" loaded successfully!\n",completeFileName);
 
 	return true;
 }
@@ -587,7 +593,7 @@ bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
  * @return:	true if file has been loaded successfully, false otherwise.
  *
  * ****************************************************************************************/
-bool SystemLoadFile(char*fname)
+bool SystemLoadFile(const char* fname)
 {
 	return SystemLoadFileToBuffer(fname,file_buffer,sizeof (file_buffer));
 }
@@ -1208,7 +1214,7 @@ void SystemGetFileBasename(const char* fileName, char* str, const size_t sz)
 
     i++; // Skip '\\' character.
 
-    for (; fileName[i] != ';'; i++)
+    for (; fileName[i]; i++)
     {
         str[j++] = fileName[i];
     }

@@ -15,8 +15,8 @@
  * 	Global prototypes
  * *************************************/
 
-void LoadMenu(	const char*	fileList[],
-				void* dest[],
+void LoadMenu(	const char*	const fileList[],
+				void* const dest[],
 				uint8_t szFileList	, uint8_t szDestList);
 
 void LoadMenuEnd(void);

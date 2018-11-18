@@ -31,7 +31,7 @@ void SfxPlaySound(SsVag* sound)
     }
 }
 
-bool SfxUploadSound_Ex(char* file_path, SsVag* vag, uint8_t voiceIndex)
+bool SfxUploadSound_Ex(const char* file_path, SsVag* vag, uint8_t voiceIndex)
 {
 #ifdef PSXSDK_DEBUG
 	static size_t SPUBytesUsed;
@@ -86,7 +86,7 @@ bool SfxUploadSound_Ex(char* file_path, SsVag* vag, uint8_t voiceIndex)
 	return true;
 }
 
-bool SfxUploadSound(char* file_path, SsVag* vag)
+bool SfxUploadSound(const char* file_path, SsVag* vag)
 {
 	bool success = false;
 	uint8_t i;

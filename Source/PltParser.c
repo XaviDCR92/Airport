@@ -28,7 +28,7 @@
 
 static void PltParserResetBuffers(TYPE_FLIGHT_DATA* ptrFlightData);
 
-bool PltParserLoadFile(char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
+bool PltParserLoadFile(const char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 {
 	enum
 	{

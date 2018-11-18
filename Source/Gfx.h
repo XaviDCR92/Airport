@@ -52,10 +52,10 @@ void GfxDrawScene_Fast(void);
 bool GfxReadyForDMATransfer(void);
 
 // Fills a GsSprite structure with information from a TIM file.
-bool GfxSpriteFromFile(char* fname, GsSprite* spr);
+bool GfxSpriteFromFile(const char* fname, GsSprite* spr);
 
 // Reportedly, loads CLUT data from a TIM image (image data is discarded)
-bool GfxCLUTFromFile(char* fname);
+bool GfxCLUTFromFile(const char* fname);
 
 // Returns true if current object is within screen limits, false otherwise.
 bool GfxIsInsideScreenArea(short x, short y, short w, short h);
