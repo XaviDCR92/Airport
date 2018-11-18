@@ -46,8 +46,8 @@ void MainWindow::onMapItemClicked(QPointF pos)
 
     pos.setX(pos.x() - (TILE_SIZE / 2));
 
-    realPos.setX(pos.x() + (pos.y() * 2));
-    realPos.setY((pos.y() * 2) - pos.x());
+    realPos.setX(static_cast<int>(pos.x() + (pos.y() * 2)));
+    realPos.setY(static_cast<int>((pos.y() * 2) - pos.x()));
 
     int tile_no = 0;
 
@@ -238,7 +238,9 @@ void MainWindow::onProcessMapFile(QByteArray data)
 
     level_size = ch;
 
-    QPixmap tile1("..\\..\\Sprites\\TILESET1.bmp");
+    const QString filePath = "../../Sprites/TILESET1.bmp";
+
+    QPixmap tile1(filePath);
 
     int expected_filesize = (DATA_HEADER_SIZE + (level_size * level_size));
 
