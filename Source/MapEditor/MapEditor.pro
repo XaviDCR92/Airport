@@ -12,6 +12,8 @@ TARGET = MapEditor
 TEMPLATE = app
 CONFIG += static
 
+QMAKE_CXXFLAGS += -funsigned-char
+
 SOURCES += main.cpp\
         mainwindow.cpp \
     mygraphicsscene.cpp

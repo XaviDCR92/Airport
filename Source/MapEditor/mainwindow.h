@@ -5,16 +5,18 @@
 #include <QFileDialog>
 #include <QSettings>
 #include <QDebug>
+#include <QPixmap>
 
 #include "mygraphicsscene.h"
 #include "ui_mainwindow.h"
 
 #define APP_NAME                    QString("Airport Map Editor")
-#define APP_VERSION_STRING          QString("0.2")
+#define APP_VERSION_STRING          QString("0.3")
+#define APP_FULL_NAME               APP_NAME + " " + APP_VERSION_STRING
 
-#define TILE_SIZE           64
-#define DATA_HEADER_SIZE    0x3F
-#define TILE_MIRROR_FLAG    ((char) 0x80)
+#define TILE_SIZE           (64)
+#define DATA_HEADER_SIZE    (0x3F)
+#define TILE_MIRROR_FLAG    (0x80)
 
 namespace Ui {
 class MainWindow;
@@ -25,7 +27,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void closeEvent(QCloseEvent*);
 
@@ -34,6 +36,7 @@ private:
     bool checkFile(QFile &f, QFile::OpenModeFlag flags = QFile::ReadOnly);
     void appSettings(void);
     void loadTilesetData(void);
+    void parseMapData(QDataStream &ds, const QPixmap &tileSet);
     QString _last_dir;
     MyGraphicsScene *gscene;
     int level_size;
@@ -42,15 +45,16 @@ private:
     QHash<int, QString> tilesetData;
 
 private slots:
-    void onLoadMap(void);
+    void loadMap(void);
     void onCreateMap(void);
-    void onProcessMapFile(QByteArray);
+    void processMapFile(const QByteArray &);
     void onMapItemClicked(QPointF);
     void onNoItemSelected(void);
     void onListItemSelected(void);
     void onSaveMap(void);
     void onShowNumbers(int);
     void onAirportNameModified(QString);
+    void showError(const QString& error);
 };
 
 #endif // MAINWINDOW_H

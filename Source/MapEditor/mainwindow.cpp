@@ -3,6 +3,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <QInputDialog>
+#include <QMessageBox>
 
 #define DEFAULT_AIRPORT_NAME    QByteArray("Default Airport\0")
 
@@ -13,9 +14,9 @@ MainWindow::MainWindow(QWidget *parent) :
     selected_item(-1)
 {
     ui->setupUi(this);
-    this->setWindowTitle(APP_NAME + " " + APP_VERSION_STRING);
+    this->setWindowTitle(APP_FULL_NAME);
 
-    connect(ui->LoadMap_Btn,            SIGNAL(released()),                 this,   SLOT(onLoadMap()));
+    connect(ui->LoadMap_Btn,            SIGNAL(released()),                 this,   SLOT(loadMap()));
     connect(ui->CreateMap_Btn,          SIGNAL(released()),                 this,   SLOT(onCreateMap()));
     connect(ui->saveMap_Btn,            SIGNAL(released()),                 this,   SLOT(onSaveMap(void)));
     connect(ui->showNumbers_Checkbox,   SIGNAL(stateChanged(int)),          this,   SLOT(onShowNumbers(int)));
@@ -37,7 +38,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::onShowNumbers(int)
 {
-    onProcessMapFile(map_buffer);
+    processMapFile(map_buffer);
 }
 
 void MainWindow::onMapItemClicked(QPointF pos)
@@ -57,7 +58,7 @@ void MainWindow::onMapItemClicked(QPointF pos)
     if (tile_no < (level_size * level_size))
     {
         selected_item = tile_no;
-        onProcessMapFile(map_buffer);
+        processMapFile(map_buffer);
     }
     else
     {
@@ -67,30 +68,29 @@ void MainWindow::onMapItemClicked(QPointF pos)
 
 void MainWindow::onListItemSelected(void)
 {
-    QList<QListWidgetItem *> item = ui->listWidget->selectedItems();
-
-    foreach (QListWidgetItem *it, item)
+    foreach (const QListWidgetItem* const it, ui->tileList->selectedItems())
     {
-        int row = ui->listWidget->row(it);
-
-        if (selected_item != -1)
+        if (it != nullptr)
         {
-            int map_buffer_pos = (DATA_HEADER_SIZE + 1) + (selected_item * sizeof(quint16));
-            //map_buffer_pos++; // MSB: building data, LSB: terrain data.
-
-            qDebug() << "Calculated file offset: 0x" + QString::number(map_buffer_pos, 16);
-
-            if (map_buffer_pos < map_buffer.count())
+            if (selected_item != -1)
             {
-                qDebug() << "Current data at 0x" + QString::number(map_buffer_pos, 16) + ": " + tilesetData.value(map_buffer[map_buffer_pos]);
-                map_buffer[map_buffer_pos] = row;
+                const int map_buffer_pos = static_cast<int>((DATA_HEADER_SIZE + 1)
+                                            + (static_cast<unsigned long>(selected_item) * sizeof(quint16)));
+                //map_buffer_pos++; // MSB: building data, LSB: terrain data.
 
-                if (ui->mirror_CheckBox->isChecked() == true)
+                if (map_buffer_pos < map_buffer.count())
                 {
-                    map_buffer[map_buffer_pos] = map_buffer[map_buffer_pos] | TILE_MIRROR_FLAG;
-                }
+                    const char row = static_cast<char>(ui->tileList->row(it));
 
-                onProcessMapFile(map_buffer);
+                    map_buffer[map_buffer_pos] = row;
+
+                    if (ui->mirror_CheckBox->isChecked() )
+                    {
+                        map_buffer[map_buffer_pos] = map_buffer[map_buffer_pos] | TILE_MIRROR_FLAG;
+                    }
+
+                    processMapFile(map_buffer);
+                }
             }
         }
     }
@@ -98,14 +98,14 @@ void MainWindow::onListItemSelected(void)
 
 void MainWindow::onSaveMap(void)
 {
-    QString path = QFileDialog::getSaveFileName(this,
-                                                "Save map file",
-                                                _last_dir,
-                                                "Map files (*.LVL)");
+    const QString path = QFileDialog::getSaveFileName(this,
+                                                      "Save map file",
+                                                      _last_dir,
+                                                      "Map files (*.LVL)");
 
     QFile f(path);
 
-    if(checkFile(f, QFile::WriteOnly) == false)
+    if (checkFile(f, QFile::WriteOnly) == false)
     {
         return;
     }
@@ -118,7 +118,7 @@ void MainWindow::onSaveMap(void)
 void MainWindow::onNoItemSelected(void)
 {
     selected_item = -1;
-    onProcessMapFile(map_buffer);
+    processMapFile(map_buffer);
 }
 
 void MainWindow::onCreateMap(void)
@@ -130,126 +130,123 @@ void MainWindow::onCreateMap(void)
     items << "16";
     items << "24";
 
-    QString size = QInputDialog::getItem(   this,
-                                            tr("Create new map"),
-                                            tr("Select map size:"),
-                                            items,
-                                            0,
-                                            false,
-                                            &ok     );
+    const QString strSize = QInputDialog::getItem(this,
+                                                  tr("Create new map"),
+                                                  tr("Select map size:"),
+                                                  items,
+                                                  0,
+                                                  false,
+                                                  &ok     );
 
-    if ( (ok == false) || (size.isEmpty() == true) )
+    if (ok && (not strSize.isEmpty()))
     {
-        return;
-    }
+        QByteArray data;
 
-    QByteArray data;
+        data.append("ATC");
 
-    data.append("ATC");
+        const quint8 size = static_cast<quint8>(strSize.toInt(&ok));
 
-    if (size == "8")
-    {
-        level_size = 8;
-        data.append((char)0x08);
-    }
-    else if (size == "16")
-    {
-        level_size = 16;
-        data.append((char)0x10);
-    }
-    else if (size == "24")
-    {
-        level_size = 24;
-        data.append((char)0x18);
-    }
-
-    data.append(DEFAULT_AIRPORT_NAME);
-
-    for (int i = 0x04 + DEFAULT_AIRPORT_NAME.count(); i < 0x1C; i++)
-    {
-        data.append('\0');
-    }
-
-    for (int i = (data.count() - 1); i < DATA_HEADER_SIZE; i++)
-    {
-        data.append(0xFF);
-    }
-
-    int size_int = size.toInt(&ok, 10);
-
-    if (ok == false)
-    {
-        qDebug() << "Invalid map size.";
-        return;
-    }
-
-    for (int i = 0; i < size_int; i++)
-    {
-        for (int j = 0; j < size_int; j++)
+        if (ok)
         {
-            data.append((char)0); // Building data
-            data.append((char)0); // Terrain data
+            switch (size)
+            {
+                case 8:
+                    // Fall through.
+                case 16:
+                    // Fall through.
+                case 24:
+                    level_size = size;
+                    data.append(static_cast<char>(size));
+                break;
+
+                default:
+                    showError(tr("Invalid map size ") + strSize);
+                break;
+            }
+
+            data.append(DEFAULT_AIRPORT_NAME);
+
+            for (int i = 0x04 + DEFAULT_AIRPORT_NAME.count(); i < 0x1C; i++)
+            {
+                data.append('\0');
+            }
+
+            for (int i = (data.count() - 1); i < DATA_HEADER_SIZE; i++)
+            {
+                data.append(static_cast<char>(0xFF));
+            }
+
+            for (quint8 i = 0; i < size; i++)
+            {
+                for (quint8 j = 0; j < size; j++)
+                {
+                    data.append(static_cast<char>(0)); // Building data
+                    data.append(static_cast<char>(0)); // Terrain data
+                }
+            }
+
+            processMapFile(data);
         }
     }
-
-    qDebug() << "Created default map. Bytes: " + QString::number(data.count());
-
-    onProcessMapFile(data);
 }
 
-void MainWindow::onLoadMap(void)
+void MainWindow::loadMap(void)
 {
-    QString path = QFileDialog::getOpenFileName(this,
-                                                "Open map file",
-                                                _last_dir,
-                                                "Map files (*.LVL)");
+    const QString path = QFileDialog::getOpenFileName(this,
+                                                      "Open map file",
+                                                      _last_dir,
+                                                      "Map files (*.LVL)");
 
     QFile f(path);
 
-    if(checkFile(f) == false)
-    {
-        return;
+    if (checkFile(f))
+    {   
+        processMapFile(f.readAll());
     }
-
-    QByteArray data = f.readAll();
-
-    onProcessMapFile(data);
 }
 
-void MainWindow::onProcessMapFile(QByteArray data)
+void MainWindow::processMapFile(const QByteArray& data)
 {
     map_buffer = data;
 
-    QDataStream ds(&data, QIODevice::ReadWrite);
+    QDataStream ds(data);
 
     char header[3];
 
     ds.readRawData(header, 3);
 
-    if (strncmp(header, "ATC", 3) != 0)
+    if (strncmp(header, "ATC", 3) == 0)
     {
-        qDebug() << "Incorrect header";
-        return;
+        char ch;
+
+        ds.readRawData(&ch, sizeof(char));
+
+        level_size = ch;
+
+        const QString filePath = "../../Sprites/TILESET1.bmp";
+
+        QPixmap tile1(filePath);
+
+        const int expected_filesize = (DATA_HEADER_SIZE + (level_size * level_size));
+
+        if (data.count() >= expected_filesize)
+        {
+            parseMapData(ds, tile1);
+        }
+        else
+        {
+            showError(tr("Invalid file size. Expected ")
+                      + QString::number(expected_filesize, 10));
+        }
     }
-
-    char ch;
-
-    ds.readRawData(&ch, sizeof(char));
-
-    level_size = ch;
-
-    const QString filePath = "../../Sprites/TILESET1.bmp";
-
-    QPixmap tile1(filePath);
-
-    int expected_filesize = (DATA_HEADER_SIZE + (level_size * level_size));
-
-    if (data.count() < expected_filesize)
+    else
     {
-        qDebug() << "Invalid count. Expected " + QString::number(expected_filesize, 10);
-        return;
+        showError(tr("Invalid header") + "\"" + header + "\"");
     }
+}
 
+void MainWindow::parseMapData(QDataStream& ds, const QPixmap& tileSet)
+{
     char airportName[0x1A];
 
     ds.readRawData(airportName, sizeof(airportName) / sizeof(airportName[0]));
@@ -269,20 +266,20 @@ void MainWindow::onProcessMapFile(QByteArray data)
             int v;
             char byte[2];
             ds.readRawData(byte, 2);
-            quint8 CurrentTile = byte[1];
+            quint8 CurrentTile = static_cast<quint8>(byte[1]);
 
             if (CurrentTile & TILE_MIRROR_FLAG)
             {
-                u = (int)((CurrentTile & 0x7F) % 4) * 64;
-                v = (int)((CurrentTile & 0x7F) / 4) * 48;
+                u = static_cast<int>(((CurrentTile & 0x7F) % 4) * 64);
+                v = static_cast<int>(((CurrentTile & 0x7F) / 4) * 48);
             }
             else
             {
-                u = (int)(CurrentTile % 4) * 64;
-                v = (int)(CurrentTile / 4) * 48;
+                u = static_cast<int>((CurrentTile % 4) * 64);
+                v = static_cast<int>((CurrentTile / 4) * 48);
             }
 
-            QImage cropped = tile1.copy(u, v, 64, 48).toImage();
+            QImage cropped = tileSet.copy(u, v, 64, 48).toImage();
 
             if (CurrentTile & TILE_MIRROR_FLAG)
             {
@@ -311,7 +308,7 @@ void MainWindow::onProcessMapFile(QByteArray data)
                     {
                         cropped.setPixel(i, j, qRgba(0,0,0,0));
                     }
-                    else if (selected == true)
+                    else if (selected )
                     {
                         QColor c = cropped.pixelColor(i, j);
 
@@ -337,7 +334,7 @@ void MainWindow::onProcessMapFile(QByteArray data)
             it->setX(x);
             it->setY(y);
 
-            if (ui->showNumbers_Checkbox->isChecked() == true)
+            if (ui->showNumbers_Checkbox->isChecked() )
             {
                 QGraphicsTextItem* io = new QGraphicsTextItem();
                 io->setPos(x + (TILE_SIZE / 4), y);
@@ -356,7 +353,7 @@ bool MainWindow::checkFile(QFile& f, QFile::OpenModeFlag flags)
 {
     QFileInfo fi(f);
 
-    if(f.open(flags) == false)
+    if (f.open(flags) == false)
     {
         return false;
     }
@@ -417,13 +414,13 @@ void MainWindow::loadTilesetData(void)
                 QString tileNumber = "tile" + QString::number(i);
                 QString tileName = tilesetFile.value(tileNumber, "").toString();
 
-                if (tileName.isEmpty() == true)
+                if (tileName.isEmpty() )
                 {
                     break;
                 }
 
                 tilesetData.insert(i++, tileName);
-                ui->listWidget->addItem(tileName);
+                ui->tileList->addItem(tileName);
             }
 
             tilesetFile.endGroup();
@@ -433,7 +430,7 @@ void MainWindow::loadTilesetData(void)
 
 void MainWindow::onAirportNameModified(QString name)
 {
-    if (map_buffer.isEmpty() == true)
+    if (map_buffer.isEmpty() )
     {
         return;
     }
@@ -449,4 +446,9 @@ void MainWindow::onAirportNameModified(QString name)
             map_buffer[i] = '\0';
         }
     }
+}
+
+void MainWindow::showError(const QString& error)
+{
+    QMessageBox::critical(this, APP_FULL_NAME, error);
 }
