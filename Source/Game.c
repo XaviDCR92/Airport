@@ -438,21 +438,18 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
 {
     uint8_t i;
     uint32_t track;
-    static bool firstLoad = true;
+    static bool loaded;
 
     GameStartupFlag = true;
 
     // Has to be initialized before loading *.PLT files inside LoadMenu().
     MessageInit();
 
-    if (firstLoad)
+    if (loaded == false)
     {
-        firstLoad = false;
+        loaded = true;
 
-        LoadMenu(   GameFileList,
-                    GameFileDest,
-                    sizeof (GameFileList) / sizeof (char*),
-                    sizeof (GameFileDest) /sizeof (void*)   );
+        LOAD_FILES(GameFileList, GameFileDest);
     }
 
     LoadMenu(   &pGameCfg->PLTPath,
@@ -3618,65 +3615,70 @@ void GameGenerateUnboardingSequence(TYPE_PLAYER* const ptrPlayer)
 
 void GameCreateTakeoffWaypoints(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* const ptrFlightData, uint8_t aircraftIdx)
 {
-    // Look for aircraft direction by searching TILE_RWY_EXIT
-    //uint16_t currentTile = AircraftGetTileFromFlightDataIndex(aircraftIdx);
-    //uint8_t targetsIdx = 0;
-    DIRECTION aircraftDir = AircraftGetDirection(AircraftFromFlightDataIndex(aircraftIdx));
-    int8_t rwyStep = 0;
-    uint16_t currentTile = 0;
-    uint16_t targets[AIRCRAFT_MAX_TARGETS] = {0};
-    uint8_t i;
+    TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(aircraftIdx);
 
-    switch(aircraftDir)
+    if (ptrAircraft != NULL)
     {
-        case DIR_EAST:
-            rwyStep = 1;
-        break;
+        // Look for aircraft direction by searching TILE_RWY_EXIT
+        //uint16_t currentTile = AircraftGetTileFromFlightDataIndex(aircraftIdx);
+        //uint8_t targetsIdx = 0;
+        DIRECTION aircraftDir = AircraftGetDirection(ptrAircraft);
+        int8_t rwyStep = 0;
+        uint16_t currentTile = 0;
+        uint16_t targets[AIRCRAFT_MAX_TARGETS] = {0};
+        uint8_t i;
 
-        case DIR_WEST:
-            rwyStep = -1;
-        break;
-
-        case DIR_NORTH:
-            rwyStep = -GameLevelColumns;
-        break;
-
-        case DIR_SOUTH:
-            rwyStep = GameLevelColumns;
-        break;
-
-        default:
-        return;
-    }
-
-    for (currentTile = (AircraftGetTileFromFlightDataIndex(aircraftIdx) + rwyStep);
-        ((levelBuffer[currentTile] & ~(TILE_MIRROR_FLAG)) != TILE_RWY_START_1)
-                            &&
-        ((levelBuffer[currentTile] & ~(TILE_MIRROR_FLAG)) != TILE_RWY_START_2);
-        currentTile -= rwyStep  )
-    {
-        // Calculate new currentTile value until conditions are invalid.
-    }
-
-    for (i = 0; i < GAME_MAX_RUNWAYS; i++)
-    {
-        if (GameUsedRwy[i] == currentTile)
+        switch(aircraftDir)
         {
-            GameUsedRwy[i] = 0;
+            case DIR_EAST:
+                rwyStep = 1;
             break;
+
+            case DIR_WEST:
+                rwyStep = -1;
+            break;
+
+            case DIR_NORTH:
+                rwyStep = -GameLevelColumns;
+            break;
+
+            case DIR_SOUTH:
+                rwyStep = GameLevelColumns;
+            break;
+
+            default:
+            return;
         }
+
+        for (currentTile = (AircraftGetTileFromFlightDataIndex(aircraftIdx) + rwyStep);
+            ((levelBuffer[currentTile] & ~(TILE_MIRROR_FLAG)) != TILE_RWY_START_1)
+                                &&
+            ((levelBuffer[currentTile] & ~(TILE_MIRROR_FLAG)) != TILE_RWY_START_2);
+            currentTile -= rwyStep  )
+        {
+            // Calculate new currentTile value until conditions are invalid.
+        }
+
+        for (i = 0; i < GAME_MAX_RUNWAYS; i++)
+        {
+            if (GameUsedRwy[i] == currentTile)
+            {
+                GameUsedRwy[i] = 0;
+                break;
+            }
+        }
+
+        for (   currentTile = (AircraftGetTileFromFlightDataIndex(aircraftIdx) + rwyStep);
+                (levelBuffer[currentTile] & ~(TILE_MIRROR_FLAG)) != TILE_RWY_EXIT;
+                currentTile += rwyStep  )
+        {
+
+        }
+
+        targets[0] = currentTile;
+
+        AircraftAddTargets(AircraftFromFlightDataIndex(aircraftIdx), targets);
     }
-
-    for (   currentTile = (AircraftGetTileFromFlightDataIndex(aircraftIdx) + rwyStep);
-            (levelBuffer[currentTile] & ~(TILE_MIRROR_FLAG)) != TILE_RWY_EXIT;
-            currentTile += rwyStep  )
-    {
-
-    }
-
-    targets[0] = currentTile;
-
-    AircraftAddTargets(AircraftFromFlightDataIndex(aircraftIdx), targets);
 }
 
 /* *******************************************************************************************

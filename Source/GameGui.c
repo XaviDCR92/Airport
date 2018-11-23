@@ -255,16 +255,13 @@ void GameGuiInit(void)
         RADIO_FONT_SPACING = 12
     };
 
-    static bool firstLoad = true;
+    static bool initialised;
 
-    if (firstLoad)
+    if (initialised == false)
     {
-        firstLoad = false;
+        initialised = true;
 
-        LoadMenu(   GameFileList,
-                    GameFileDest,
-                    sizeof (GameFileList) / sizeof (char*),
-                    sizeof (GameFileDest) /sizeof (void*) );
+        LOAD_FILES(GameFileList, GameFileDest);
     }
 
     PauseRect.x[0] = PAUSE_DIALOG_X;

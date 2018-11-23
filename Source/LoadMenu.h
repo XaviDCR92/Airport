@@ -11,6 +11,9 @@
  * 	Defines
  * *************************************/
 
+#define LOAD_FILES(x, y)    \
+    LoadMenu(x, y, sizeof (x) / sizeof(x[0]), sizeof (y) / sizeof(y[0]))
+
 /* *************************************
  * 	Global prototypes
  * *************************************/

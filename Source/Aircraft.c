@@ -49,7 +49,7 @@ typedef enum t_aircraftSpeeds
  * *************************************/
 
 static TYPE_AIRCRAFT_DATA AircraftData[GAME_MAX_AIRCRAFT];
-static uint8_t AircraftIndex;
+static uint8_t aircraftIndex;
 static GsSprite AircraftSpr;
 static GsSprite UpDownArrowSpr;
 static GsSprite LeftRightArrowSpr;
@@ -65,7 +65,7 @@ static void* GameFileDest[] = { (GsSprite*)&UpDownArrowSpr,
                                 (GsSprite*)&LeftRightArrowSpr       };
 
 // Used to quickly link FlightData indexes against AircraftData indexes.
-static uint8_t AircraftFlightDataIdx_HashTable[GAME_MAX_AIRCRAFT];
+static uint8_t flightDataIdxTable[GAME_MAX_AIRCRAFT];
 
 static const fix16_t AircraftSpeedsTable[] = {  [AIRCRAFT_SPEED_IDLE] = 0,
                                                 [AIRCRAFT_SPEED_GROUND] = 0x9999,
@@ -87,10 +87,10 @@ static bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* ptrAicraft, TYPE_AIRCRAFT_DATA
 
 void AircraftInit(void)
 {
-    static bool firstLoad = true;
+    static bool initialised;
 
     bzero(AircraftData, GAME_MAX_AIRCRAFT * sizeof (TYPE_AIRCRAFT_DATA));
-    AircraftIndex = 0;
+    aircraftIndex = 0;
 
     AircraftSpr.x = 0;
     AircraftSpr.y = 0;
@@ -111,13 +111,11 @@ void AircraftInit(void)
 
     AircraftCenterPos = GfxIsometricToCartesian(&AircraftCenterIsoPos);
 
-    memset( AircraftFlightDataIdx_HashTable,
-            AIRCRAFT_INVALID_IDX,
-            sizeof (AircraftFlightDataIdx_HashTable)    );
+    memset(flightDataIdxTable, AIRCRAFT_INVALID_IDX, sizeof (flightDataIdxTable));
 
-    if (firstLoad)
+    if (initialised == false)
     {
-        firstLoad = false;
+        initialised = true;
 
         LoadMenu(   GameFileList,
                     GameFileDest,
@@ -131,105 +129,112 @@ bool AircraftAddNew(    TYPE_FLIGHT_DATA* const ptrFlightData,
                         uint16_t* targets,
                         DIRECTION direction     )
 {
-    TYPE_AIRCRAFT_DATA* const ptrAircraft = &AircraftData[AircraftIndex];
-    uint8_t level_columns = GameGetLevelColumns();
-    uint8_t i;
+    if (aircraftIndex < GAME_MAX_AIRCRAFT)
+    {
+        TYPE_AIRCRAFT_DATA* const ptrAircraft = &AircraftData[aircraftIndex];
 
-    if (AircraftIndex >= GAME_MAX_AIRCRAFT)
+        memcpy(ptrAircraft->Target, targets, sizeof (uint16_t) * AIRCRAFT_MAX_TARGETS);
+
+        ptrAircraft->TargetIdx = 0;
+        ptrAircraft->Livery = AircraftLiveryFromFlightNumber(ptrFlightData->strFlightNumber[FlightDataIndex]);
+
+        ptrAircraft->FlightDataIdx = FlightDataIndex;
+
+        Serial_printf("ptrAircraft->FlightDataIdx = %d, FlightDataIndex = %d\n", ptrAircraft->FlightDataIdx, FlightDataIndex);
+
+        if (ptrFlightData->FlightDirection[FlightDataIndex] == ARRIVAL)
+        {
+            const uint8_t level_columns = GameGetLevelColumns();
+
+            switch (direction)
+            {
+                case DIR_EAST:
+                    ptrAircraft->IsoPos.x = 0;
+
+                    ptrAircraft->IsoPos.y = targets[0] / level_columns;
+                    ptrAircraft->IsoPos.y <<= TILE_SIZE_BIT_SHIFT;
+                    ptrAircraft->IsoPos.y += TILE_SIZE >> 1; // Adjust to tile center
+                    ptrAircraft->IsoPos.y = fix16_from_int(ptrAircraft->IsoPos.y);
+
+                    ptrAircraft->IsoPos.z = targets[0] % level_columns;
+                    ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 1;
+                    ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
+                break;
+
+                case DIR_SOUTH:
+                    ptrAircraft->IsoPos.x = targets[0] % level_columns;
+                    ptrAircraft->IsoPos.x <<= TILE_SIZE_BIT_SHIFT;
+                    ptrAircraft->IsoPos.x += TILE_SIZE >> 1; // Adjust to tile center
+                    ptrAircraft->IsoPos.x = fix16_from_int(ptrAircraft->IsoPos.x);
+
+                    ptrAircraft->IsoPos.y = 0;
+
+                    ptrAircraft->IsoPos.z = targets[0] / level_columns;
+                    ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 1;
+                    ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
+                break;
+
+                case NO_DIRECTION:
+                    // Fall through
+                default:
+                    Serial_printf("Invalid runway direction %d for inbound flight.\n", direction);
+                return false;
+            }
+        }
+        else if (ptrFlightData->FlightDirection[FlightDataIndex] == DEPARTURE)
+        {
+            if (direction == NO_DIRECTION)
+            {
+                Serial_printf("Invalid direction for outbound flight.\n");
+                return false;
+            }
+
+            ptrAircraft->IsoPos.x = GameGetXFromTile(ptrFlightData->Parking[FlightDataIndex]);
+            ptrAircraft->IsoPos.y = GameGetYFromTile(ptrFlightData->Parking[FlightDataIndex]);
+            ptrAircraft->IsoPos.z = 0;
+        }
+
+        ptrAircraft->Direction = direction;
+
+        ptrAircraft->State = ptrFlightData->State[FlightDataIndex];
+        flightDataIdxTable[FlightDataIndex] = aircraftIndex;
+
+        Serial_printf("\nAircraft Data:\n");
+        Serial_printf("\tTargets:");
+
+        {
+            uint8_t i;
+
+            for (i = 0; i < AIRCRAFT_MAX_TARGETS; i++)
+            {
+                if (ptrAircraft->Target[i] == 0)
+                {
+                    break;
+                }
+
+                Serial_printf(" %d", ptrAircraft->Target[i]);
+            }
+        }
+
+        Serial_printf("\n\tDirection: %d\n", ptrAircraft->Direction);
+
+        Serial_printf("\nLivery: %d\n", ptrAircraft->Livery );
+
+        Serial_printf("Aircraft position: {%d, %d, %d}\n",
+                fix16_to_int(ptrAircraft->IsoPos.x),
+                fix16_to_int(ptrAircraft->IsoPos.y),
+                fix16_to_int(ptrAircraft->IsoPos.z) );
+
+        aircraftIndex++;
+
+        return true;
+    }
+    else
     {
         Serial_printf("Exceeded maximum aircraft capacity!\n");
-        return false;
     }
 
-    memcpy(ptrAircraft->Target, targets, sizeof (uint16_t) * AIRCRAFT_MAX_TARGETS);
-
-    ptrAircraft->TargetIdx = 0;
-    ptrAircraft->Livery = AircraftLiveryFromFlightNumber(ptrFlightData->strFlightNumber[FlightDataIndex]);
-
-    ptrAircraft->FlightDataIdx = FlightDataIndex;
-
-    Serial_printf("ptrAircraft->FlightDataIdx = %d, FlightDataIndex = %d\n", ptrAircraft->FlightDataIdx, FlightDataIndex);
-
-    if (ptrFlightData->FlightDirection[FlightDataIndex] == ARRIVAL)
-    {
-        switch (direction)
-        {
-            case DIR_EAST:
-                ptrAircraft->IsoPos.x = 0;
-
-                ptrAircraft->IsoPos.y = targets[0] / level_columns;
-                ptrAircraft->IsoPos.y <<= TILE_SIZE_BIT_SHIFT;
-                ptrAircraft->IsoPos.y += TILE_SIZE >> 1; // Adjust to tile center
-                ptrAircraft->IsoPos.y = fix16_from_int(ptrAircraft->IsoPos.y);
-
-                ptrAircraft->IsoPos.z = targets[0] % level_columns;
-                ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 1;
-                ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
-            break;
-
-            case DIR_SOUTH:
-                ptrAircraft->IsoPos.x = targets[0] % level_columns;
-                ptrAircraft->IsoPos.x <<= TILE_SIZE_BIT_SHIFT;
-                ptrAircraft->IsoPos.x += TILE_SIZE >> 1; // Adjust to tile center
-                ptrAircraft->IsoPos.x = fix16_from_int(ptrAircraft->IsoPos.x);
-
-                ptrAircraft->IsoPos.y = 0;
-
-                ptrAircraft->IsoPos.z = targets[0] / level_columns;
-                ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 1;
-                ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
-            break;
-
-            case NO_DIRECTION:
-                // Fall through
-            default:
-                Serial_printf("Invalid runway direction %d for inbound flight.\n", direction);
-            return false;
-        }
-    }
-    else if (ptrFlightData->FlightDirection[FlightDataIndex] == DEPARTURE)
-    {
-        if (direction == NO_DIRECTION)
-        {
-            Serial_printf("Invalid direction for outbound flight.\n");
-            return false;
-        }
-
-        ptrAircraft->IsoPos.x = GameGetXFromTile(ptrFlightData->Parking[FlightDataIndex]);
-        ptrAircraft->IsoPos.y = GameGetYFromTile(ptrFlightData->Parking[FlightDataIndex]);
-        ptrAircraft->IsoPos.z = 0;
-    }
-
-    ptrAircraft->Direction = direction;
-
-    ptrAircraft->State = ptrFlightData->State[FlightDataIndex];
-    AircraftFlightDataIdx_HashTable[FlightDataIndex] = AircraftIndex;
-
-    Serial_printf("\nAircraft Data:\n");
-    Serial_printf("\tTargets:");
-
-    for (i = 0; i < AIRCRAFT_MAX_TARGETS; i++)
-    {
-        if (ptrAircraft->Target[i] == 0)
-        {
-            break;
-        }
-
-        Serial_printf(" %d", ptrAircraft->Target[i]);
-    }
-
-    Serial_printf("\n\tDirection: %d\n", ptrAircraft->Direction);
-
-    Serial_printf("\nLivery: %d\n", ptrAircraft->Livery );
-
-    Serial_printf("Aircraft position: {%d, %d, %d}\n",
-            fix16_to_int(ptrAircraft->IsoPos.x),
-            fix16_to_int(ptrAircraft->IsoPos.y),
-            fix16_to_int(ptrAircraft->IsoPos.z) );
-
-    AircraftIndex++;
-
-    return true;
+    return false;
 }
 
 AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char* strFlightNumber)
@@ -253,15 +258,18 @@ AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char* strFlightNumber)
 
 bool AircraftRemove(uint8_t aircraftIdx)
 {
-    TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(aircraftIdx);
-
-    if (ptrAircraft->State != STATE_IDLE)
+    if (aircraftIdx != AIRCRAFT_INVALID_IDX)
     {
-        if (ptrAircraft->FlightDataIdx == aircraftIdx)
+        TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(aircraftIdx);
+
+        if (ptrAircraft->State != STATE_IDLE)
         {
-            ptrAircraft->State = STATE_IDLE;
-            Serial_printf("Flight %d removed\n", ptrAircraft->FlightDataIdx);
-            return true;
+            if (ptrAircraft->FlightDataIdx == aircraftIdx)
+            {
+                ptrAircraft->State = STATE_IDLE;
+                Serial_printf("Flight %d removed\n", ptrAircraft->FlightDataIdx);
+                return true;
+            }
         }
     }
 
@@ -424,167 +432,164 @@ void AircraftSpeed(TYPE_AIRCRAFT_DATA* const ptrAircraft)
 
 void AircraftRender(TYPE_PLAYER* const ptrPlayer, uint8_t aircraftIdx)
 {
-    TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(aircraftIdx);
-    TYPE_CARTESIAN_POS cartPos;
-    TYPE_ISOMETRIC_FIX16_POS shadowIsoPos;
-    TYPE_CARTESIAN_POS shadowCartPos;
-
-    if (ptrAircraft == NULL)
+    if (aircraftIdx != AIRCRAFT_INVALID_IDX)
     {
-        return;
-    }
+        TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(aircraftIdx);
 
-    shadowIsoPos.x = ptrAircraft->IsoPos.x;
-    shadowIsoPos.y = ptrAircraft->IsoPos.y;
-    shadowIsoPos.z = 0;
-
-    if (ptrAircraft->State == STATE_IDLE)
-    {
-        return;
-    }
-
-    AircraftUpdateSpriteFromData(ptrAircraft);
-
-    if (ptrAircraft->IsoPos.z > 0)
-    {
-        // Draw aircraft shadow
-
-        shadowCartPos = GfxIsometricFix16ToCartesian(&shadowIsoPos);
-
-        // Aircraft position is referred to aircraft center
-        AircraftSpr.x = shadowCartPos.x - (AircraftSpr.w >> 1);
-        AircraftSpr.y = shadowCartPos.y - (AircraftSpr.h >> 1);
-
-        CameraApplyCoordinatesToSprite(ptrPlayer, &AircraftSpr);
-
-        AircraftSpr.r = 0;
-        AircraftSpr.g = 0;
-        AircraftSpr.b = 0;
-
-        AircraftSpr.attribute |= ENABLE_TRANS | TRANS_MODE(0);
-
-        GfxSortSprite(&AircraftSpr);
-    }
-
-    cartPos = GfxIsometricFix16ToCartesian(&ptrAircraft->IsoPos);
-
-    // Aircraft position is referred to aircraft center
-    AircraftSpr.x = cartPos.x - (AircraftSpr.w >> 1);
-    AircraftSpr.y = cartPos.y - (AircraftSpr.h >> 1);
-
-    AircraftSpr.attribute &= ~(ENABLE_TRANS | TRANS_MODE(0));
-
-    CameraApplyCoordinatesToSprite(ptrPlayer, &AircraftSpr);
-
-    if ( (ptrPlayer->FlightDataSelectedAircraft == aircraftIdx)
-                        &&
-        (ptrPlayer->ShowAircraftData)                   )
-    {
-        static uint8_t aircraft_sine;
-        static bool aircraft_sine_decrease;
-
-        if (aircraft_sine_decrease == false)
+        if (ptrAircraft != NULL)
         {
-            if (aircraft_sine < 240)
+            if (ptrAircraft->State != STATE_IDLE)
             {
-                aircraft_sine += 24;
-            }
-            else
-            {
-                aircraft_sine_decrease = true;
+                AircraftUpdateSpriteFromData(ptrAircraft);
+
+                if (ptrAircraft->IsoPos.z > 0)
+                {
+                    // Draw aircraft shadow
+                    TYPE_ISOMETRIC_FIX16_POS shadowIsoPos;
+
+                    shadowIsoPos.x = ptrAircraft->IsoPos.x;
+                    shadowIsoPos.y = ptrAircraft->IsoPos.y;
+                    shadowIsoPos.z = 0;
+
+                    const TYPE_CARTESIAN_POS shadowCartPos = GfxIsometricFix16ToCartesian(&shadowIsoPos);
+
+                    // Aircraft position is referred to aircraft center
+                    AircraftSpr.x = shadowCartPos.x - (AircraftSpr.w >> 1);
+                    AircraftSpr.y = shadowCartPos.y - (AircraftSpr.h >> 1);
+
+                    CameraApplyCoordinatesToSprite(ptrPlayer, &AircraftSpr);
+
+                    AircraftSpr.r = 0;
+                    AircraftSpr.g = 0;
+                    AircraftSpr.b = 0;
+
+                    AircraftSpr.attribute |= ENABLE_TRANS | TRANS_MODE(0);
+
+                    GfxSortSprite(&AircraftSpr);
+                }
+
+                const TYPE_CARTESIAN_POS cartPos = GfxIsometricFix16ToCartesian(&ptrAircraft->IsoPos);
+
+                // Aircraft position is referred to aircraft center
+                AircraftSpr.x = cartPos.x - (AircraftSpr.w >> 1);
+                AircraftSpr.y = cartPos.y - (AircraftSpr.h >> 1);
+
+                AircraftSpr.attribute &= ~(ENABLE_TRANS | TRANS_MODE(0));
+
+                CameraApplyCoordinatesToSprite(ptrPlayer, &AircraftSpr);
+
+                if ((ptrPlayer->FlightDataSelectedAircraft == aircraftIdx)
+                                &&
+                    (ptrPlayer->ShowAircraftData))
+                {
+                    static uint8_t aircraft_sine;
+                    static bool aircraft_sine_decrease;
+
+                    if (aircraft_sine_decrease == false)
+                    {
+                        if (aircraft_sine < 240)
+                        {
+                            aircraft_sine += 24;
+                        }
+                        else
+                        {
+                            aircraft_sine_decrease = true;
+                        }
+                    }
+                    else
+                    {
+                        if (aircraft_sine > 24)
+                        {
+                            aircraft_sine -= 24;
+                        }
+                        else
+                        {
+                            aircraft_sine_decrease = false;
+                        }
+                    }
+
+                    AircraftSpr.r = NORMAL_LUMINANCE >> 2;
+                    AircraftSpr.g = NORMAL_LUMINANCE >> 2;
+                    AircraftSpr.b = aircraft_sine;
+
+                    if (GfxIsSpriteInsideScreenArea(&AircraftSpr) == false)
+                    {
+                        bool showLRArrow = false;
+                        bool showUPDNArrow = false;
+                        // When aircraft can't be shown on screen,
+                        // show an arrow indicating its position.
+
+                        if (AircraftSpr.x < 0)
+                        {
+                            LeftRightArrowSpr.x = 0;
+                            LeftRightArrowSpr.attribute |= H_FLIP;
+                            showLRArrow = true;
+                        }
+                        else if (AircraftSpr.x > X_SCREEN_RESOLUTION)
+                        {
+                            LeftRightArrowSpr.x = X_SCREEN_RESOLUTION - (LeftRightArrowSpr.w << 1);
+                            LeftRightArrowSpr.attribute &= ~(H_FLIP);
+                            showLRArrow = true;
+                        }
+                        else if (AircraftSpr.y < 0)
+                        {
+                            UpDownArrowSpr.y = 0;
+                            UpDownArrowSpr.attribute &= ~(V_FLIP);
+                            showUPDNArrow = true;
+                        }
+                        else if (AircraftSpr.y > Y_SCREEN_RESOLUTION)
+                        {
+                            UpDownArrowSpr.y = Y_SCREEN_RESOLUTION - (UpDownArrowSpr.h);
+                            UpDownArrowSpr.attribute |= V_FLIP;
+                            showUPDNArrow = true;
+                        }
+
+                        if (showLRArrow)
+                        {
+                            LeftRightArrowSpr.y = AircraftSpr.y;
+
+                            // First, saturate calculated Y values to {0, Y_SCREEN_RESOLUTION - LeftRightArrowSpr.h}.
+                            if (LeftRightArrowSpr.y < 0)
+                            {
+                                LeftRightArrowSpr.y = 0;
+                            }
+                            else if (LeftRightArrowSpr.y > (Y_SCREEN_RESOLUTION - LeftRightArrowSpr.h) )
+                            {
+                                LeftRightArrowSpr.y = (Y_SCREEN_RESOLUTION - LeftRightArrowSpr.h);
+                            }
+
+                            GfxSortSprite(&LeftRightArrowSpr);
+                        }
+                        else if (showUPDNArrow)
+                        {
+                            UpDownArrowSpr.x = AircraftSpr.x;
+
+                            // First, saturate calculated Y values to {0, Y_SCREEN_RESOLUTION - UpDownArrowSpr.h}.
+                            if (UpDownArrowSpr.x < 0)
+                            {
+                                UpDownArrowSpr.x = 0;
+                            }
+                            else if (UpDownArrowSpr.x > (X_SCREEN_RESOLUTION - (UpDownArrowSpr.w << 1) ) )
+                            {
+                                UpDownArrowSpr.x = (UpDownArrowSpr.w << 1);
+                            }
+
+                            GfxSortSprite(&UpDownArrowSpr);
+                        }
+                    }
+
+                }
+                else
+                {
+                    AircraftSpr.r = NORMAL_LUMINANCE;
+                    AircraftSpr.g = NORMAL_LUMINANCE;
+                    AircraftSpr.b = NORMAL_LUMINANCE;
+                }
+
+                GfxSortSprite(&AircraftSpr);
             }
         }
-        else
-        {
-            if (aircraft_sine > 24)
-            {
-                aircraft_sine -= 24;
-            }
-            else
-            {
-                aircraft_sine_decrease = false;
-            }
-        }
-
-        AircraftSpr.r = NORMAL_LUMINANCE >> 2;
-        AircraftSpr.g = NORMAL_LUMINANCE >> 2;
-        AircraftSpr.b = aircraft_sine;
-
-        if (GfxIsSpriteInsideScreenArea(&AircraftSpr) == false)
-        {
-            bool showLRArrow = false;
-            bool showUPDNArrow = false;
-            // When aircraft can't be shown on screen,
-            // show an arrow indicating its position.
-
-            if (AircraftSpr.x < 0)
-            {
-                LeftRightArrowSpr.x = 0;
-                LeftRightArrowSpr.attribute |= H_FLIP;
-                showLRArrow = true;
-            }
-            else if (AircraftSpr.x > X_SCREEN_RESOLUTION)
-            {
-                LeftRightArrowSpr.x = X_SCREEN_RESOLUTION - (LeftRightArrowSpr.w << 1);
-                LeftRightArrowSpr.attribute &= ~(H_FLIP);
-                showLRArrow = true;
-            }
-            else if (AircraftSpr.y < 0)
-            {
-                UpDownArrowSpr.y = 0;
-                UpDownArrowSpr.attribute &= ~(V_FLIP);
-                showUPDNArrow = true;
-            }
-            else if (AircraftSpr.y > Y_SCREEN_RESOLUTION)
-            {
-                UpDownArrowSpr.y = Y_SCREEN_RESOLUTION - (UpDownArrowSpr.h);
-                UpDownArrowSpr.attribute |= V_FLIP;
-                showUPDNArrow = true;
-            }
-
-            if (showLRArrow)
-            {
-                LeftRightArrowSpr.y = AircraftSpr.y;
-
-                // First, saturate calculated Y values to {0, Y_SCREEN_RESOLUTION - LeftRightArrowSpr.h}.
-                if (LeftRightArrowSpr.y < 0)
-                {
-                    LeftRightArrowSpr.y = 0;
-                }
-                else if (LeftRightArrowSpr.y > (Y_SCREEN_RESOLUTION - LeftRightArrowSpr.h) )
-                {
-                    LeftRightArrowSpr.y = (Y_SCREEN_RESOLUTION - LeftRightArrowSpr.h);
-                }
-
-                GfxSortSprite(&LeftRightArrowSpr);
-            }
-            else if (showUPDNArrow)
-            {
-                UpDownArrowSpr.x = AircraftSpr.x;
-
-                // First, saturate calculated Y values to {0, Y_SCREEN_RESOLUTION - UpDownArrowSpr.h}.
-                if (UpDownArrowSpr.x < 0)
-                {
-                    UpDownArrowSpr.x = 0;
-                }
-                else if (UpDownArrowSpr.x > (X_SCREEN_RESOLUTION - (UpDownArrowSpr.w << 1) ) )
-                {
-                    UpDownArrowSpr.x = (UpDownArrowSpr.w << 1);
-                }
-
-                GfxSortSprite(&UpDownArrowSpr);
-            }
-        }
-
     }
-    else
-    {
-        AircraftSpr.r = NORMAL_LUMINANCE;
-        AircraftSpr.g = NORMAL_LUMINANCE;
-        AircraftSpr.b = NORMAL_LUMINANCE;
-    }
-
-    GfxSortSprite(&AircraftSpr);
 }
 
 void AircraftDirection(TYPE_AIRCRAFT_DATA* const ptrAircraft)
@@ -778,16 +783,25 @@ void AircraftAttitude(TYPE_AIRCRAFT_DATA* const ptrAircraft)
     }
 }
 
-TYPE_ISOMETRIC_POS AircraftGetIsoPos(uint8_t FlightDataIdx)
+TYPE_ISOMETRIC_POS AircraftGetIsoPos(const uint8_t FlightDataIdx)
 {
-    // Aircraft position data is stored in fix16_t data type instead of "short" data type.
-    // So we must perform a conversion first for convenience.
-    TYPE_ISOMETRIC_POS retIsoPos;
-    TYPE_ISOMETRIC_FIX16_POS fix16IsoPos = AircraftFromFlightDataIndex(FlightDataIdx)->IsoPos;
+    TYPE_ISOMETRIC_POS retIsoPos = {0};
 
-    retIsoPos.x = (short)fix16_to_int(fix16IsoPos.x);
-    retIsoPos.y = (short)fix16_to_int(fix16IsoPos.y);
-    retIsoPos.z = (short)fix16_to_int(fix16IsoPos.z);
+    if (FlightDataIdx != AIRCRAFT_INVALID_IDX)
+    {
+        TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(FlightDataIdx);
+
+        if (ptrAircraft != NULL)
+        {
+            // Aircraft position data is stored in fix16_t data type instead of "short" data type.
+            // So we must perform a conversion first for convenience.
+            const TYPE_ISOMETRIC_FIX16_POS fix16IsoPos = ptrAircraft->IsoPos;
+
+            retIsoPos.x = (short)fix16_to_int(fix16IsoPos.x);
+            retIsoPos.y = (short)fix16_to_int(fix16IsoPos.y);
+            retIsoPos.z = (short)fix16_to_int(fix16IsoPos.z);
+        }
+    }
 
     return retIsoPos;
 }
@@ -798,42 +812,51 @@ void AircraftAddTargets(TYPE_AIRCRAFT_DATA* const ptrAircraft, uint16_t* targets
     ptrAircraft->TargetIdx = 0;
 }
 
-uint16_t AircraftGetTileFromFlightDataIndex(uint8_t index)
+uint16_t AircraftGetTileFromFlightDataIndex(const uint8_t index)
 {
-    TYPE_ISOMETRIC_POS isoPos = AircraftGetIsoPos(index);
+    TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(index);
 
-    if (AircraftFromFlightDataIndex(index)->State != STATE_IDLE)
+    if (ptrAircraft != NULL)
     {
-        return GameGetTileFromIsoPosition(&isoPos);
+        if (ptrAircraft->State != STATE_IDLE)
+        {
+            TYPE_ISOMETRIC_POS isoPos = AircraftGetIsoPos(index);
+
+            return GameGetTileFromIsoPosition(&isoPos);
+        }
     }
-    else
-    {
-        return 0;
-    }
+
+    return 0;
 }
 
-TYPE_AIRCRAFT_DATA* AircraftFromFlightDataIndex(uint8_t index)
+TYPE_AIRCRAFT_DATA* AircraftFromFlightDataIndex(const uint8_t index)
 {
-    uint8_t idx;
-
-    if ( (index == AIRCRAFT_INVALID_IDX) || (index >= GAME_MAX_AIRCRAFT) )
+    if ((index != AIRCRAFT_INVALID_IDX)
+                &&
+        (index < GAME_MAX_AIRCRAFT))
     {
-        return NULL;
+        const uint8_t idx = flightDataIdxTable[index];
+
+        if (idx != AIRCRAFT_INVALID_IDX)
+        {
+            return &AircraftData[idx];
+        }
+        else
+        {
+        }
     }
 
-    idx = AircraftFlightDataIdx_HashTable[index];
-
-    if (idx == AIRCRAFT_INVALID_IDX)
-    {
-        return NULL;
-    }
-
-    return &AircraftData[idx];
+    return NULL;
 }
 
 void AircraftFromFlightDataIndexAddTargets(uint8_t index, uint16_t* targets)
 {
-    AircraftAddTargets(AircraftFromFlightDataIndex(index), targets);
+    TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(index);
+
+    if (ptrAircraft != NULL)
+    {
+        AircraftAddTargets(ptrAircraft, targets);
+    }
 }
 
 DIRECTION AircraftGetDirection(TYPE_AIRCRAFT_DATA* const ptrAircraft)
