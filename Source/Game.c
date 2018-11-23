@@ -219,7 +219,6 @@ static GsSprite GameTileset2Spr;
 static GsSprite GamePlaneSpr;
 static GsSprite GameMouseSpr;
 static GsSprite GameBuildingSpr;
-static GsSprite CityBg1Spr;
 
 static uint16_t GameRwy[GAME_MAX_RUNWAYS];
 static TYPE_FLIGHT_DATA FlightData;
@@ -259,7 +258,6 @@ static const char* const GameFileList[] =
     "DATA\\SOUNDS\\RCPM1A1.VAG",
     "DATA\\SOUNDS\\RCTM1F1.VAG",
     "DATA\\SOUNDS\\TAKEOFF1.VAG",
-    "DATA\\SPRITES\\CITYBG1.TIM",
     "DATA\\SOUNDS\\BEEP.VAG"
 };
 
@@ -274,7 +272,6 @@ static void* GameFileDest[] =
     &ApproachSnds[SOUND_W1_INDEX],
     &TowerFinalSnds[SOUND_M1_INDEX],
     &TakeoffSnd,
-    &CityBg1Spr,
     &BeepSnd
 };
 
@@ -1157,82 +1154,52 @@ void GameDrawBackground(TYPE_PLAYER* const ptrPlayer)
     enum
     {
         BG_POLY4_R0 = 0,
-        BG_POLY4_G0 = BG_POLY4_R0,
-        BG_POLY4_B0 = BG_POLY4_R0,
+        BG_POLY4_G0 = 0,
+        BG_POLY4_B0 = 16,
 
-        BG_POLY4_R1 = BG_POLY4_R0,
-        BG_POLY4_G1 = BG_POLY4_R1,
-        BG_POLY4_B1 = BG_POLY4_R1,
+        BG_POLY4_R1 = 0,
+        BG_POLY4_G1 = 0,
+        BG_POLY4_B1 = 16,
 
-        BG_POLY4_R2 = 40,
-        BG_POLY4_G2 = BG_POLY4_R2,
-        BG_POLY4_B2 = BG_POLY4_R2,
+        BG_POLY4_R2 = 0,
+        BG_POLY4_G2 = 0,
+        BG_POLY4_B2 = 80,
 
-        BG_POLY4_R3 = BG_POLY4_R2,
-        BG_POLY4_G3 = BG_POLY4_R3,
-        BG_POLY4_B3 = BG_POLY4_R3,
+        BG_POLY4_R3 = 0,
+        BG_POLY4_G3 = 0,
+        BG_POLY4_B3 = 80
     };
 
-    enum
+    static const GsGPoly4 BgPoly4 =
     {
-        CITY_BG_X = 0,
-        CITY_BG_Y = Y_SCREEN_RESOLUTION >> 1,
+        .x[0] = 0,
+        .x[1] = X_SCREEN_RESOLUTION,
+        .x[2] = 0,
+        .x[3] = X_SCREEN_RESOLUTION,
 
-        CITY_BG_R = 40,
-        CITY_BG_G = 40,
-        CITY_BG_B = 40,
+        .y[0] = 0,
+        .y[1] = 0,
+        .y[2] = Y_SCREEN_RESOLUTION,
+        .y[3] = Y_SCREEN_RESOLUTION,
+
+        .r[0] = BG_POLY4_R0,
+        .g[0] = BG_POLY4_G0,
+        .b[0] = BG_POLY4_B0,
+
+        .r[1] = BG_POLY4_R1,
+        .g[1] = BG_POLY4_G1,
+        .b[1] = BG_POLY4_B1,
+
+        .r[2] = BG_POLY4_R2,
+        .g[2] = BG_POLY4_G2,
+        .b[2] = BG_POLY4_B2,
+
+        .r[3] = BG_POLY4_R3,
+        .g[3] = BG_POLY4_G3,
+        .b[3] = BG_POLY4_B3
     };
 
-    GsGPoly4 BgPoly4 = {.x[0] = 0,
-                        .x[1] = X_SCREEN_RESOLUTION,
-                        .x[2] = 0,
-                        .x[3] = X_SCREEN_RESOLUTION,
-
-                        .y[0] = 0,
-                        .y[1] = 0,
-                        .y[2] = Y_SCREEN_RESOLUTION,
-                        .y[3] = Y_SCREEN_RESOLUTION,
-
-                        .r[0] = BG_POLY4_R0,
-                        .g[0] = BG_POLY4_G0,
-                        .b[0] = BG_POLY4_B0,
-
-                        .r[1] = BG_POLY4_R1,
-                        .g[1] = BG_POLY4_G1,
-                        .b[1] = BG_POLY4_B1,
-
-                        .r[2] = BG_POLY4_R2,
-                        .g[2] = BG_POLY4_G2,
-                        .b[2] = BG_POLY4_B2,
-
-                        .r[3] = BG_POLY4_R3,
-                        .g[3] = BG_POLY4_G3,
-                        .b[3] = BG_POLY4_B3 };
-
-    short x;
-    bool reverse = false;
-
-    GsSortGPoly4(&BgPoly4);
-
-    for (x = CITY_BG_X; x < X_SCREEN_RESOLUTION; x += CityBg1Spr.w)
-    {
-        CityBg1Spr.x = x;
-        CityBg1Spr.y = CITY_BG_Y;
-
-        CityBg1Spr.r = CITY_BG_R;
-        CityBg1Spr.g = CITY_BG_G;
-        CityBg1Spr.b = CITY_BG_B;
-
-        CityBg1Spr.attribute = reverse? CityBg1Spr.attribute | H_FLIP : CityBg1Spr.attribute & ~(H_FLIP);
-        reverse = reverse? true: false; // Revert "reverse" flag.
-
-        CameraApplyCoordinatesToSprite(ptrPlayer, &CityBg1Spr);
-
-        // Restore original Y value.
-        CityBg1Spr.y = CITY_BG_Y;
-
-        GfxSortSprite(&CityBg1Spr);
-    }
+    GsSortGPoly4((GsGPoly4*)&BgPoly4);
 }
 
 /* *******************************************************************

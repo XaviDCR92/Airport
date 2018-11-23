@@ -82,7 +82,7 @@ static AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char* strFlightNumber);
 static void AircraftAttitude(TYPE_AIRCRAFT_DATA* const ptrAircraft);
 static void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* const ptrAircraft);
 static void AircraftSpeed(TYPE_AIRCRAFT_DATA* const ptrAircraft);
-static bool AircraftCheckCollision(TYPE_AIRCRAFT_DATA* ptrRefAircraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft);
+static bool AircraftCheckCollision(const TYPE_AIRCRAFT_DATA* const ptrRefAircraft, const TYPE_AIRCRAFT_DATA* const ptrOtherAircraft);
 static bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* ptrAicraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft);
 
 void AircraftInit(void)
@@ -237,7 +237,7 @@ bool AircraftAddNew(    TYPE_FLIGHT_DATA* const ptrFlightData,
     return false;
 }
 
-AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char* strFlightNumber)
+static AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char* strFlightNumber)
 {
     int32_t liveryIndex;
     char strLivery[4];
@@ -345,11 +345,10 @@ void AircraftHandler(void)
     }
 }
 
-bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* const ptrAircraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft)
+static bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* const ptrAircraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft)
 {
-    uint16_t currentTile = AircraftGetTileFromFlightDataIndex(ptrAircraft->FlightDataIdx);
-    uint16_t nextTile = 0; // Keep compiler happy
-    uint16_t otherAircraft_currentTile = AircraftGetTileFromFlightDataIndex(ptrOtherAircraft->FlightDataIdx);
+    const uint16_t currentTile = AircraftGetTileFromFlightDataIndex(ptrAircraft->FlightDataIdx);
+    uint16_t nextTile; // Keep compiler happy
 
     switch (ptrAircraft->Direction)
     {
@@ -376,21 +375,25 @@ bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* const ptrAircraft, TYPE_AIRCRAFT_DATA
         return false;
     }
 
-    if (    (otherAircraft_currentTile == nextTile)
-                        ||
-            (otherAircraft_currentTile == currentTile)  )
     {
-        if (ptrOtherAircraft->Speed == 0)
+        const uint16_t otherAircraft_currentTile = AircraftGetTileFromFlightDataIndex(ptrOtherAircraft->FlightDataIdx);
+
+        if (    (otherAircraft_currentTile == nextTile)
+                            ||
+                (otherAircraft_currentTile == currentTile)  )
         {
-            // Make ptrAircraft stop if ptrOtherAircraft is nearby and not moving!
-            return true;
+            if (ptrOtherAircraft->Speed == 0)
+            {
+                // Make ptrAircraft stop if ptrOtherAircraft is nearby and not moving!
+                return true;
+            }
         }
     }
 
     return false;
 }
 
-void AircraftSpeed(TYPE_AIRCRAFT_DATA* const ptrAircraft)
+static void AircraftSpeed(TYPE_AIRCRAFT_DATA* const ptrAircraft)
 {
     switch(ptrAircraft->State)
     {
@@ -592,7 +595,7 @@ void AircraftRender(TYPE_PLAYER* const ptrPlayer, uint8_t aircraftIdx)
     }
 }
 
-void AircraftDirection(TYPE_AIRCRAFT_DATA* const ptrAircraft)
+static void AircraftDirection(TYPE_AIRCRAFT_DATA* const ptrAircraft)
 {
     TYPE_ISOMETRIC_FIX16_POS targetPos;
 
@@ -724,7 +727,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* const ptrAircraft)
     }
 }
 
-void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* const ptrAircraft)
+static void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* const ptrAircraft)
 {
     switch(ptrAircraft->Livery)
     {
@@ -772,7 +775,7 @@ void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* const ptrAircraft)
     }
 }
 
-void AircraftAttitude(TYPE_AIRCRAFT_DATA* const ptrAircraft)
+static void AircraftAttitude(TYPE_AIRCRAFT_DATA* const ptrAircraft)
 {
     if (ptrAircraft->State == STATE_FINAL)
     {
@@ -841,9 +844,6 @@ TYPE_AIRCRAFT_DATA* AircraftFromFlightDataIndex(const uint8_t index)
         {
             return &AircraftData[idx];
         }
-        else
-        {
-        }
     }
 
     return NULL;
@@ -900,7 +900,7 @@ bool AircraftMoving(uint8_t index)
     return false;
 }
 
-bool AircraftCheckCollision(TYPE_AIRCRAFT_DATA* ptrRefAircraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft)
+static bool AircraftCheckCollision(const TYPE_AIRCRAFT_DATA* const ptrRefAircraft, const TYPE_AIRCRAFT_DATA* const ptrOtherAircraft)
 {
 // Here I have used an old macro that I found on nextvolume's source code for "A Small Journey", IIRC.
 // Totally fool-proof, so I dint' want to complicate things!
@@ -923,4 +923,5 @@ bool AircraftCheckCollision(TYPE_AIRCRAFT_DATA* ptrRefAircraft, TYPE_AIRCRAFT_DA
     }
 
     return false;
+#undef check_bb_collision
 }

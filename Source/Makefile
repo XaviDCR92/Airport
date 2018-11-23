@@ -107,7 +107,6 @@ SPRITE_OBJECTS =	$(addprefix $(OBJ_SPRITES_PATH)/,	PSXDISK.TIM			\
 														LFRARROW.TIM		\
 														UDNARROW.TIM		\
 														BCNGW.TIM			\
-														CITYBG1.TIM			\
 														MENUSTAR.TIM	)
 
 SPRITE_OBJECTS += $(addprefix $(OBJ_FONTS_PATH)/,	INTROFNT.TIM			\
