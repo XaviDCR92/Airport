@@ -9,25 +9,25 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    gscene(new MyGraphicsScene),
+    level_size(0),
     selected_item(-1)
 {
-    ui->setupUi(this);
+    ui.setupUi(this);
     this->setWindowTitle(APP_FULL_NAME);
 
-    connect(ui->LoadMap_Btn,            SIGNAL(released()),                 this,   SLOT(loadMap()));
-    connect(ui->CreateMap_Btn,          SIGNAL(released()),                 this,   SLOT(onCreateMap()));
-    connect(ui->saveMap_Btn,            SIGNAL(released()),                 this,   SLOT(onSaveMap(void)));
-    connect(ui->showNumbers_Checkbox,   SIGNAL(stateChanged(int)),          this,   SLOT(onShowNumbers(int)));
-    connect(ui->airportName_Label,      SIGNAL(textChanged(QString)),       this,   SLOT(onAirportNameModified(QString)));
+    connect(ui.LoadMap_Btn,            SIGNAL(released()),                 this,   SLOT(loadMap()));
+    connect(ui.CreateMap_Btn,          SIGNAL(released()),                 this,   SLOT(onCreateMap()));
+    connect(ui.saveMap_Btn,            SIGNAL(released()),                 this,   SLOT(onSaveMap(void)));
+    connect(ui.showNumbers_Checkbox,   SIGNAL(stateChanged(int)),          this,   SLOT(onShowNumbers(int)));
+    connect(ui.airportName_Label,      SIGNAL(textChanged(QString)),       this,   SLOT(onAirportNameModified(QString)));
 
-    connect(gscene,                     SIGNAL(positionClicked(QPointF)),   this,   SLOT(onMapItemClicked(QPointF)));
-    connect(gscene,                     SIGNAL(noItemSelected(void)),       this,   SLOT(onNoItemSelected(void)));
-    connect(gscene,                     SIGNAL(updateSelectedItem(void)),   this,   SLOT(onListItemSelected(void)));
+    connect(&gscene,                     SIGNAL(positionClicked(QPointF)),   this,   SLOT(onMapItemClicked(QPointF)));
+    connect(&gscene,                     SIGNAL(noItemSelected(void)),       this,   SLOT(onNoItemSelected(void)));
+    connect(&gscene,                     SIGNAL(updateSelectedItem(void)),   this,   SLOT(onListItemSelected(void)));
 
     appSettings();
     loadTilesetData();
+    loadBuildingData();
 }
 
 MainWindow::~MainWindow()
@@ -36,9 +36,22 @@ MainWindow::~MainWindow()
     {
         delete it;
     }
+}
 
-    delete ui;
-    delete gscene;
+void MainWindow::loadBuildingData(void)
+{
+    const QString filePath = "./buildings.ini";
+
+    QFile f(filePath);
+
+    if (f.open(QFile::ReadOnly))
+    {
+
+    }
+    else
+    {
+        showError(tr("Could not open file ") + filePath);
+    }
 }
 
 void MainWindow::onShowNumbers(int)
@@ -73,7 +86,7 @@ void MainWindow::onMapItemClicked(QPointF pos)
 
 void MainWindow::onListItemSelected(void)
 {
-    foreach (const QListWidgetItem* const it, ui->tileList->selectedItems())
+    foreach (const QListWidgetItem* const it, ui.tileList->selectedItems())
     {
         if (it != nullptr)
         {
@@ -85,11 +98,11 @@ void MainWindow::onListItemSelected(void)
 
                 if (map_buffer_pos < map_buffer.count())
                 {
-                    const char row = static_cast<char>(ui->tileList->row(it));
+                    const char row = static_cast<char>(ui.tileList->row(it));
 
                     map_buffer[map_buffer_pos] = row;
 
-                    if (ui->mirror_CheckBox->isChecked() )
+                    if (ui.mirror_CheckBox->isChecked() )
                     {
                         map_buffer[map_buffer_pos] = map_buffer[map_buffer_pos] | TILE_MIRROR_FLAG;
                     }
@@ -256,12 +269,12 @@ void MainWindow::parseMapData(QDataStream& ds, const QPixmap& tileSet)
 
     ds.readRawData(airportName, sizeof(airportName) / sizeof(airportName[0]));
 
-    ui->airportName_Label->setText(QString(airportName));
+    ui.airportName_Label->setText(QString(airportName));
 
     ds.skipRawData(0x3B - 0x1A);
 
-    gscene->clear();
-    gscene->clearFocus();
+    gscene.clear();
+    gscene.clearFocus();
 
     for (int j = 0; j < level_size; j++)
     {
@@ -326,7 +339,7 @@ void MainWindow::parseMapData(QDataStream& ds, const QPixmap& tileSet)
                 }
             }
 
-            QGraphicsPixmapItem* const it = gscene->addPixmap(QPixmap::fromImage(cropped));
+            QGraphicsPixmapItem* const it = gscene.addPixmap(QPixmap::fromImage(cropped));
 
             if (it != nullptr)
             {
@@ -336,7 +349,7 @@ void MainWindow::parseMapData(QDataStream& ds, const QPixmap& tileSet)
                 it->setX(x);
                 it->setY(y);
 
-                if (ui->showNumbers_Checkbox->isChecked() )
+                if (ui.showNumbers_Checkbox->isChecked() )
                 {
                     QGraphicsTextItem* const io = new QGraphicsTextItem();
 
@@ -345,7 +358,10 @@ void MainWindow::parseMapData(QDataStream& ds, const QPixmap& tileSet)
                         io->setPos(x + (TILE_SIZE / 4), y);
                         io->setPlainText(QString::number(i + (j * level_size)));
 
-                        gscene->addItem(io);
+                        gscene.addItem(io);
+
+                        /* Append pointer to the list so it can be
+                         * safely removed on the constructor. */
                         textItems.append(io);
                     }
                 }
@@ -353,15 +369,15 @@ void MainWindow::parseMapData(QDataStream& ds, const QPixmap& tileSet)
         }
     }
 
-    ui->graphicsView->setScene(gscene);
-    ui->graphicsView->show();
+    ui.graphicsView->setScene(&gscene);
+    ui.graphicsView->show();
 }
 
 bool MainWindow::checkFile(QFile& f, QFile::OpenModeFlag flags)
 {
-    QFileInfo fi(f);
+    const QFileInfo fi(f);
 
-    if (f.open(flags) == false)
+    if (not f.open(flags))
     {
         return false;
     }
@@ -375,35 +391,36 @@ bool MainWindow::checkFile(QFile& f, QFile::OpenModeFlag flags)
 
 void MainWindow::appSettings(void)
 {
-    QSettings set("./settings.ini", QSettings::IniFormat);
+    QSettings settings("./settings.ini", QSettings::IniFormat);
 
-    set.beginGroup("app_settings");
+    settings.beginGroup("app_settings");
 
-    _last_dir = set.value("last_dir").toString();
+    _last_dir = settings.value("last_dir").toString();
 
-    set.endGroup();
+    restoreGeometry(settings.value("window_geometry").toByteArray());
+
+    settings.endGroup();
 }
 
 void MainWindow::closeEvent(QCloseEvent*)
 {
-    QSettings set("./settings.ini", QSettings::IniFormat);
+    QSettings settings("./settings.ini", QSettings::IniFormat);
 
-    set.beginGroup("app_settings");
+    settings.beginGroup("app_settings");
 
-    set.setValue("last_dir", _last_dir);
+    settings.setValue("last_dir", _last_dir);
+    settings.setValue("window_geometry", saveGeometry());
 
-    set.endGroup();
+    settings.endGroup();
 }
 
 void MainWindow::loadTilesetData(void)
 {
-    QFile f("./tileset.ini");
+    const QString filePath = "./tileset.ini";
 
-    if (f.exists() == false)
-    {
-        qDebug() << "tileset.ini does not exist. Please create it";
-    }
-    else
+    QFile f(filePath);
+
+    if (f.exists())
     {
         QSettings tilesetFile("./tileset.ini", QSettings::IniFormat);
         QStringList tilesets_to_check;
@@ -428,11 +445,15 @@ void MainWindow::loadTilesetData(void)
                 }
 
                 tilesetData.insert(i++, tileName);
-                ui->tileList->addItem(tileName);
+                ui.tileList->addItem(tileName);
             }
 
             tilesetFile.endGroup();
         }
+    }
+    else
+    {
+        showError(tr("Could not find tile data file ") + filePath);
     }
 }
 

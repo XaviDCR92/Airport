@@ -32,13 +32,15 @@ public:
     void closeEvent(QCloseEvent*);
 
 private:
-    Ui::MainWindow *ui;
     bool checkFile(QFile &f, QFile::OpenModeFlag flags = QFile::ReadOnly);
     void appSettings(void);
     void loadTilesetData(void);
+    void loadBuildingData(void);
     void parseMapData(QDataStream &ds, const QPixmap &tileSet);
+
+    Ui::MainWindow ui;
     QString _last_dir;
-    MyGraphicsScene *gscene;
+    MyGraphicsScene gscene;
     int level_size;
     QByteArray map_buffer;
     int selected_item;
