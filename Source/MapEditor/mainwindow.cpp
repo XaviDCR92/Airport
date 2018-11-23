@@ -32,6 +32,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    foreach (QGraphicsTextItem* it, textItems)
+    {
+        delete it;
+    }
+
     delete ui;
     delete gscene;
 }
@@ -321,26 +326,29 @@ void MainWindow::parseMapData(QDataStream& ds, const QPixmap& tileSet)
                 }
             }
 
-            QGraphicsPixmapItem* it = gscene->addPixmap(QPixmap::fromImage(cropped));
-            int x;
-            int y;
+            QGraphicsPixmapItem* const it = gscene->addPixmap(QPixmap::fromImage(cropped));
 
-            x = (i * TILE_SIZE) - (i * (TILE_SIZE / 2));
-            x -= (j * (TILE_SIZE / 2));
-
-            y = (j * (TILE_SIZE / 4));
-            y += i * (TILE_SIZE / 4);
-
-            it->setX(x);
-            it->setY(y);
-
-            if (ui->showNumbers_Checkbox->isChecked() )
+            if (it != nullptr)
             {
-                QGraphicsTextItem* io = new QGraphicsTextItem();
-                io->setPos(x + (TILE_SIZE / 4), y);
-                io->setPlainText(QString::number(i + (j * level_size)));
+                const int x = ((i * TILE_SIZE) - (i * (TILE_SIZE / 2))) - (j * (TILE_SIZE / 2));
+                const int y = (j * (TILE_SIZE / 4)) + (i * (TILE_SIZE / 4));
 
-                gscene->addItem(io);
+                it->setX(x);
+                it->setY(y);
+
+                if (ui->showNumbers_Checkbox->isChecked() )
+                {
+                    QGraphicsTextItem* const io = new QGraphicsTextItem();
+
+                    if (io != nullptr)
+                    {
+                        io->setPos(x + (TILE_SIZE / 4), y);
+                        io->setPlainText(QString::number(i + (j * level_size)));
+
+                        gscene->addItem(io);
+                        textItems.append(io);
+                    }
+                }
             }
         }
     }

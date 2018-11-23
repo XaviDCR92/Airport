@@ -43,6 +43,7 @@ private:
     QByteArray map_buffer;
     int selected_item;
     QHash<int, QString> tilesetData;
+    QList<QGraphicsTextItem*> textItems;
 
 private slots:
     void loadMap(void);
