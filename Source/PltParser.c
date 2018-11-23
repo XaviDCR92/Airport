@@ -26,9 +26,9 @@
  * 	Local Prototypes
  * *************************************/
 
-static void PltParserResetBuffers(TYPE_FLIGHT_DATA* ptrFlightData);
+static void PltParserResetBuffers(TYPE_FLIGHT_DATA* const ptrFlightData);
 
-bool PltParserLoadFile(const char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
+bool PltParserLoadFile(const char* strPath, TYPE_FLIGHT_DATA* const ptrFlightData)
 {
 	enum
 	{
@@ -314,7 +314,7 @@ bool PltParserLoadFile(const char* strPath, TYPE_FLIGHT_DATA* ptrFlightData)
 	return true;
 }
 
-void PltParserResetBuffers(TYPE_FLIGHT_DATA* ptrFlightData)
+void PltParserResetBuffers(TYPE_FLIGHT_DATA* const ptrFlightData)
 {
 	uint8_t i;
 

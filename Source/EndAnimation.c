@@ -141,7 +141,7 @@ void EndAnimationLine(void)
 
 		rectIndex += END_ANIMATION_LINE_STEP;
 
-	}while (rectIndex <= (X_SCREEN_RESOLUTION >> 1) );
+	} while (rectIndex <= (X_SCREEN_RESOLUTION >> 1) );
 
 }
 
@@ -177,7 +177,7 @@ void EndAnimationSquares(void)
 				sqPos[randInd] = true;
 				sqCounter--;
 
-				while (sqPos[maxIndex] != false)
+				while (sqPos[maxIndex])
 				{
 					// Lower maximum value for rand() so that it's
 					// easier to spot new empty index on next iteration.
@@ -193,7 +193,7 @@ void EndAnimationSquares(void)
 					break;
 				}
 			}
-		}while (1);
+		} while (1);
 
 		GfxSortSprite(&EndAnimationDisplay);
 
@@ -201,7 +201,7 @@ void EndAnimationSquares(void)
 		{
 			for (j = 0; j < END_ANIMATION_SQUARES_TOTAL ; j++)
 			{
-				if (sqPos[j] != false)
+				if (sqPos[j])
 				{
 					EndAnimationRect.x = ((j) << END_ANIMATION_SQUARES_SIZE_BITSHIFT) -
 												(short)( (j / END_ANIMATION_SQUARES_PER_ROW) *

@@ -46,7 +46,7 @@ bool SfxUploadSound_Ex(const char* file_path, SsVag* vag, uint8_t voiceIndex)
 		return false;
 	}
 
-	if (usedVoices[voiceIndex] != false)
+	if (usedVoices[voiceIndex])
 	{
 		Serial_printf("Voice number %d is already being used.\n", voiceIndex);
 		return false;

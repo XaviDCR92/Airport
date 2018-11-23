@@ -62,13 +62,13 @@ void MessageHandler(void)
 {
 	uint8_t i;
 
-	if (System1SecondTick() != false)
+	if (System1SecondTick())
 	{
 		for (i = 0; i < MESSAGE_FIFO_SIZE; i++)
 		{
 			TYPE_MESSAGE_DATA* ptrMessage = &tMessageFIFO[i];
 
-			if (ptrMessage->used != false)
+			if (ptrMessage->used)
 			{
 				if (ptrMessage->Timeout == 0)
 				{

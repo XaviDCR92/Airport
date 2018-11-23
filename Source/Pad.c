@@ -170,46 +170,46 @@ bool PadOneAnyKeyPressed(void)
 
 bool PadOneDirectionKeyPressed(void)
 {
-	return (	(PadOneKeyPressed(PAD_UP) != false)
+	return (	(PadOneKeyPressed(PAD_UP))
 						||
-				(PadOneKeyPressed(PAD_LEFT) != false)
+				(PadOneKeyPressed(PAD_LEFT))
 						||
-				(PadOneKeyPressed(PAD_RIGHT) != false)
+				(PadOneKeyPressed(PAD_RIGHT))
 						||
-				(PadOneKeyPressed(PAD_DOWN) != false)	);
+				(PadOneKeyPressed(PAD_DOWN))	);
 }
 
 bool PadOneDirectionKeyReleased(void)
 {
-	return (	(PadOneKeyReleased(PAD_UP) != false)
+	return (	(PadOneKeyReleased(PAD_UP))
 						||
-				(PadOneKeyReleased(PAD_LEFT) != false)
+				(PadOneKeyReleased(PAD_LEFT))
 						||
-				(PadOneKeyReleased(PAD_RIGHT) != false)
+				(PadOneKeyReleased(PAD_RIGHT))
 						||
-				(PadOneKeyReleased(PAD_DOWN) != false)	);
+				(PadOneKeyReleased(PAD_DOWN))	);
 }
 
 bool PadTwoDirectionKeyReleased(void)
 {
-	return (	(PadTwoKeyReleased(PAD_UP) != false)
+	return (	(PadTwoKeyReleased(PAD_UP))
 						||
-				(PadTwoKeyReleased(PAD_LEFT) != false)
+				(PadTwoKeyReleased(PAD_LEFT))
 						||
-				(PadTwoKeyReleased(PAD_RIGHT) != false)
+				(PadTwoKeyReleased(PAD_RIGHT))
 						||
-				(PadTwoKeyReleased(PAD_DOWN) != false)	);
+				(PadTwoKeyReleased(PAD_DOWN))	);
 }
 
 bool PadTwoDirectionKeyPressed(void)
 {
-	return (	(PadTwoKeyPressed(PAD_UP) != false)
+	return (	(PadTwoKeyPressed(PAD_UP))
 						||
-				(PadTwoKeyPressed(PAD_LEFT) != false)
+				(PadTwoKeyPressed(PAD_LEFT))
 						||
-				(PadTwoKeyPressed(PAD_RIGHT) != false)
+				(PadTwoKeyPressed(PAD_RIGHT))
 						||
-				(PadTwoKeyPressed(PAD_DOWN) != false)	);
+				(PadTwoKeyPressed(PAD_DOWN))	);
 }
 
 bool PadTwoAnyKeyPressed(void)
@@ -279,7 +279,7 @@ bool PadTwoKeyRepeat(unsigned short key, uint8_t time)
 
 void PadOneVibrationHandler(void)
 {
-	if (PadOneIsVibrationEnabled() != false)
+	if (PadOneIsVibrationEnabled())
 	{
 		pad_enable_vibration(PAD_ONE);
 		pad_set_vibration(PAD_ONE,pad1_small_vibration_force,pad1_big_vibration_force);
@@ -289,7 +289,7 @@ void PadOneVibrationHandler(void)
 
 void PadTwoVibrationHandler(void)
 {
-	if (PadTwoIsVibrationEnabled() != false)
+	if (PadTwoIsVibrationEnabled())
 	{
 		pad_enable_vibration(PAD_TWO);
 		pad_set_vibration(PAD_TWO,pad2_small_vibration_force,pad2_big_vibration_force);
@@ -503,7 +503,7 @@ void PadCheatHandler(uint8_t n_pad)
 	{
 		if (cheatsArray[i] != NULL)
 		{
-			if (SystemArrayCompare(cheat_array, cheatsArray[i]->Combination, CHEAT_ARRAY_SIZE) != false)
+			if (SystemArrayCompare(cheat_array, cheatsArray[i]->Combination, CHEAT_ARRAY_SIZE))
 			{
 				if (cheatsArray[i]->Callback != NULL)
 				{
@@ -522,7 +522,7 @@ void PadCheatHandler(uint8_t n_pad)
 
 	for (i = 0; i < sizeof (available_keys) / sizeof (unsigned short); i++)
 	{
-		if (pressed_callback(available_keys[i]) != false)
+		if (pressed_callback(available_keys[i]))
 		{
 			TimerRestart(timer);
 			key = available_keys[i];

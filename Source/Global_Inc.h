@@ -19,7 +19,7 @@
 
 #ifndef SERIAL_INTERFACE
 
-#define Serial_printf printf
+#define Serial_printf dprintf
 
 #endif // SERIAL_INTERFACE
 

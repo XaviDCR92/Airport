@@ -13,6 +13,8 @@
 #define TIMER_PRESCALER_1_SECOND    10
 #define TIMER_PRESCALER_1_MINUTE    (TIMER_PRESCALER_1_SECOND * 60)
 
+#define ARRAY_SIZE(x)   (sizeof ((x)) / sizeof ((x[0])))
+
 /* **************************************
  * 	Global Prototypes					*
  * **************************************/

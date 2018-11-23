@@ -181,7 +181,7 @@ void ISR_MemCardDataHandling(void)
 
 	uint8_t i;
 
-	if (	(GfxIsGPUBusy() != false) || (SystemIsBusy() != false) )
+	if (	(GfxIsGPUBusy()) || (SystemIsBusy()) )
 	{
 		return;
 	}
@@ -712,7 +712,7 @@ bool MemCardReadSector(TYPE_BLOCK_DATA * ptrBlockData, int sector)
 		return false;
 	}
 
-	while (GfxIsGPUBusy() != false);
+	while (GfxIsGPUBusy());
 
 	result = McReadSector(ptrBlockData->Slot, sector, DataBuffer);
 
@@ -817,7 +817,7 @@ void MemCardIconIndexHandler(void)
 {
 	static uint8_t iconTimer = 0;
 
-	if (System100msTick() != false)
+	if (System100msTick())
 	{
 		if (++iconTimer >= MEMCARD_ICON_INDEX_TIME)
 		{
@@ -872,7 +872,7 @@ void MemCardDrawIcon(TYPE_BLOCK_DATA * ptrBlockData, short x, short y)
 	}
 
 
-	if (first_access != false)
+	if (first_access)
 	{
 		if (IconIndex == 0)
 		{
@@ -966,36 +966,36 @@ TYPE_BLOCK_DATA * MemCardShowMap(void)
 
 	while (1)
 	{
-		if (PadOneKeyReleased(PAD_TRIANGLE) != false)
+		if (PadOneKeyReleased(PAD_TRIANGLE))
 		{
 			break;
 		}
-		else if (PadOneKeyReleased(PAD_CROSS) != false)
+		else if (PadOneKeyReleased(PAD_CROSS))
 		{
 			return &MemCardData[selectedBlock - BLOCK_1][selectedSlot];
 		}
-		else if (PadOneKeyReleased(PAD_LEFT) != false)
+		else if (PadOneKeyReleased(PAD_LEFT))
 		{
 			if (selectedSlot == SLOT_TWO)
 			{
 				selectedSlot = SLOT_ONE;
 			}
 		}
-		else if (PadOneKeyReleased(PAD_RIGHT) != false)
+		else if (PadOneKeyReleased(PAD_RIGHT))
 		{
 			if (selectedSlot == SLOT_ONE)
 			{
 				selectedSlot = SLOT_TWO;
 			}
 		}
-		else if (PadOneKeyReleased(PAD_UP) != false)
+		else if (PadOneKeyReleased(PAD_UP))
 		{
 			if (selectedBlock > BLOCK_1)
 			{
 				selectedBlock--;
 			}
 		}
-		else if (PadOneKeyReleased(PAD_DOWN) != false)
+		else if (PadOneKeyReleased(PAD_DOWN))
 		{
 			if (selectedBlock < BLOCK_15)
 			{

@@ -557,7 +557,7 @@ static void MainMenuRenderLevelList(void)
         }
     }
 
-    if (isLevelSelected != false)
+    if (isLevelSelected)
     {
         levelListSelectionRect.y[0] = LEVEL_LIST_PLT_TEXT_Y + (short)(SelectedPlt << 3);
         levelListSelectionRect.y[1] = levelListSelectionRect.y[0];
@@ -612,7 +612,7 @@ static void MainMenuButtonHandler(void)
     static uint8_t previous_btn_selected = 0;
     uint8_t max_buttons = 0;
 
-    if (PadOneAnyKeyPressed() != false)
+    if (PadOneAnyKeyPressed())
     {
         if (SystemIsRandSeedSet() == false)
         {
@@ -620,9 +620,9 @@ static void MainMenuButtonHandler(void)
         }
     }
 
-    if (    (PadOneKeySinglePress(PAD_CROSS) != false)
+    if (    (PadOneKeySinglePress(PAD_CROSS))
                 ||
-            (PadOneKeySinglePress(PAD_TRIANGLE) != false)   )
+            (PadOneKeySinglePress(PAD_TRIANGLE))   )
     {
         SfxPlaySound(&AcceptSnd);
     }
@@ -646,7 +646,7 @@ static void MainMenuButtonHandler(void)
                 max_buttons = MAIN_MENU_ONE_TWO_PLAYERS_LEVEL_BUTTONS;
             }
 
-            if (PadOneKeySinglePress(PAD_TRIANGLE) != false)
+            if (PadOneKeySinglePress(PAD_TRIANGLE))
             {
                 menuLevel = PLAY_OPTIONS_LEVEL;
                 MainMenuMinimumBtn = PLAY_BUTTON_INDEX;
@@ -656,7 +656,7 @@ static void MainMenuButtonHandler(void)
         break;
 
         case LEVEL_LIST_LEVEL:
-            if (PadOneKeySinglePress(PAD_UP) != false)
+            if (PadOneKeySinglePress(PAD_UP))
             {
                 if (isLevelSelected == false)
                 {
@@ -674,7 +674,7 @@ static void MainMenuButtonHandler(void)
                     }
                 }
             }
-            else if (PadOneKeySinglePress(PAD_DOWN) != false)
+            else if (PadOneKeySinglePress(PAD_DOWN))
             {
                 if (isLevelSelected == false)
                 {
@@ -692,7 +692,7 @@ static void MainMenuButtonHandler(void)
                     }
                 }
             }
-            else if (PadOneKeySinglePress(PAD_TRIANGLE) != false)
+            else if (PadOneKeySinglePress(PAD_TRIANGLE))
             {
                 if (isLevelSelected == true)
                 {
@@ -787,7 +787,7 @@ static void MainMenuDrawButton(TYPE_MMBtn* btn)
         btn->timer++;
     }
 
-    if (btn->selected != false)
+    if (btn->selected)
     {
         if (btn->was_selected == false)
         {

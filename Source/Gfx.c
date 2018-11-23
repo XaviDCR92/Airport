@@ -242,12 +242,12 @@ void GfxDrawScene_Fast(void)
 
     FontSetFlags(&SmallFont, FONT_NOFLAGS);
 
-	if (System1SecondTick() != false)
+	if (System1SecondTick())
 	{
 		one_second_show = one_second_show? false:true;
 	}
 
-	if (System500msTick() != false)
+	if (System500msTick())
 	{
 		five_hundred_ms_show = five_hundred_ms_show? false:true;
 	}
@@ -290,7 +290,7 @@ void GfxDrawScene(void)
 
 	while (	(SystemRefreshNeeded() == false)
 						||
-			(GfxIsGPUBusy() != false)		);
+			(GfxIsGPUBusy())		);
 
 	GfxDrawScene_Fast();
 
@@ -316,7 +316,7 @@ void GfxDrawScene(void)
 void GfxDrawScene_Slow(void)
 {
 	GfxDrawScene();
-	while (GfxIsGPUBusy() != false);
+	while (GfxIsGPUBusy());
 }
 
 /* **********************************************************************
@@ -395,7 +395,7 @@ void GfxSortSprite(GsSprite* spr)
 		}
 	}
 
-	if (has_1hz_flash != false)
+	if (has_1hz_flash)
 	{
 		spr->attribute &= ~(GFX_1HZ_FLASH);
 	}
@@ -423,7 +423,7 @@ void GfxSortSprite(GsSprite* spr)
 		GsSortSprite(spr);
 	}
 
-	if (has_1hz_flash != false)
+	if (has_1hz_flash)
 	{
 		spr->attribute |= GFX_1HZ_FLASH;
 	}
@@ -545,7 +545,7 @@ bool GfxSpriteFromFile(const char* fname, GsSprite* spr)
 		return false;
 	}
 
-	while (GfxIsGPUBusy() != false);
+	while (GfxIsGPUBusy());
 
 	gfx_busy = true;
 
@@ -581,7 +581,7 @@ bool GfxCLUTFromFile(const char* fname)
 		return false;
 	}
 
-	while (GfxIsGPUBusy() != false);
+	while (GfxIsGPUBusy());
 
 	gfx_busy = true;
 
@@ -658,7 +658,7 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 	static short orig_u;
 	static short orig_v;
 
-	if (first_entered != false)
+	if (first_entered)
 	{
 		first_entered = false;
 		orig_u = PSXButtons.u;
@@ -787,7 +787,7 @@ void GfxDrawButton(short x, short y, unsigned short btn)
 
 void GfxSaveDisplayData(GsSprite *spr)
 {
-	while (GfxIsGPUBusy() != false);
+	while (GfxIsGPUBusy());
 
 	MoveImage(	DispEnv.x,
 				DispEnv.y,
@@ -808,7 +808,7 @@ void GfxSaveDisplayData(GsSprite *spr)
 	spr->g = NORMAL_LUMINANCE;
 	spr->b = NORMAL_LUMINANCE;
 
-	while (GfxIsGPUBusy() != false);
+	while (GfxIsGPUBusy());
 }
 
 bool Gfx1HzFlash(void)

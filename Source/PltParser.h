@@ -16,7 +16,7 @@
 /* *************************************
  * 	Global prototypes
  * *************************************/
-bool PltParserLoadFile(const char* strPath, TYPE_FLIGHT_DATA* ptrFlightData);
+bool PltParserLoadFile(const char* strPath, TYPE_FLIGHT_DATA* const ptrFlightData);
 uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig);
 
 /* *************************************

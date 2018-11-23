@@ -38,7 +38,7 @@ extern bool GameStartupFlag;
  * 	Global prototypes
  * *************************************/
 
-void 		Game(TYPE_GAME_CONFIGURATION* pGameCfg);
+void 		Game(const TYPE_GAME_CONFIGURATION* const pGameCfg);
 void 		GameSetTime(uint8_t hour, uint8_t minutes);
 bool		GameTwoPlayersActive(void);
 uint8_t 	GameGetLevelColumns(void);

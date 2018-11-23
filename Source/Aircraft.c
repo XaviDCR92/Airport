@@ -77,11 +77,11 @@ static const fix16_t AircraftSpeedsTable[] = {  [AIRCRAFT_SPEED_IDLE] = 0,
  *  Local prototypes
  * *************************************/
 
-static void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft);
+static void AircraftDirection(TYPE_AIRCRAFT_DATA* const ptrAircraft);
 static AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char* strFlightNumber);
-static void AircraftAttitude(TYPE_AIRCRAFT_DATA* ptrAircraft);
-static void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* ptrAircraft);
-static void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft);
+static void AircraftAttitude(TYPE_AIRCRAFT_DATA* const ptrAircraft);
+static void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* const ptrAircraft);
+static void AircraftSpeed(TYPE_AIRCRAFT_DATA* const ptrAircraft);
 static bool AircraftCheckCollision(TYPE_AIRCRAFT_DATA* ptrRefAircraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft);
 static bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* ptrAicraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft);
 
@@ -115,7 +115,7 @@ void AircraftInit(void)
             AIRCRAFT_INVALID_IDX,
             sizeof (AircraftFlightDataIdx_HashTable)    );
 
-    if (firstLoad != false)
+    if (firstLoad)
     {
         firstLoad = false;
 
@@ -126,12 +126,12 @@ void AircraftInit(void)
     }
 }
 
-bool AircraftAddNew(    TYPE_FLIGHT_DATA* ptrFlightData,
+bool AircraftAddNew(    TYPE_FLIGHT_DATA* const ptrFlightData,
                         uint8_t FlightDataIndex,
                         uint16_t* targets,
                         DIRECTION direction     )
 {
-    TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[AircraftIndex];
+    TYPE_AIRCRAFT_DATA* const ptrAircraft = &AircraftData[AircraftIndex];
     uint8_t level_columns = GameGetLevelColumns();
     uint8_t i;
 
@@ -253,7 +253,7 @@ AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char* strFlightNumber)
 
 bool AircraftRemove(uint8_t aircraftIdx)
 {
-    TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(aircraftIdx);
+    TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(aircraftIdx);
 
     if (ptrAircraft->State != STATE_IDLE)
     {
@@ -274,71 +274,70 @@ void AircraftHandler(void)
 
     for (i = 0; i < GAME_MAX_AIRCRAFT; i++)
     {
-        TYPE_AIRCRAFT_DATA* ptrAircraft = &AircraftData[i];
-        uint8_t j;
+        TYPE_AIRCRAFT_DATA* const ptrAircraft = &AircraftData[i];
         bool collision_warning = false;
 
-        if (ptrAircraft->State == STATE_IDLE)
+        if (ptrAircraft->State != STATE_IDLE)
         {
-            continue;
-        }
+            uint8_t j;
 
-        AircraftDirection(ptrAircraft);
-        AircraftAttitude(ptrAircraft);
-        AircraftSpeed(ptrAircraft);
+            AircraftDirection(ptrAircraft);
+            AircraftAttitude(ptrAircraft);
+            AircraftSpeed(ptrAircraft);
 
-        // Check collision against all other aircraft.
-        for (j = 0; j < GAME_MAX_AIRCRAFT; j++)
-        {
-            TYPE_AIRCRAFT_DATA* ptrOtherAircraft = &AircraftData[j];
-
-            if (ptrOtherAircraft->State == STATE_IDLE)
+            // Check collision against all other aircraft.
+            for (j = 0; j < GAME_MAX_AIRCRAFT; j++)
             {
-                continue;
-            }
+                TYPE_AIRCRAFT_DATA* ptrOtherAircraft = &AircraftData[j];
 
-            if (i == j)
-            {
-                continue;
-            }
-            else
-            {
-                // Check whether aircraft should stop in order to avoid collision against
-                // other aircraft.
-                // WARNING: only STATE_TAXIING can be used to automatically stop an aircraft
-                // when calling GameStopFlight() or GameResumeFlightFromAutoStop().
-                collision_warning |= AircraftCheckPath(ptrAircraft, ptrOtherAircraft);
-            }
-
-            if (j > i)
-            {
-                if (AircraftCheckCollision(ptrAircraft, ptrOtherAircraft) != false)
+                if (ptrOtherAircraft->State == STATE_IDLE)
                 {
-                    GameAircraftCollision(ptrAircraft->FlightDataIdx);
-                    break;
+                    continue;
                 }
+
+                if (i == j)
+                {
+                    continue;
+                }
+                else
+                {
+                    // Check whether aircraft should stop in order to avoid collision against
+                    // other aircraft.
+                    // WARNING: only STATE_TAXIING can be used to automatically stop an aircraft
+                    // when calling GameStopFlight() or GameResumeFlightFromAutoStop().
+                    collision_warning |= AircraftCheckPath(ptrAircraft, ptrOtherAircraft);
+                }
+
+                if (j > i)
+                {
+                    if (AircraftCheckCollision(ptrAircraft, ptrOtherAircraft))
+                    {
+                        GameAircraftCollision(ptrAircraft->FlightDataIdx);
+                        break;
+                    }
+                }
+                else
+                {
+                    // Collision already calculated.
+                }
+
+            }
+
+            if (collision_warning)
+            {
+                GameStopFlight(ptrAircraft->FlightDataIdx);
             }
             else
             {
-                // Collision already calculated.
+                GameResumeFlightFromAutoStop(ptrAircraft->FlightDataIdx);
             }
 
+            ptrAircraft->State = GameGetFlightDataStateFromIdx(ptrAircraft->FlightDataIdx);
         }
-
-        if (collision_warning != false)
-        {
-            GameStopFlight(ptrAircraft->FlightDataIdx);
-        }
-        else
-        {
-            GameResumeFlightFromAutoStop(ptrAircraft->FlightDataIdx);
-        }
-
-        ptrAircraft->State = GameGetFlightDataStateFromIdx(ptrAircraft->FlightDataIdx);
     }
 }
 
-bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* ptrAircraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft)
+bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* const ptrAircraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft)
 {
     uint16_t currentTile = AircraftGetTileFromFlightDataIndex(ptrAircraft->FlightDataIdx);
     uint16_t nextTile = 0; // Keep compiler happy
@@ -383,7 +382,7 @@ bool AircraftCheckPath(TYPE_AIRCRAFT_DATA* ptrAircraft, TYPE_AIRCRAFT_DATA* ptrO
     return false;
 }
 
-void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft)
+void AircraftSpeed(TYPE_AIRCRAFT_DATA* const ptrAircraft)
 {
     switch(ptrAircraft->State)
     {
@@ -423,9 +422,9 @@ void AircraftSpeed(TYPE_AIRCRAFT_DATA* ptrAircraft)
     }
 }
 
-void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx)
+void AircraftRender(TYPE_PLAYER* const ptrPlayer, uint8_t aircraftIdx)
 {
-    TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(aircraftIdx);
+    TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(aircraftIdx);
     TYPE_CARTESIAN_POS cartPos;
     TYPE_ISOMETRIC_FIX16_POS shadowIsoPos;
     TYPE_CARTESIAN_POS shadowCartPos;
@@ -479,7 +478,7 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx)
 
     if ( (ptrPlayer->FlightDataSelectedAircraft == aircraftIdx)
                         &&
-        (ptrPlayer->ShowAircraftData != false)                   )
+        (ptrPlayer->ShowAircraftData)                   )
     {
         static uint8_t aircraft_sine;
         static bool aircraft_sine_decrease;
@@ -543,7 +542,7 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx)
                 showUPDNArrow = true;
             }
 
-            if (showLRArrow != false)
+            if (showLRArrow)
             {
                 LeftRightArrowSpr.y = AircraftSpr.y;
 
@@ -559,7 +558,7 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx)
 
                 GfxSortSprite(&LeftRightArrowSpr);
             }
-            else if (showUPDNArrow != false)
+            else if (showUPDNArrow)
             {
                 UpDownArrowSpr.x = AircraftSpr.x;
 
@@ -588,7 +587,7 @@ void AircraftRender(TYPE_PLAYER* ptrPlayer, uint8_t aircraftIdx)
     GfxSortSprite(&AircraftSpr);
 }
 
-void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
+void AircraftDirection(TYPE_AIRCRAFT_DATA* const ptrAircraft)
 {
     TYPE_ISOMETRIC_FIX16_POS targetPos;
 
@@ -668,7 +667,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
             }
         }
 
-        if (ptrAircraft->TargetReached != false)
+        if (ptrAircraft->TargetReached)
         {
             ptrAircraft->IsoPos.x = targetPos.x;
             ptrAircraft->IsoPos.y = targetPos.y;
@@ -720,7 +719,7 @@ void AircraftDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
     }
 }
 
-void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* ptrAircraft)
+void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* const ptrAircraft)
 {
     switch(ptrAircraft->Livery)
     {
@@ -768,7 +767,7 @@ void AircraftUpdateSpriteFromData(TYPE_AIRCRAFT_DATA* ptrAircraft)
     }
 }
 
-void AircraftAttitude(TYPE_AIRCRAFT_DATA* ptrAircraft)
+void AircraftAttitude(TYPE_AIRCRAFT_DATA* const ptrAircraft)
 {
     if (ptrAircraft->State == STATE_FINAL)
     {
@@ -793,7 +792,7 @@ TYPE_ISOMETRIC_POS AircraftGetIsoPos(uint8_t FlightDataIdx)
     return retIsoPos;
 }
 
-void AircraftAddTargets(TYPE_AIRCRAFT_DATA* ptrAircraft, uint16_t* targets)
+void AircraftAddTargets(TYPE_AIRCRAFT_DATA* const ptrAircraft, uint16_t* targets)
 {
     memcpy(ptrAircraft->Target, targets, sizeof (uint16_t) * AIRCRAFT_MAX_TARGETS);
     ptrAircraft->TargetIdx = 0;
@@ -837,30 +836,45 @@ void AircraftFromFlightDataIndexAddTargets(uint8_t index, uint16_t* targets)
     AircraftAddTargets(AircraftFromFlightDataIndex(index), targets);
 }
 
-DIRECTION AircraftGetDirection(TYPE_AIRCRAFT_DATA* ptrAircraft)
+DIRECTION AircraftGetDirection(TYPE_AIRCRAFT_DATA* const ptrAircraft)
 {
     return ptrAircraft->Direction;
 }
 
 uint16_t* AircraftGetTargets(uint8_t index)
 {
-    TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(index);
+    TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(index);
 
-    return ptrAircraft->Target;
+    if (ptrAircraft != NULL)
+    {
+        return ptrAircraft->Target;
+    }
+
+    return NULL;
 }
 
 uint8_t AircraftGetTargetIdx(uint8_t index)
 {
-    TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(index);
+    TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(index);
 
-    return ptrAircraft->TargetIdx;
+    if (ptrAircraft != NULL)
+    {
+        return ptrAircraft->TargetIdx;
+    }
+
+    return 0;
 }
 
 bool AircraftMoving(uint8_t index)
 {
-    TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(index);
+    TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(index);
 
-    return (bool)ptrAircraft->Speed;
+    if (ptrAircraft != NULL)
+    {
+        return (bool)ptrAircraft->Speed;
+    }
+
+    return false;
 }
 
 bool AircraftCheckCollision(TYPE_AIRCRAFT_DATA* ptrRefAircraft, TYPE_AIRCRAFT_DATA* ptrOtherAircraft)

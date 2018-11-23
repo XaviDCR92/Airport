@@ -24,10 +24,10 @@ static int32_t Camera_Max_Y_Offset;
 /* *************************************
  * 	Local Prototypes
  * *************************************/
-static void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer);
-static bool CameraSpecialConditions(TYPE_PLAYER* ptrPlayer);
+static void CameraUpdateSpeed(TYPE_PLAYER* const ptrPlayer);
+static bool CameraSpecialConditions(TYPE_PLAYER* const ptrPlayer);
 
-void CameraInit(TYPE_PLAYER* ptrPlayer)
+void CameraInit(TYPE_PLAYER* const ptrPlayer)
 {
 	// Center camera on screen
 	ptrPlayer->Camera.X_Offset = CAMERA_INITIAL_X_OFFSET;
@@ -40,29 +40,29 @@ void CameraInit(TYPE_PLAYER* ptrPlayer)
     Camera_Max_Y_Offset = GameGetLevelColumns() * TILE_SIZE_H;
 }
 
-void CameraApplyCoordinatesToSprite(TYPE_PLAYER* ptrPlayer, GsSprite* spr)
+void CameraApplyCoordinatesToSprite(TYPE_PLAYER* const ptrPlayer, GsSprite* spr)
 {
 	spr->x += (short)ptrPlayer->Camera.X_Offset;
 	spr->y += (short)ptrPlayer->Camera.Y_Offset;
 }
 
-void CameraApplyCoordinatesToRectangle(TYPE_PLAYER* ptrPlayer, GsRectangle* rect)
+void CameraApplyCoordinatesToRectangle(TYPE_PLAYER* const ptrPlayer, GsRectangle* rect)
 {
 	rect->x += (short)ptrPlayer->Camera.X_Offset;
 	rect->y += (short)ptrPlayer->Camera.Y_Offset;
 }
 
-void CameraApplyCoordinatesToCartesianPos(TYPE_PLAYER* ptrPlayer, TYPE_CARTESIAN_POS* pos)
+void CameraApplyCoordinatesToCartesianPos(TYPE_PLAYER* const ptrPlayer, TYPE_CARTESIAN_POS* pos)
 {
     pos->x += (short)ptrPlayer->Camera.X_Offset;
     pos->y += (short)ptrPlayer->Camera.Y_Offset;
 }
 
-void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer)
+void CameraUpdateSpeed(TYPE_PLAYER* const ptrPlayer)
 {
-	if (ptrPlayer->PadDirectionKeyPressed_Callback() != false)
+	if (ptrPlayer->PadDirectionKeyPressed_Callback())
 	{
-		if (ptrPlayer->PadKeyPressed_Callback(PAD_LEFT) != false)
+		if (ptrPlayer->PadKeyPressed_Callback(PAD_LEFT))
 		{
 			if (ptrPlayer->Camera.X_Speed < 0)
 			{
@@ -74,7 +74,7 @@ void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer)
 			}
 		}
 
-		if (ptrPlayer->PadKeyPressed_Callback(PAD_UP) != false)
+		if (ptrPlayer->PadKeyPressed_Callback(PAD_UP))
 		{
 			if (ptrPlayer->Camera.Y_Speed < 0)
 			{
@@ -86,7 +86,7 @@ void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer)
 			}
 		}
 
-		if (ptrPlayer->PadKeyPressed_Callback(PAD_DOWN) != false)
+		if (ptrPlayer->PadKeyPressed_Callback(PAD_DOWN))
 		{
 			if (ptrPlayer->Camera.Y_Speed > 0)
 			{
@@ -98,7 +98,7 @@ void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer)
 			}
 		}
 
-		if (ptrPlayer->PadKeyPressed_Callback(PAD_RIGHT) != false)
+		if (ptrPlayer->PadKeyPressed_Callback(PAD_RIGHT))
 		{
 			if (ptrPlayer->Camera.X_Speed > 0)
 			{
@@ -140,9 +140,9 @@ void CameraUpdateSpeed(TYPE_PLAYER* ptrPlayer)
 	}
 }
 
-void CameraHandler(TYPE_PLAYER* ptrPlayer)
+void CameraHandler(TYPE_PLAYER* const ptrPlayer)
 {
-	if (CameraSpecialConditions(ptrPlayer) != false)
+	if (CameraSpecialConditions(ptrPlayer))
 	{
 		ptrPlayer->Camera.X_Speed = 0;
 		ptrPlayer->Camera.Y_Speed = 0;
@@ -166,11 +166,11 @@ void CameraHandler(TYPE_PLAYER* ptrPlayer)
     //DEBUG_PRINT_VAR(ptrPlayer->Camera.Y_Offset);
 }
 
-bool CameraSpecialConditions(TYPE_PLAYER* ptrPlayer)
+bool CameraSpecialConditions(TYPE_PLAYER* const ptrPlayer)
 {
-	if (	(ptrPlayer->ShowAircraftData != false)
+	if (	(ptrPlayer->ShowAircraftData)
 					||
-		(ptrPlayer->SelectRunway != false)		)
+		(ptrPlayer->SelectRunway)		)
 	{
 		// Camera cannot be handled when these states are activated
 
@@ -180,12 +180,12 @@ bool CameraSpecialConditions(TYPE_PLAYER* ptrPlayer)
 	return false;
 }
 
-TYPE_ISOMETRIC_POS CameraGetIsoPos(TYPE_PLAYER* ptrPlayer)
+TYPE_ISOMETRIC_POS CameraGetIsoPos(TYPE_PLAYER* const ptrPlayer)
 {
 	TYPE_ISOMETRIC_POS IsoPos;
 	TYPE_CARTESIAN_POS CartPos;
 
-	if (GameTwoPlayersActive() != false)
+	if (GameTwoPlayersActive())
 	{
 		CartPos.x = CAMERA_INITIAL_X_OFFSET_2PLAYER - ptrPlayer->Camera.X_Offset;
 		CartPos.y = (Y_SCREEN_RESOLUTION >> 1) - ptrPlayer->Camera.Y_Offset;
@@ -203,7 +203,7 @@ TYPE_ISOMETRIC_POS CameraGetIsoPos(TYPE_PLAYER* ptrPlayer)
 	return IsoPos;
 }
 
-void CameraMoveToIsoPos(TYPE_PLAYER* ptrPlayer, TYPE_ISOMETRIC_POS IsoPos)
+void CameraMoveToIsoPos(TYPE_PLAYER* const ptrPlayer, TYPE_ISOMETRIC_POS IsoPos)
 {
 	TYPE_CARTESIAN_POS CartPos = GfxIsometricToCartesian(&IsoPos);
 
@@ -215,7 +215,7 @@ void CameraMoveToIsoPos(TYPE_PLAYER* ptrPlayer, TYPE_ISOMETRIC_POS IsoPos)
 			CartPos.x,
 			CartPos.y	);*/
 
-	if (GameTwoPlayersActive() != false)
+	if (GameTwoPlayersActive())
 	{
 		ptrPlayer->Camera.X_Offset = CAMERA_INITIAL_X_OFFSET_2PLAYER - CartPos.x;
 		ptrPlayer->Camera.Y_Offset = (Y_SCREEN_RESOLUTION >> 1) - CartPos.y;

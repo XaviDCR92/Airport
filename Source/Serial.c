@@ -56,7 +56,7 @@ bool SerialRead(uint8_t* ptrArray, size_t nBytes)
         while ( (SIOCheckInBuffer() == SERIAL_RX_FIFO_EMPTY)); // Wait for RX FIFO not empty
 
         *(ptrArray++) = SIOReadByte();
-    }while (--nBytes);
+    } while (--nBytes);
 
     return true;
 }
@@ -79,7 +79,7 @@ bool SerialWrite(void* ptrArray, size_t nBytes)
 
         SIOSendByte(*(uint8_t*)ptrArray++);
 
-    }while (--nBytes);
+    } while (--nBytes);
 
     serial_busy = false;
 

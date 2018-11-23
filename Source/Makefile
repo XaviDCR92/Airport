@@ -11,13 +11,13 @@ GNU_SIZE = mipsel-unknown-elf-size
 
 # Custom define flags for GCC
 DEFINE= -DFIXMATH_FAST_SIN -D_PAL_MODE_
-#DEFINE += -DPSXSDK_DEBUG
+DEFINE += -DPSXSDK_DEBUG
 DEFINE +=  -DNO_CDDA
 DEFINE +=  -DNO_INTRO
 
 # Compiler flags
 LIBS= -lfixmath
-CC_FLAGS = -Wall -Werror -c -Os -Wfatal-errors
+CC_FLAGS = -Wall -Werror -c -O3 -Wfatal-errors
 
 # Path definitions
 PSXSDK_PATH = /usr/local/psxsdk

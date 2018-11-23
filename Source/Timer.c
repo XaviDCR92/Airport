@@ -113,9 +113,9 @@ void TimerHandler(void)
 
 	for (i = 0; i < MAX_TIMERS; i++)
 	{
-		if (timer_array[i].busy != false)
+		if (timer_array[i].busy)
 		{
-			if (System100msTick() != false)
+			if (System100msTick())
 			{
 				timer_array[i].time--;
 
@@ -123,7 +123,7 @@ void TimerHandler(void)
 				{
 					timer_array[i].Timeout_Callback();
 
-					if (timer_array[i].repeat_flag != false)
+					if (timer_array[i].repeat_flag)
 					{
 						timer_array[i].time = timer_array[i].orig_time;
 					}
