@@ -703,7 +703,7 @@ volatile bool SystemIsBusy(void)
  * @return:	true if value is contained inside buffer, false otherwise.
  *
  * ****************************************************************************/
-bool SystemContains_u8(uint8_t value, uint8_t* buffer, size_t sz)
+bool SystemContains_u8(const uint8_t value, const uint8_t* const buffer, const size_t sz)
 {
 	size_t i = 0;
 
@@ -730,7 +730,7 @@ bool SystemContains_u8(uint8_t value, uint8_t* buffer, size_t sz)
  * @return:	true if value is contained inside buffer, false otherwise.
  *
  * ****************************************************************************/
-bool SystemContains_u16(uint16_t value, uint16_t* buffer, size_t sz)
+bool SystemContains_u16(const uint16_t value, const uint16_t* const buffer, const size_t sz)
 {
 	size_t i = 0;
 
@@ -889,7 +889,7 @@ int32_t SystemIndexOfStringArray(char* str, char** array)
  * @return  Index for a variable "value" inside "array". -1 if it could not be found.
  *
  * ****************************************************************************************/
-int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz)
+int32_t SystemIndexOf_U16(const uint16_t value, const uint16_t* const array, const uint32_t sz)
 {
 	int32_t i;
 
@@ -917,7 +917,7 @@ int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz)
  *
  * ****************************************************************************************/
 
-int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t sz)
+int32_t SystemIndexOf_U8(const uint8_t value, const uint8_t* const array, const uint32_t from, const uint32_t sz)
 {
 	int32_t i;
 

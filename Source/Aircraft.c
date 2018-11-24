@@ -466,8 +466,6 @@ void AircraftRender(TYPE_PLAYER* const ptrPlayer, uint8_t aircraftIdx)
                     AircraftSpr.g = 0;
                     AircraftSpr.b = 0;
 
-                    AircraftSpr.attribute |= ENABLE_TRANS | TRANS_MODE(0);
-
                     GfxSortSprite(&AircraftSpr);
                 }
 
@@ -476,8 +474,6 @@ void AircraftRender(TYPE_PLAYER* const ptrPlayer, uint8_t aircraftIdx)
                 // Aircraft position is referred to aircraft center
                 AircraftSpr.x = cartPos.x - (AircraftSpr.w >> 1);
                 AircraftSpr.y = cartPos.y - (AircraftSpr.h >> 1);
-
-                AircraftSpr.attribute &= ~(ENABLE_TRANS | TRANS_MODE(0));
 
                 CameraApplyCoordinatesToSprite(ptrPlayer, &AircraftSpr);
 
@@ -864,7 +860,7 @@ DIRECTION AircraftGetDirection(TYPE_AIRCRAFT_DATA* const ptrAircraft)
     return ptrAircraft->Direction;
 }
 
-uint16_t* AircraftGetTargets(uint8_t index)
+const uint16_t* AircraftGetTargets(uint8_t index)
 {
     TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(index);
 

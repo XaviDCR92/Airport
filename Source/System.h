@@ -75,10 +75,10 @@ volatile uint64_t SystemGetGlobalTimer(void);
 volatile bool SystemIsBusy(void);
 
 // Returns whether indicated value is contained inside buffer
-bool SystemContains_u8(uint8_t value, uint8_t* buffer, size_t sz);
+bool SystemContains_u8(const uint8_t value, const uint8_t* const buffer, const size_t sz);
 
 // Overload for uint16_t
-bool SystemContains_u16(uint16_t value, uint16_t* buffer, size_t sz);
+bool SystemContains_u16(const uint16_t value, const uint16_t* const buffer, const size_t sz);
 
 // Compares two arrays of unsigned short type.
 bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz);
@@ -95,10 +95,10 @@ void SystemCheckStack(void);
 int32_t SystemIndexOfStringArray(char* str, char** array);
 
 // Function overload for uint16_t data type.
-int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz);
+int32_t SystemIndexOf_U16(const uint16_t value, const uint16_t* array, const uint32_t sz);
 
 // Function overload for uint8_t data type.
-int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t sz);
+int32_t SystemIndexOf_U8(const uint8_t value, const uint8_t* const array, const uint32_t from, const uint32_t sz);
 
 // Returns frames per second.
 volatile uint8_t SystemGetFPS(void);

@@ -33,6 +33,29 @@ enum
 
 enum
 {
+    PAUSE_DIALOG_X = 92,
+    PAUSE_DIALOG_Y = 28,
+    PAUSE_DIALOG_W = 200,
+    PAUSE_DIALOG_H = 184,
+
+    PAUSE_DIALOG_R0 = 0,
+    PAUSE_DIALOG_R1 = PAUSE_DIALOG_R0,
+    PAUSE_DIALOG_R2 = 0,
+    PAUSE_DIALOG_R3 = PAUSE_DIALOG_R2,
+
+    PAUSE_DIALOG_G0 = NORMAL_LUMINANCE,
+    PAUSE_DIALOG_G1 = PAUSE_DIALOG_G0,
+    PAUSE_DIALOG_G2 = 0,
+    PAUSE_DIALOG_G3 = PAUSE_DIALOG_G2,
+
+    PAUSE_DIALOG_B0 = 40,
+    PAUSE_DIALOG_B1 = PAUSE_DIALOG_B0,
+    PAUSE_DIALOG_B2 = 0,
+    PAUSE_DIALOG_B3 = PAUSE_DIALOG_B2,
+};
+
+enum
+{
     AIRCRAFT_DATA_GSGPOLY4_R0 = 0,
     AIRCRAFT_DATA_GSGPOLY4_R1 = AIRCRAFT_DATA_GSGPOLY4_R0,
     AIRCRAFT_DATA_GSGPOLY4_R2 = 0,
@@ -67,14 +90,6 @@ enum
     AIRCRAFT_DATA_GSGPOLY4_Y1_2PLAYER = AIRCRAFT_DATA_GSGPOLY4_Y0_2PLAYER,
     AIRCRAFT_DATA_GSGPOLY4_Y2_2PLAYER = 208,
     AIRCRAFT_DATA_GSGPOLY4_Y3_2PLAYER = AIRCRAFT_DATA_GSGPOLY4_Y2_2PLAYER,
-};
-
-enum
-{
-    AIRCRAFT_LOCK_TARGET_X = 32,
-    AIRCRAFT_LOCK_TARGET_TEXT_X = AIRCRAFT_LOCK_TARGET_X + 16,
-    AIRCRAFT_LOCK_TARGET_Y = 224,
-    AIRCRAFT_LOCK_TARGET_TEXT_Y = AIRCRAFT_LOCK_TARGET_Y + 4,
 };
 
 enum
@@ -193,8 +208,56 @@ static void GameGuiBubbleStopVibration(void);
 
 static GsSprite BubbleSpr;
 static GsGPoly4 AircraftDataGPoly4;
-static GsGPoly4 SelectedAircraftGPoly4;
-static GsGPoly4 PauseRect;
+static GsGPoly4 SelectedAircraftGPoly4 =
+{
+    .r[0] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R0,
+    .r[1] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R1,
+    .r[2] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R2,
+    .r[3] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R3,
+
+    .g[0] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_G0,
+    .g[1] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_G1,
+    .g[2] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_G2,
+    .g[3] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_G3,
+
+    .b[0] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_B0,
+    .b[1] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_B1,
+    .b[2] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_B2,
+    .b[3] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_B3,
+
+    .attribute = ENABLE_TRANS | TRANS_MODE(0)
+};
+
+static const GsGPoly4 PauseRect =
+{
+    .x[0] = PAUSE_DIALOG_X,
+    .x[1] = PAUSE_DIALOG_X + PAUSE_DIALOG_W,
+    .x[2] = PAUSE_DIALOG_X,
+    .x[3] = PAUSE_DIALOG_X + PAUSE_DIALOG_W,
+
+    .y[0] = PAUSE_DIALOG_Y,
+    .y[1] = PAUSE_DIALOG_Y,
+    .y[2] = PAUSE_DIALOG_Y + PAUSE_DIALOG_H,
+    .y[3] = PAUSE_DIALOG_Y + PAUSE_DIALOG_H,
+
+    .r[0] = PAUSE_DIALOG_R0,
+    .r[1] = PAUSE_DIALOG_R1,
+    .r[2] = PAUSE_DIALOG_R2,
+    .r[3] = PAUSE_DIALOG_R3,
+
+    .b[0] = PAUSE_DIALOG_B0,
+    .b[1] = PAUSE_DIALOG_B1,
+    .b[2] = PAUSE_DIALOG_B2,
+    .b[3] = PAUSE_DIALOG_B3,
+
+    .g[0] = PAUSE_DIALOG_G0,
+    .g[1] = PAUSE_DIALOG_G1,
+    .g[2] = PAUSE_DIALOG_G2,
+    .g[3] = PAUSE_DIALOG_G3,
+
+    .attribute = ENABLE_TRANS | TRANS_MODE(0)
+};
+
 static GsSprite SecondDisplay;
 static GsSprite DepArrSpr;
 static GsSprite PageUpDownSpr;
@@ -208,7 +271,7 @@ static const char* GameFileList[] = {   "DATA\\SPRITES\\BUBBLE.TIM"   ,
                                         "DATA\\SPRITES\\DEPARR.TIM"   ,
                                         "DATA\\SPRITES\\PAGEUPDN.TIM" };
 
-static void* GameFileDest[] = {	(GsSprite*)&BubbleSpr     	,
+static void* GameFileDest[] = { (GsSprite*)&BubbleSpr       ,
                                 (TYPE_FONT*)&RadioFont      ,
                                 (GsSprite*)&DepArrSpr       ,
                                 (GsSprite*)&PageUpDownSpr   };
@@ -229,29 +292,6 @@ void GameGuiInit(void)
 {
     enum
     {
-        PAUSE_DIALOG_X = 92,
-        PAUSE_DIALOG_Y = 28,
-        PAUSE_DIALOG_W = 200,
-        PAUSE_DIALOG_H = 184,
-
-        PAUSE_DIALOG_R0 = 0,
-        PAUSE_DIALOG_R1 = PAUSE_DIALOG_R0,
-        PAUSE_DIALOG_R2 = 0,
-        PAUSE_DIALOG_R3 = PAUSE_DIALOG_R2,
-
-        PAUSE_DIALOG_G0 = NORMAL_LUMINANCE,
-        PAUSE_DIALOG_G1 = PAUSE_DIALOG_G0,
-        PAUSE_DIALOG_G2 = 0,
-        PAUSE_DIALOG_G3 = PAUSE_DIALOG_G2,
-
-        PAUSE_DIALOG_B0 = 40,
-        PAUSE_DIALOG_B1 = PAUSE_DIALOG_B0,
-        PAUSE_DIALOG_B2 = 0,
-        PAUSE_DIALOG_B3 = PAUSE_DIALOG_B2,
-    };
-
-    enum
-    {
         RADIO_FONT_SPACING = 12
     };
 
@@ -262,38 +302,10 @@ void GameGuiInit(void)
         initialised = true;
 
         LOAD_FILES(GameFileList, GameFileDest);
+        ShowAircraftPassengersTimer = TimerCreate(20, true, GameGuiClearPassengersLeft);
     }
 
-    PauseRect.x[0] = PAUSE_DIALOG_X;
-    PauseRect.x[1] = PAUSE_DIALOG_X + PAUSE_DIALOG_W;
-    PauseRect.x[2] = PAUSE_DIALOG_X;
-    PauseRect.x[3] = PAUSE_DIALOG_X + PAUSE_DIALOG_W;
-
-    PauseRect.y[0] = PAUSE_DIALOG_Y;
-    PauseRect.y[1] = PAUSE_DIALOG_Y;
-    PauseRect.y[2] = PAUSE_DIALOG_Y + PAUSE_DIALOG_H;
-    PauseRect.y[3] = PAUSE_DIALOG_Y + PAUSE_DIALOG_H;
-
-    PauseRect.r[0] = PAUSE_DIALOG_R0;
-    PauseRect.r[1] = PAUSE_DIALOG_R1;
-    PauseRect.r[2] = PAUSE_DIALOG_R2;
-    PauseRect.r[3] = PAUSE_DIALOG_R3;
-
-    PauseRect.b[0] = PAUSE_DIALOG_B0;
-    PauseRect.b[1] = PAUSE_DIALOG_B1;
-    PauseRect.b[2] = PAUSE_DIALOG_B2;
-    PauseRect.b[3] = PAUSE_DIALOG_B3;
-
-    PauseRect.g[0] = PAUSE_DIALOG_G0;
-    PauseRect.g[1] = PAUSE_DIALOG_G1;
-    PauseRect.g[2] = PAUSE_DIALOG_G2;
-    PauseRect.g[3] = PAUSE_DIALOG_G3;
-
-    PauseRect.attribute |= ENABLE_TRANS | TRANS_MODE(0);
-
     PageUpDownSpr.w = AIRCRAFT_DATA_FLIGHT_PAGEUPDN_SIZE;
-
-    ShowAircraftPassengersTimer = TimerCreate( 20, true, GameGuiClearPassengersLeft);
 
     // Prepare RGB data and (X,Y) coordinates for aircraft
     // data list request rectangle.
@@ -350,7 +362,7 @@ bool GameGuiPauseDialog(const TYPE_PLAYER* const ptrPlayer)
 
         GfxSortSprite(&SecondDisplay);
 
-        GsSortGPoly4(&PauseRect);
+        GsSortGPoly4((GsGPoly4*)&PauseRect);
 
         GfxDrawScene_Slow();
 
@@ -510,9 +522,9 @@ void GameGuiAircraftList(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* const p
 
     enum
     {
-        AIRCRAFT_STOP_X = 128,
+        AIRCRAFT_STOP_X = 32,
         AIRCRAFT_STOP_TEXT_X = AIRCRAFT_STOP_X + 32,
-        AIRCRAFT_STOP_Y = AIRCRAFT_LOCK_TARGET_Y,
+        AIRCRAFT_STOP_Y = 224,
         AIRCRAFT_STOP_TEXT_Y = AIRCRAFT_STOP_Y + 4
     };
 
@@ -547,54 +559,52 @@ void GameGuiAircraftList(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* const p
 
         GsSortGPoly4(&AircraftDataGPoly4);
 
-        if (GameTwoPlayersActive())
+        const struct
         {
-            FontPrintText(  &SmallFont,
-                            GAME_GUI_REMAINING_AIRCRAFT_X_2PLAYER,
-                            GAME_GUI_REMAINING_AIRCRAFT_Y_2PLAYER,
-                            "Rem. aircraft: %d",
-                            ptrFlightData->nRemainingAircraft       );
+            struct pos
+            {
+                short x;
+                short y;
+            } remainingTime;
 
-            FontPrintText(  &SmallFont,
-                            GAME_GUI_NEXT_AIRCRAFT_TIME_X_2PLAYER,
-                            GAME_GUI_NEXT_AIRCRAFT_TIME_Y_2PLAYER,
-                            "Next aircraft: %d sec",
-                            ptrPlayer->NextAircraftTime             );
-        }
-        else
+            struct pos aircraftTime;
+        } posData =
         {
-            FontPrintText(  &SmallFont,
-                            GAME_GUI_REMAINING_AIRCRAFT_X,
-                            GAME_GUI_REMAINING_AIRCRAFT_Y,
-                            "Remaining aircraft: %d",
-                            ptrFlightData->nRemainingAircraft       );
+            .remainingTime =
+            {
+                .x = GameTwoPlayersActive() ?
+                        GAME_GUI_REMAINING_AIRCRAFT_X_2PLAYER
+                    :   GAME_GUI_REMAINING_AIRCRAFT_X,
+                .y = GameTwoPlayersActive() ?
+                        GAME_GUI_REMAINING_AIRCRAFT_Y_2PLAYER
+                        :GAME_GUI_REMAINING_AIRCRAFT_Y
+            },
 
-            FontPrintText(  &SmallFont,
-                            GAME_GUI_NEXT_AIRCRAFT_TIME_X,
-                            GAME_GUI_NEXT_AIRCRAFT_TIME_Y,
-                            "Next aircraft: %d sec",
-                            ptrPlayer->NextAircraftTime             );
-        }
+            .aircraftTime =
+            {
+                .x = GameTwoPlayersActive() ?
+                        GAME_GUI_NEXT_AIRCRAFT_TIME_X_2PLAYER
+                    :   GAME_GUI_NEXT_AIRCRAFT_TIME_X,
+                .y = GameTwoPlayersActive() ?
+                        GAME_GUI_NEXT_AIRCRAFT_TIME_Y_2PLAYER
+                    :   GAME_GUI_NEXT_AIRCRAFT_TIME_Y
+            },
+        };
+
+        FontPrintText(&SmallFont,
+                      posData.remainingTime.x,
+                      posData.remainingTime.y,
+                      "Remaining aircraft: %d",
+                      ptrFlightData->nRemainingAircraft);
+
+        FontPrintText(&SmallFont,
+                      posData.aircraftTime.x,
+                      posData.aircraftTime.y,
+                      "Next aircraft: %d sec",
+                      ptrPlayer->NextAircraftTime);
 
         if (ptrPlayer->ActiveAircraft != 0)
         {
-            SelectedAircraftGPoly4.r[0] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R0;
-            SelectedAircraftGPoly4.r[1] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R1;
-            SelectedAircraftGPoly4.r[2] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R2;
-            SelectedAircraftGPoly4.r[3] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_R3;
-
-            SelectedAircraftGPoly4.g[0] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_G0;
-            SelectedAircraftGPoly4.g[1] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_G1;
-            SelectedAircraftGPoly4.g[2] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_G2;
-            SelectedAircraftGPoly4.g[3] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_G3;
-
-            SelectedAircraftGPoly4.b[0] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_B0;
-            SelectedAircraftGPoly4.b[1] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_B1;
-            SelectedAircraftGPoly4.b[2] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_B2;
-            SelectedAircraftGPoly4.b[3] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_B3;
-
-            SelectedAircraftGPoly4.attribute |= ENABLE_TRANS | TRANS_MODE(0);
-
             if (GameTwoPlayersActive())
             {
                 SelectedAircraftGPoly4.x[0] = AIRCRAFT_DATA_FLIGHT_GSGPOLY4_X0_2PLAYER;
@@ -683,17 +693,6 @@ void GameGuiAircraftList(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* const p
             }
 
             GameGuiShowAircraftData(ptrPlayer, ptrFlightData);
-
-            GfxDrawButton(AIRCRAFT_LOCK_TARGET_X, AIRCRAFT_LOCK_TARGET_Y, PAD_SQUARE);
-
-            if (ptrPlayer->LockTarget)
-            {
-                FontPrintText(&SmallFont, AIRCRAFT_LOCK_TARGET_TEXT_X, AIRCRAFT_LOCK_TARGET_TEXT_Y, "Unlock target");
-            }
-            else
-            {
-                FontPrintText(&SmallFont, AIRCRAFT_LOCK_TARGET_TEXT_X, AIRCRAFT_LOCK_TARGET_TEXT_Y, "Lock target");
-            }
 
             if (ptrFlightData->State[ptrPlayer->FlightDataSelectedAircraft] == STATE_USER_STOPPED)
             {
@@ -794,8 +793,8 @@ void GameGuiBubble(TYPE_FLIGHT_DATA* const ptrFlightData)
 
         if (bubbleVibration)
         {
-            BubbleSpr.x += SystemRand(BUBBLE_SPRITE_RAND_MIN,BUBBLE_SPRITE_RAND_MAX);
-            BubbleSpr.y += SystemRand(BUBBLE_SPRITE_RAND_MIN,BUBBLE_SPRITE_RAND_MAX);
+            BubbleSpr.x += SystemRand(BUBBLE_SPRITE_RAND_MIN, BUBBLE_SPRITE_RAND_MAX);
+            BubbleSpr.y += SystemRand(BUBBLE_SPRITE_RAND_MIN, BUBBLE_SPRITE_RAND_MAX);
         }
 
         GfxSortSprite(&BubbleSpr);
@@ -927,17 +926,20 @@ void GameGuiShowAircraftData(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* con
 
     for (i = init_flight ; i < ptrPlayer->ActiveAircraft ; i++)
     {
-		const char* const strAircraftArray[MAX_STATES] = {	[STATE_APPROACH]			=	"Approach",
-															[STATE_READY_FOR_TAKEOFF]	=	"Takeoff",
-															[STATE_LANDED]				=	"Landed",
-															[STATE_PARKED]				=	"Parked",
-															[STATE_UNBOARDING]			=	"Unboard",
-															[STATE_HOLDING_RWY]			=	"Holding",
-															[STATE_USER_STOPPED]		=	"Stopped",
-															[STATE_AUTO_STOPPED]		=	"Stopped"	};
+        static const char* const strAircraftArray[MAX_STATES] =
+        {
+            [STATE_APPROACH]            =   "Approach",
+            [STATE_READY_FOR_TAKEOFF]   =   "Takeoff",
+            [STATE_LANDED]              =   "Landed",
+            [STATE_PARKED]              =   "Parked",
+            [STATE_UNBOARDING]          =   "Unboard",
+            [STATE_HOLDING_RWY]         =   "Holding",
+            [STATE_USER_STOPPED]        =   "Stopped",
+            [STATE_AUTO_STOPPED]        =   "Stopped"
+        };
 
-		FL_STATE aircraftState;
-		const char* strState;
+        FL_STATE aircraftState;
+        const char* strState;
 
         j = i - init_flight;
 
@@ -980,11 +982,11 @@ void GameGuiShowAircraftData(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* con
 
         if (strState != NULL)
         {
-			FontPrintText(  &SmallFont,
-							AircraftDataDirection_X + AircraftDataState_X_Offset,
-							AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
-							(char*)strState	);
-		}
+            FontPrintText(  &SmallFont,
+                            AircraftDataDirection_X + AircraftDataState_X_Offset,
+                            AircraftDataDirection_Y + (AIRCRAFT_DATA_FLIGHT_GSGPOLY4_H * j),
+                            (char*)strState );
+        }
 
         FontSetFlags(&SmallFont, FONT_NOFLAGS);
 
@@ -1168,7 +1170,7 @@ bool GameGuiFinishedDialog(TYPE_PLAYER* const ptrPlayer)
 
         GfxSortSprite(&SecondDisplay);
 
-        GsSortGPoly4(&PauseRect);
+        GsSortGPoly4((GsGPoly4*)&PauseRect);
 
         FontPrintText(  &SmallFont,
                         AIRCRAFT_DATA_GSGPOLY4_X0 +
@@ -1208,7 +1210,7 @@ void GameGuiAircraftCollision(TYPE_PLAYER* const ptrPlayer)
     {
         GfxSortSprite(&SecondDisplay);
 
-        GsSortGPoly4(&PauseRect);
+        GsSortGPoly4((GsGPoly4*)&PauseRect);
 
         FontPrintText(  &SmallFont,
                         AIRCRAFT_DATA_GSGPOLY4_X0 + 8,
