@@ -13,11 +13,11 @@
  /* *************************************
  * 	Structs and enums
  * *************************************/
-typedef enum t_musicTracks
+typedef enum
 {
 	INTRO_TRACK = 2,
-	GAMEPLAY_TRACK1 = 3,
-	GAMEPLAY_TRACK2 = 4,
+	GAMEPLAY_TRACK1,
+	GAMEPLAY_TRACK2,
 	GAMEPLAY_FIRST_TRACK = GAMEPLAY_TRACK1,
 	GAMEPLAY_LAST_TRACK = GAMEPLAY_TRACK2
 }MUSIC_TRACKS;
