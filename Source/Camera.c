@@ -10,7 +10,7 @@
  * 	Defines
  * *************************************/
 #define SPEED_CALCULATION_TIME 3
-#define MAX_CAMERA_SPEED 5
+#define MAX_CAMERA_SPEED 8
 #define MIN_CAMERA_SPEED 1
 #define CAMERA_INITIAL_X_OFFSET (X_SCREEN_RESOLUTION >> 1)
 #define CAMERA_INITIAL_X_OFFSET_2PLAYER (X_SCREEN_RESOLUTION >> 2)
@@ -66,7 +66,7 @@ void CameraUpdateSpeed(TYPE_PLAYER* const ptrPlayer)
 		{
 			if (ptrPlayer->Camera.X_Speed < 0)
 			{
-				ptrPlayer->Camera.X_Speed += 2;
+				ptrPlayer->Camera.X_Speed += 3;
 			}
 			else if (ptrPlayer->Camera.X_Speed < MAX_CAMERA_SPEED)
 			{
@@ -78,7 +78,7 @@ void CameraUpdateSpeed(TYPE_PLAYER* const ptrPlayer)
 		{
 			if (ptrPlayer->Camera.Y_Speed < 0)
 			{
-				ptrPlayer->Camera.Y_Speed += 2;
+				ptrPlayer->Camera.Y_Speed += 3;
 			}
 			else if (ptrPlayer->Camera.Y_Speed < MAX_CAMERA_SPEED)
 			{
@@ -115,28 +115,36 @@ void CameraUpdateSpeed(TYPE_PLAYER* const ptrPlayer)
 			&&
 		(ptrPlayer->PadKeyPressed_Callback(PAD_RIGHT) == false)	)
 	{
-		if (ptrPlayer->Camera.X_Speed > 0)
+		if (ptrPlayer->Camera.X_Speed >= 2)
 		{
-			ptrPlayer->Camera.X_Speed--;
+			ptrPlayer->Camera.X_Speed -= 2;
 		}
-		else if (ptrPlayer->Camera.X_Speed < 0)
+		else if (ptrPlayer->Camera.X_Speed <= -2)
 		{
-			ptrPlayer->Camera.X_Speed++;
+			ptrPlayer->Camera.X_Speed += 2;
 		}
+        else
+        {
+            ptrPlayer->Camera.X_Speed = 0;
+        }
 	}
 
 	if (	(ptrPlayer->PadKeyPressed_Callback(PAD_UP) == false)
 			&&
 		(ptrPlayer->PadKeyPressed_Callback(PAD_DOWN) == false)	)
 	{
-		if (ptrPlayer->Camera.Y_Speed > 0)
+		if (ptrPlayer->Camera.Y_Speed >= 2)
 		{
-			ptrPlayer->Camera.Y_Speed--;
+			ptrPlayer->Camera.Y_Speed -= 2;
 		}
-		else if (ptrPlayer->Camera.Y_Speed < 0)
+		else if (ptrPlayer->Camera.Y_Speed <= -2)
 		{
-			ptrPlayer->Camera.Y_Speed++;
+			ptrPlayer->Camera.Y_Speed += 2;
 		}
+        else
+        {
+            ptrPlayer->Camera.Y_Speed = 0;
+        }
 	}
 }
 
