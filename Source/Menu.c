@@ -31,6 +31,7 @@ typedef enum t_levelId
 {
     LEVEL1 = 0,
     LEVEL2,
+    LEVEL3,
     MAX_LEVELS
 }LEVEL_ID;
 
@@ -154,17 +155,32 @@ static bool isLevelSelected;
 static const char* MainMenuLevelList[] =
 {
     [LEVEL1] = "DATA\\LEVELS\\LEVEL1.LVL",
-    [LEVEL2] = "DATA\\LEVELS\\LEVEL2.LVL"
+    [LEVEL2] = "DATA\\LEVELS\\LEVEL2.LVL",
+    [LEVEL3] = "DATA\\LEVELS\\LEVEL3.LVL"
 };
 
-static const char* MainMenuLevel1Plt[] = {  "DATA\\LEVELS\\TUTORIA1.PLT",
-                                            "DATA\\LEVELS\\LEVEL1.PLT",
-                                            "DATA\\LEVELS\\EASY.PLT",
-                                            NULL};
+static const char** MainMenuPltList[] =
+{
+    [LEVEL1] = (const char*[])
+    {
+        "DATA\\LEVELS\\TUTORIA1.PLT",
+        "DATA\\LEVELS\\LEVEL1.PLT",
+        "DATA\\LEVELS\\EASY.PLT",
+        NULL
+    },
 
-static const char* MainMenuLevel2Plt[] = {"DATA\\LEVELS\\LEVEL2.PLT", NULL};
+    [LEVEL2] = (const char*[])
+    {
+        "DATA\\LEVELS\\LEVEL2.PLT",
+        NULL
+    },
 
-static const char** MainMenuPltList[] = {[LEVEL1] = MainMenuLevel1Plt, [LEVEL2] = MainMenuLevel2Plt};
+    [LEVEL3] = (const char*[])
+    {
+        "DATA\\LEVELS\\LEVEL3.PLT",
+        NULL
+    }
+};
 
 static TYPE_GAME_CONFIGURATION GameCfg;
 

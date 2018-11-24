@@ -247,34 +247,6 @@ static SsVag BeepSnd;
 // Instances for player-specific data
 static TYPE_PLAYER PlayerData[MAX_PLAYERS];
 
-static const char* const GameFileList[] =
-{
-    "DATA\\SPRITES\\TILESET1.TIM",
-    "DATA\\SPRITES\\GAMEPLN.TIM",
-    "DATA\\SPRITES\\PLNBLUE.CLT",
-    "DATA\\SPRITES\\MOUSE.TIM",
-    "DATA\\SPRITES\\BLDNGS1.TIM",
-    "DATA\\SOUNDS\\RCPW1A1.VAG",
-    "DATA\\SOUNDS\\RCPM1A1.VAG",
-    "DATA\\SOUNDS\\RCTM1F1.VAG",
-    "DATA\\SOUNDS\\TAKEOFF1.VAG",
-    "DATA\\SOUNDS\\BEEP.VAG"
-};
-
-static void* GameFileDest[] =
-{
-    &GameTilesetSpr,
-    &GamePlaneSpr,
-    NULL, // CLT files must use NULL pointers
-    &GameMouseSpr,
-    &GameBuildingSpr,
-    &ApproachSnds[SOUND_M1_INDEX],
-    &ApproachSnds[SOUND_W1_INDEX],
-    &TowerFinalSnds[SOUND_M1_INDEX],
-    &TakeoffSnd,
-    &BeepSnd
-};
-
 static void* GamePltDest[] = {(TYPE_FLIGHT_DATA*)&FlightData    };
 
 static uint16_t levelBuffer[GAME_MAX_MAP_SIZE];
@@ -433,6 +405,34 @@ static bool GamePause(void)
  * ***************************************************************************************/
 void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
 {
+    static const char* const GameFileList[] =
+    {
+        "DATA\\SPRITES\\TILESET1.TIM",
+        "DATA\\SPRITES\\GAMEPLN.TIM",
+        "DATA\\SPRITES\\PLNBLUE.CLT",
+        "DATA\\SPRITES\\MOUSE.TIM",
+        "DATA\\SPRITES\\BLDNGS1.TIM",
+        "DATA\\SOUNDS\\RCPW1A1.VAG",
+        "DATA\\SOUNDS\\RCPM1A1.VAG",
+        "DATA\\SOUNDS\\RCTM1F1.VAG",
+        "DATA\\SOUNDS\\TAKEOFF1.VAG",
+        "DATA\\SOUNDS\\BEEP.VAG"
+    };
+
+    static void* GameFileDest[] =
+    {
+        &GameTilesetSpr,
+        &GamePlaneSpr,
+        NULL, // CLT files must use NULL pointers
+        &GameMouseSpr,
+        &GameBuildingSpr,
+        &ApproachSnds[SOUND_M1_INDEX],
+        &ApproachSnds[SOUND_W1_INDEX],
+        &TowerFinalSnds[SOUND_M1_INDEX],
+        &TakeoffSnd,
+        &BeepSnd
+    };
+
     uint8_t i;
     uint32_t track;
     static bool loaded;
@@ -1409,7 +1409,7 @@ static void GameLoadLevel(const char* path)
 
     if (strncmp(LevelHeader,LEVEL_MAGIC_NUMBER_STRING,LEVEL_MAGIC_NUMBER_SIZE) != 0)
     {
-        Serial_printf("Invalid level header! Read \"%s\" instead of \"ATC\"\n",LevelHeader);
+        Serial_printf("Invalid level header! Read \"%s\" instead of " LEVEL_MAGIC_NUMBER_STRING "\n", LevelHeader);
         return;
     }
 
@@ -3177,6 +3177,7 @@ bool GamePathToTile(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* const ptrFli
         TILE_PARKING,
         TILE_RWY_MID,
         TILE_RWY_EXIT,
+        TILE_RWY_EXIT_2,
         TILE_TAXIWAY_CORNER_GRASS,
         TILE_TAXIWAY_CORNER_GRASS_2,
         TILE_TAXIWAY_GRASS,
@@ -3315,6 +3316,7 @@ bool GamePathToTile(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* const ptrFli
                 TILE_PARKING | TILE_MIRROR_FLAG,
                 TILE_RWY_MID | TILE_MIRROR_FLAG,
                 TILE_RWY_EXIT | TILE_MIRROR_FLAG,
+                TILE_RWY_EXIT_2 | TILE_MIRROR_FLAG,
                 TILE_TAXIWAY_CORNER_GRASS | TILE_MIRROR_FLAG,
                 TILE_TAXIWAY_CORNER_GRASS_2 | TILE_MIRROR_FLAG,
                 TILE_TAXIWAY_GRASS | TILE_MIRROR_FLAG,

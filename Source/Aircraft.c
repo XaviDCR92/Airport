@@ -58,20 +58,17 @@ static TYPE_CARTESIAN_POS AircraftCenterPos;
 static char* AircraftLiveryNamesTable[] = {"PHX", NULL};
 static AIRCRAFT_LIVERY AircraftLiveryTable[] = {AIRCRAFT_LIVERY_0, AIRCRAFT_LIVERY_UNKNOWN};
 
-static const char* GameFileList[] = {   "DATA\\SPRITES\\UDNARROW.TIM",
-                                        "DATA\\SPRITES\\LFRARROW.TIM"    };
-
-static void* GameFileDest[] = { (GsSprite*)&UpDownArrowSpr,
-                                (GsSprite*)&LeftRightArrowSpr       };
-
 // Used to quickly link FlightData indexes against AircraftData indexes.
 static uint8_t flightDataIdxTable[GAME_MAX_AIRCRAFT];
 
-static const fix16_t AircraftSpeedsTable[] = {  [AIRCRAFT_SPEED_IDLE] = 0,
-                                                [AIRCRAFT_SPEED_GROUND] = 0x9999,
-                                                [AIRCRAFT_SPEED_TAKEOFF] = 0x20000,
-                                                [AIRCRAFT_SPEED_FINAL] = 0x10000,
-                                                [AIRCRAFT_SPEED_FINAL_Z] = 0x4000   };
+static const fix16_t AircraftSpeedsTable[] =
+{
+    [AIRCRAFT_SPEED_IDLE] = 0,
+    [AIRCRAFT_SPEED_GROUND] = 0x9999,
+    [AIRCRAFT_SPEED_TAKEOFF] = 0x20000,
+    [AIRCRAFT_SPEED_FINAL] = 0x10000,
+    [AIRCRAFT_SPEED_FINAL_Z] = 0x3000
+};
 
 /* *************************************
  *  Local prototypes
@@ -115,12 +112,21 @@ void AircraftInit(void)
 
     if (initialised == false)
     {
+        static const char* const GameFileList[] =
+        {
+            "DATA\\SPRITES\\UDNARROW.TIM",
+            "DATA\\SPRITES\\LFRARROW.TIM"
+        };
+
+        static void* const GameFileDest[] =
+        {
+            &UpDownArrowSpr,
+            &LeftRightArrowSpr
+        };
+
         initialised = true;
 
-        LoadMenu(   GameFileList,
-                    GameFileDest,
-                    sizeof (GameFileList) / sizeof (GameFileList[0]),
-                    sizeof (GameFileDest) / sizeof (GameFileDest[0])  );
+        LOAD_FILES(GameFileList, GameFileDest);
     }
 }
 
@@ -157,7 +163,7 @@ bool AircraftAddNew(    TYPE_FLIGHT_DATA* const ptrFlightData,
                     ptrAircraft->IsoPos.y = fix16_from_int(ptrAircraft->IsoPos.y);
 
                     ptrAircraft->IsoPos.z = targets[0] % level_columns;
-                    ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 1;
+                    ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 2;
                     ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
                 break;
 
@@ -170,7 +176,7 @@ bool AircraftAddNew(    TYPE_FLIGHT_DATA* const ptrFlightData,
                     ptrAircraft->IsoPos.y = 0;
 
                     ptrAircraft->IsoPos.z = targets[0] / level_columns;
-                    ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 1;
+                    ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 2;
                     ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
                 break;
 

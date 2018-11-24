@@ -4,13 +4,16 @@
 #include <QGraphicsPixmapItem>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QShortcut>
 
 #define DEFAULT_AIRPORT_NAME    QByteArray("Default Airport\0")
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     level_size(0),
-    selected_item(-1)
+    selected_item(-1),
+    tileSet(tr("Space"), this),
+    tileMoveUp(tr("Up"), this)
 {
     ui.setupUi(this);
     this->setWindowTitle(APP_FULL_NAME);
@@ -21,9 +24,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui.showNumbers_Checkbox,   SIGNAL(stateChanged(int)),          this,   SLOT(onShowNumbers(int)));
     connect(ui.airportName_Label,      SIGNAL(textChanged(QString)),       this,   SLOT(onAirportNameModified(QString)));
 
-    connect(&gscene,                     SIGNAL(positionClicked(QPointF)),   this,   SLOT(onMapItemClicked(QPointF)));
-    connect(&gscene,                     SIGNAL(noItemSelected(void)),       this,   SLOT(onNoItemSelected(void)));
-    connect(&gscene,                     SIGNAL(updateSelectedItem(void)),   this,   SLOT(onListItemSelected(void)));
+    connect(&gscene, SIGNAL(positionClicked(QPointF)),   this,   SLOT(onMapItemClicked(QPointF)));
+    connect(&gscene, SIGNAL(noItemSelected(void)),       this,   SLOT(onNoItemSelected(void)));
+    connect(&gscene, SIGNAL(updateSelectedItem(void)),   this,   SLOT(onListItemSelected(void)));
+
+    // Configure keyboard shortcuts.
+    connect(&tileSet, SIGNAL(activated()), this, SLOT(onListItemSelected(void)));
+    connect(&tileMoveUp, SIGNAL(activated(void)), this, SLOT(moveUp(void)));
 
     appSettings();
     loadTilesetData();
@@ -34,7 +41,10 @@ MainWindow::~MainWindow()
 {
     foreach (QGraphicsTextItem* it, textItems)
     {
-        delete it;
+        if (it != nullptr)
+        {
+            delete it;
+        }
     }
 }
 
@@ -475,6 +485,11 @@ void MainWindow::onAirportNameModified(QString name)
             map_buffer[i] = '\0';
         }
     }
+}
+
+void MainWindow::moveUp(void)
+{
+
 }
 
 void MainWindow::showError(const QString& error)

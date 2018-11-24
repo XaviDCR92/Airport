@@ -79,7 +79,15 @@ SOUND_OBJECTS = $(addprefix $(OBJ_SOUNDS_DIR)/,	BELL.VAG		\
 # Level objects:
 SRC_LEVELS_DIR = $(PROJECT_DIR)/Levels
 OBJ_LEVELS_DIR = $(CDROM_ROOT)/DATA/LEVELS
-LEVEL_OBJECTS = $(addprefix $(OBJ_LEVELS_DIR)/, LEVEL1.LVL LEVEL2.LVL LEVEL2.PLT LEVEL1.PLT EASY.PLT TUTORIA1.PLT)
+LEVEL_OBJECTS = $(addprefix $(OBJ_LEVELS_DIR)/,	\
+							LEVEL1.LVL			\
+							LEVEL2.LVL			\
+							LEVEL3.LVL			\
+							LEVEL1.PLT			\
+							LEVEL2.PLT			\
+							LEVEL3.PLT			\
+							EASY.PLT			\
+							TUTORIA1.PLT)
 
 # Sprite objects:
 BMP2TIM = bmp2tim

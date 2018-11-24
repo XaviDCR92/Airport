@@ -6,6 +6,7 @@
 #include <QSettings>
 #include <QDebug>
 #include <QPixmap>
+#include <QShortcut>
 
 #include "mygraphicsscene.h"
 #include "ui_mainwindow.h"
@@ -46,6 +47,8 @@ private:
     int selected_item;
     QHash<int, QString> tilesetData;
     QList<QGraphicsTextItem*> textItems;
+    QShortcut tileSet;
+    QShortcut tileMoveUp;
 
 private slots:
     void loadMap(void);
@@ -58,6 +61,7 @@ private slots:
     void onShowNumbers(int);
     void onAirportNameModified(QString);
     void showError(const QString& error);
+    void moveUp(void);
 };
 
 #endif // MAINWINDOW_H
