@@ -45,8 +45,8 @@ bool PltParserLoadFile(const char* strPath, TYPE_FLIGHT_DATA* const ptrFlightDat
 	char lineBuffer[LINE_MAX_CHARACTERS];
 	char* lineBufferPtr;
 	char* pltBufferSavePtr;
-	char strHour[PLT_HOUR_MINUTE_CHARACTERS];
-	char strMinutes[PLT_HOUR_MINUTE_CHARACTERS];
+	char strHour[PLT_HOUR_MINUTE_CHARACTERS] = {'\0'};
+	char strMinutes[PLT_HOUR_MINUTE_CHARACTERS] = {'\0'};;
 	uint8_t* strPltBuffer;
 
 	if (SystemLoadFile(strPath) == false)
@@ -112,7 +112,6 @@ bool PltParserLoadFile(const char* strPath, TYPE_FLIGHT_DATA* const ptrFlightDat
 				if (i == PLT_COLON_POSITION)
 				{
 					j = 0;
-					buffer = strtok(NULL,"\n");
 					continue;
 				}
 				else if (i < PLT_COLON_POSITION)
@@ -126,17 +125,14 @@ bool PltParserLoadFile(const char* strPath, TYPE_FLIGHT_DATA* const ptrFlightDat
 			}
 
 			GameSetTime((uint8_t)atoi(strHour),(uint8_t)atoi(strMinutes) );
-			Serial_printf("Game time set to %.2d:%.2d.\n",(uint8_t)atoi(strHour),(uint8_t)atoi(strMinutes) );
 		}
 		else
 		{
-			typedef enum t_lineType
+			enum
 			{
 				MESSAGE_INFO,
 				AIRCRAFT_DATA
-			}TYPE_LINE;
-
-			TYPE_LINE tLine = AIRCRAFT_DATA; // Default value
+			} tLine = AIRCRAFT_DATA; // Default value
 			TYPE_MESSAGE_DATA tMessage = {0};
 
 			// File header (initial game time) has already been read

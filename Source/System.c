@@ -86,6 +86,9 @@ void SystemInit(void)
     PSX_InitEx(PSX_INIT_SAVESTATE | PSX_INIT_CD);
 #endif // SERIAL_INTERFACE
 
+    // SIO init
+    SerialInit();
+
     //Graphics init
     GsInit();
     //Clear VRAM

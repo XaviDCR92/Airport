@@ -251,20 +251,24 @@ void MainWindow::processMapFile(const QByteArray& data)
 
         level_size = ch;
 
-        const QString filePath = "../../Sprites/TILESET1.bmp";
-
-        QPixmap tile1(filePath);
-
-        const int expected_filesize = (DATA_HEADER_SIZE + (level_size * level_size));
-
-        if (data.count() >= expected_filesize)
+        if (not tilesetPaths[0].isEmpty()
+                    &&
+            not tilesetPaths[1].isEmpty())
         {
-            parseMapData(ds, tile1);
-        }
-        else
-        {
-            showError(tr("Invalid file size. Expected ")
-                      + QString::number(expected_filesize, 10));
+            QPixmap tile1(tilesetPaths[0]);
+            QPixmap tile2(tilesetPaths[1]);
+
+            const int expected_filesize = (DATA_HEADER_SIZE + (level_size * level_size));
+
+            if (data.count() >= expected_filesize)
+            {
+                parseMapData(ds, tile1, tile2);
+            }
+            else
+            {
+                showError(tr("Invalid file size. Expected ")
+                          + QString::number(expected_filesize, 10));
+            }
         }
     }
     else
@@ -273,7 +277,7 @@ void MainWindow::processMapFile(const QByteArray& data)
     }
 }
 
-void MainWindow::parseMapData(QDataStream& ds, const QPixmap& tileSet)
+void MainWindow::parseMapData(QDataStream& ds, const QPixmap& tileSet, const QPixmap& tileSet2)
 {
     char airportName[0x1A];
 
@@ -290,89 +294,143 @@ void MainWindow::parseMapData(QDataStream& ds, const QPixmap& tileSet)
     {
         for (int i = 0; i < level_size; i++)
         {
+            enum
+            {
+                TILE_GRASS = 0,
+                TILE_ASPHALT_WITH_BORDERS,
+                TILE_WATER,
+                TILE_ASPHALT,
+
+                TILE_RWY_MID,
+                TILE_RWY_START_1,
+                TILE_RWY_START_2,
+                TILE_PARKING,
+
+                TILE_PARKING_2,
+                TILE_TAXIWAY_INTERSECT_GRASS,
+                TILE_TAXIWAY_GRASS,
+                TILE_TAXIWAY_CORNER_GRASS,
+
+                TILE_HALF_WATER_1,
+                TILE_HALF_WATER_2,
+                TILE_RWY_HOLDING_POINT,
+                TILE_RWY_HOLDING_POINT_2,
+
+                TILE_RWY_EXIT,
+                TILE_TAXIWAY_CORNER_GRASS_2,
+                TILE_TAXIWAY_4WAY_CROSSING,
+                TILE_RWY_EXIT_2,
+
+                LAST_TILE_TILESET1 = TILE_RWY_EXIT_2,
+
+                TILE_UNUSED_1,
+                TILE_TAXIWAY_CORNER_GRASS_3,
+
+                FIRST_TILE_TILESET2 = TILE_UNUSED_1,
+                LAST_TILE_TILESET2 = TILE_TAXIWAY_CORNER_GRASS_3
+            };
+
             int u;
             int v;
             char byte[2];
             ds.readRawData(byte, 2);
             quint8 CurrentTile = static_cast<quint8>(byte[1]);
+            quint8 CurrentBuilding = static_cast<quint8>(byte[0]);
+            quint8 buildingNoMirror = CurrentBuilding & 0x7F;
+            quint8 tileNoMirror = CurrentTile & 0x7F;
+            const QPixmap* p = nullptr;
 
-            if (CurrentTile & TILE_MIRROR_FLAG)
+            if (tileNoMirror <= LAST_TILE_TILESET1)
             {
-                u = static_cast<int>(((CurrentTile & 0x7F) % 4) * 64);
-                v = static_cast<int>(((CurrentTile & 0x7F) / 4) * 48);
+                p = &tileSet;
             }
-            else
+            else if (tileNoMirror <= LAST_TILE_TILESET2)
             {
-                u = static_cast<int>((CurrentTile % 4) * 64);
-                v = static_cast<int>((CurrentTile / 4) * 48);
-            }
-
-            QImage cropped = tileSet.copy(u, v, 64, 48).toImage();
-
-            if (CurrentTile & TILE_MIRROR_FLAG)
-            {
-                cropped = cropped.mirrored(true, false);
+                p = &tileSet2;
+                CurrentTile -= FIRST_TILE_TILESET2;
+                tileNoMirror -= FIRST_TILE_TILESET2;
             }
 
-            bool selected = false;
-
-            if (selected_item != -1)
+            if (p != nullptr)
             {
-                if (selected_item == ((j * level_size) + i))
+                if (CurrentTile & TILE_MIRROR_FLAG)
                 {
-                    selected = true;
+                    u = static_cast<int>((tileNoMirror % 4) * 64);
+                    v = static_cast<int>((tileNoMirror / 4) * 48);
                 }
-            }
-
-            cropped = cropped.convertToFormat(QImage::Format_ARGB32); // or maybe other format
-
-            for (int i = 0; i < cropped.width(); i++)
-            {
-                for (int j = 0; j < cropped.height(); j++)
+                else
                 {
-                    QColor rgb = cropped.pixel(i, j);
+                    u = static_cast<int>((CurrentTile % 4) * 64);
+                    v = static_cast<int>((CurrentTile / 4) * 48);
+                }
 
-                    if (rgb == QColor(Qt::magenta))
+                QImage cropped = p->copy(u, v, 64, 48).toImage();
+
+                if (CurrentTile & TILE_MIRROR_FLAG)
+                {
+                    cropped = cropped.mirrored(true, false);
+                }
+
+                bool selected = false;
+
+                if (selected_item != -1)
+                {
+                    if (selected_item == ((j * level_size) + i))
                     {
-                        cropped.setPixel(i, j, qRgba(0,0,0,0));
-                    }
-                    else if (selected )
-                    {
-                        QColor c = cropped.pixelColor(i, j);
-
-                        c.setRed(255 - c.red());
-                        c.setBlue(255 - c.blue());
-                        c.setGreen(255 - c.green());
-
-                        cropped.setPixel(i, j, qRgb(c.red(), c.green(), c.blue()));
+                        selected = true;
                     }
                 }
-            }
 
-            QGraphicsPixmapItem* const it = gscene.addPixmap(QPixmap::fromImage(cropped));
+                cropped = cropped.convertToFormat(QImage::Format_ARGB32); // or maybe other format
 
-            if (it != nullptr)
-            {
-                const int x = ((i * TILE_SIZE) - (i * (TILE_SIZE / 2))) - (j * (TILE_SIZE / 2));
-                const int y = (j * (TILE_SIZE / 4)) + (i * (TILE_SIZE / 4));
-
-                it->setX(x);
-                it->setY(y);
-
-                if (ui.showNumbers_Checkbox->isChecked() )
+                for (int i = 0; i < cropped.width(); i++)
                 {
-                    QGraphicsTextItem* const io = new QGraphicsTextItem();
-
-                    if (io != nullptr)
+                    for (int j = 0; j < cropped.height(); j++)
                     {
-                        io->setPos(x + (TILE_SIZE / 4), y);
-                        io->setPlainText(QString::number(i + (j * level_size)));
+                        QColor rgb = cropped.pixel(i, j);
 
-                        gscene.addItem(io);
+                        if (rgb == QColor(Qt::magenta))
+                        {
+                            cropped.setPixel(i, j, qRgba(0,0,0,0));
+                        }
+                        else if (selected )
+                        {
+                            QColor c = cropped.pixelColor(i, j);
 
-                        /* Append pointer to the list so it can be
-                         * safely removed on the constructor. */
-                        textItems.append(io);
+                            c.setRed(255 - c.red());
+                            c.setBlue(255 - c.blue());
+                            c.setGreen(255 - c.green());
+
+                            cropped.setPixel(i, j, qRgb(c.red(), c.green(), c.blue()));
+                        }
+                    }
+                }
+
+                QGraphicsPixmapItem* const it = gscene.addPixmap(QPixmap::fromImage(cropped));
+
+                if (it != nullptr)
+                {
+                    const int x = ((i * TILE_SIZE) - (i * (TILE_SIZE / 2))) - (j * (TILE_SIZE / 2));
+                    const int y = (j * (TILE_SIZE / 4)) + (i * (TILE_SIZE / 4));
+
+                    it->setX(x);
+                    it->setY(y);
+
+                    if (ui.showNumbers_Checkbox->isChecked() )
+                    {
+                        QGraphicsTextItem* const io = new QGraphicsTextItem();
+
+                        if (io != nullptr)
+                        {
+                            io->setPos(x + (TILE_SIZE / 4), y);
+                            io->setPlainText(QString::number(i + (j * level_size)));
+
+                            gscene.addItem(io);
+
+                            /* Append pointer to the list so it can be
+                             * safely removed on the constructor. */
+                            textItems.append(io);
+                        }
                     }
                 }
             }
@@ -438,11 +496,14 @@ void MainWindow::loadTilesetData(void)
         tilesets_to_check << "tileset1";
         tilesets_to_check << "tileset2";
 
+        int j = 0;
         int i = 0;
 
         foreach (QString tileset, tilesets_to_check)
         {
             tilesetFile.beginGroup(tileset);
+
+            tilesetPaths[j++] = tilesetFile.value("path").toString();
 
             while (1)
             {

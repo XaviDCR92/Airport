@@ -1,11 +1,11 @@
 /* *************************************
- * 	Includes
+ *  Includes
  * *************************************/
 
 #include "Serial.h"
 
 /* *************************************
- * 	Defines
+ *  Defines
  * *************************************/
 
 #define SERIAL_BAUDRATE 115200
@@ -15,7 +15,7 @@
 #define SERIAL_PRINTF_INTERNAL_BUFFER_SIZE 256
 
 /* **************************************
- * 	Structs and enums					*
+ *  Structs and enums                   *
  * *************************************/
 
 typedef enum
@@ -26,19 +26,27 @@ typedef enum
 }SERIAL_STATE;
 
 /* *************************************
- * 	Local Variables
+ *  Local Variables
  * *************************************/
 
 static volatile SERIAL_STATE SerialState;
 static volatile bool serial_busy;
+static void ISR_Serial(void);
 
 /* *************************************
- * 	Local Prototypes
+ *  Local Prototypes
  * *************************************/
 
 void SerialInit(void)
 {
+    SetSIOHandler(&ISR_Serial);
+
     SIOStart(115200);
+}
+
+static void ISR_Serial(void)
+{
+    Serial_printf("SIO\n");
 }
 
 bool SerialRead(uint8_t* ptrArray, size_t nBytes)
@@ -100,10 +108,10 @@ void Serial_printf(const char* str, ...)
 
     va_start(ap, str);
 
-    result = vsnprintf(	internal_buffer,
-						SERIAL_PRINTF_INTERNAL_BUFFER_SIZE,
-						str,
-						ap	);
+    result = vsnprintf( internal_buffer,
+                        SERIAL_PRINTF_INTERNAL_BUFFER_SIZE,
+                        str,
+                        ap  );
 
     SerialWrite(internal_buffer, result);
 }

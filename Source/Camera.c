@@ -21,6 +21,11 @@
 static int32_t Camera_Max_X_Offset;
 static int32_t Camera_Max_Y_Offset;
 
+static int32_t Camera_Max_X_Limit;
+static int32_t Camera_Min_X_Limit;
+//~ static int32_t Camera_Min_Y_Limit;
+//~ static int32_t Camera_Max_Y_Limit;
+
 /* *************************************
  * 	Local Prototypes
  * *************************************/
@@ -38,6 +43,13 @@ void CameraInit(TYPE_PLAYER* const ptrPlayer)
 
     Camera_Max_X_Offset = GameGetLevelColumns() << TILE_SIZE_BIT_SHIFT;
     Camera_Max_Y_Offset = GameGetLevelColumns() * TILE_SIZE_H;
+
+    Camera_Min_X_Limit = -Camera_Max_X_Offset;
+    Camera_Max_X_Limit = GameGetLevelColumns() << (TILE_SIZE_BIT_SHIFT - 1);
+    Camera_Max_X_Limit += Camera_Max_X_Limit >> 1;
+
+    DEBUG_PRINT_VAR(Camera_Min_X_Limit);
+    DEBUG_PRINT_VAR(Camera_Max_X_Limit);
 }
 
 void CameraApplyCoordinatesToSprite(TYPE_PLAYER* const ptrPlayer, GsSprite* spr)
@@ -167,11 +179,38 @@ void CameraHandler(TYPE_PLAYER* const ptrPlayer)
 		CameraUpdateSpeed(ptrPlayer);
 	}
 
-	ptrPlayer->Camera.X_Offset += ptrPlayer->Camera.X_Speed;
+    bool limitAchieved = false;
+
+    if (ptrPlayer->Camera.X_Offset < 0)
+    {
+        if ((ptrPlayer->Camera.X_Offset + ptrPlayer->Camera.X_Speed) <= Camera_Min_X_Limit)
+        {
+            DEBUG_PRINT_VAR(ptrPlayer->Camera.X_Offset);
+            if (ptrPlayer->Camera.X_Speed < 0)
+            {
+                limitAchieved = true;
+                ptrPlayer->Camera.X_Speed = 0;
+            }
+        }
+    }
+    else if ((ptrPlayer->Camera.X_Offset + ptrPlayer->Camera.X_Speed) >= Camera_Max_X_Limit)
+    {
+        if (ptrPlayer->Camera.X_Speed > 0)
+        {
+            limitAchieved = true;
+            ptrPlayer->Camera.X_Speed = 0;
+        }
+    }
+
+    if (limitAchieved == false)
+    {
+        ptrPlayer->Camera.X_Offset += ptrPlayer->Camera.X_Speed;
+    }
+
 	ptrPlayer->Camera.Y_Offset += ptrPlayer->Camera.Y_Speed;
 
-    //DEBUG_PRINT_VAR(ptrPlayer->Camera.X_Offset);
-    //DEBUG_PRINT_VAR(ptrPlayer->Camera.Y_Offset);
+    //~ DEBUG_PRINT_VAR(ptrPlayer->Camera.X_Offset);
+    //~ DEBUG_PRINT_VAR(ptrPlayer->Camera.Y_Offset);
 }
 
 bool CameraSpecialConditions(TYPE_PLAYER* const ptrPlayer)

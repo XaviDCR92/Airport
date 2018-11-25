@@ -96,7 +96,7 @@ enum
 
 enum
 {
-    BUILDING_NONE = 0,
+    BUILDING_NONE,
     BUILDING_HANGAR,
     BUILDING_ILS,
     BUILDING_ATC_TOWER,
@@ -111,7 +111,7 @@ enum
 
 enum
 {
-    TILE_GRASS = 0,
+    TILE_GRASS,
     TILE_ASPHALT_WITH_BORDERS,
     TILE_WATER,
     TILE_ASPHALT,
@@ -136,17 +136,18 @@ enum
     TILE_TAXIWAY_4WAY_CROSSING,
     TILE_RWY_EXIT_2,
 
-    LAST_TILE_TILESET1 = TILE_RWY_EXIT_2
+    LAST_TILE_TILESET1 = TILE_RWY_EXIT_2,
+
+    TILE_UNUSED_1,
+    TILE_TAXIWAY_CORNER_GRASS_3,
+
+    FIRST_TILE_TILESET2 = TILE_UNUSED_1,
+    LAST_TILE_TILESET2 = TILE_TAXIWAY_CORNER_GRASS_3
 };
 
 enum
 {
-    LAST_TILE_TILESET2 = LAST_TILE_TILESET1
-};
-
-enum
-{
-    SOUND_M1_INDEX = 0,
+    SOUND_M1_INDEX,
     SOUND_W1_INDEX,
 
     MAX_RADIO_CHATTER_SOUNDS
@@ -195,7 +196,6 @@ static void GameActiveAircraftList(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DAT
 static void GameRemainingAircraft(const uint8_t i);
 static void GameMinimumSpawnTimeout(void);
 static void GameRenderBuildingAircraft(TYPE_PLAYER* const ptrPlayer);
-static void GameBuildingsInit(void);
 static void GameGetAircraftTilemap(const uint8_t i);
 static bool GameWaypointCheckExisting(TYPE_PLAYER* const ptrPlayer, uint16_t temp_tile);
 static void GameDrawBackground(TYPE_PLAYER* const ptrPlayer);
@@ -229,7 +229,6 @@ static bool spawnMinTimeFlag;
 static bool aircraftCreated;
 static bool GameAircraftCollisionFlag;
 static uint8_t GameAircraftCollisionIdx;
-static TYPE_BUILDING_DATA GameBuildingData[MAX_BUILDING_ID];
 static uint8_t GameAircraftTilemap[GAME_MAX_MAP_SIZE][GAME_MAX_AIRCRAFT_PER_TILE];
 
 static TYPE_TILE_UV_DATA GameLevelBuffer_UVData[GAME_MAX_MAP_SIZE];
@@ -428,6 +427,7 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
     static const char* const GameFileList[] =
     {
         "DATA\\SPRITES\\TILESET1.TIM",
+        "DATA\\SPRITES\\TILESET2.TIM",
         "DATA\\SPRITES\\GAMEPLN.TIM",
         "DATA\\SPRITES\\PLNBLUE.CLT",
         "DATA\\SPRITES\\MOUSE.TIM",
@@ -442,6 +442,7 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
     static void* GameFileDest[] =
     {
         &GameTilesetSpr,
+        &GameTileset2Spr,
         &GamePlaneSpr,
         NULL, // CLT files must use NULL pointers
         &GameMouseSpr,
@@ -476,8 +477,6 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
     GameLoadLevel(pGameCfg->LVLPath);
 
     GameGuiInit();
-
-    GameBuildingsInit();
 
     memset(GameRwy, 0, GAME_MAX_RUNWAYS * sizeof (uint16_t) );
 
@@ -590,141 +589,6 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
 
         SfxPlayTrack(track);
     }
-}
-
-/* ***************************************************************************************
- *
- * @name: void GameBuildingsInit(void)
- *
- * @author: Xavier Del Campo
- *
- *
- * @brief:
- *  Reportedly, it initializes coordinate/size data for each building instance.
- *
- * @remarks:
- *
- *
- * ***************************************************************************************/
-static void GameBuildingsInit(void)
-{
-    enum
-    {
-        BUILDING_ATC_LOC_OFFSET_X = TILE_SIZE >> 1,
-        BUILDING_ATC_LOC_OFFSET_Y = TILE_SIZE >> 1,
-
-        BUILDING_ILS_OFFSET_X = 0,
-        BUILDING_ILS_OFFSET_Y = 0,
-
-        BUILDING_GATE_OFFSET_X = (TILE_SIZE >> 1) - 4,
-        BUILDING_GATE_OFFSET_Y = 0,
-
-        BUILDING_HANGAR_OFFSET_X = 4,
-        BUILDING_HANGAR_OFFSET_Y = TILE_SIZE >> 1,
-
-        BUILDING_ATC_TOWER_OFFSET_X = TILE_SIZE >> 2,
-        BUILDING_ATC_TOWER_OFFSET_Y = TILE_SIZE >> 1,
-    };
-
-    enum
-    {
-        BUILDING_ILS_U = 34,
-        BUILDING_ILS_V = 0,
-        BUILDING_ILS_W = 24,
-        BUILDING_ILS_H = 34,
-
-        BUILDING_GATE_U = 0,
-        BUILDING_GATE_V = 70,
-        BUILDING_GATE_W = 28,
-        BUILDING_GATE_H = 25,
-
-        BUILDING_HANGAR_U = 0,
-        BUILDING_HANGAR_V = 34,
-        BUILDING_HANGAR_W = 51,
-        BUILDING_HANGAR_H = 36,
-
-        BUILDING_ATC_TOWER_U = 58,
-        BUILDING_ATC_TOWER_V = 0,
-        BUILDING_ATC_TOWER_W = 29,
-        BUILDING_ATC_TOWER_H = 34,
-    };
-
-    enum
-    {
-        BUILDING_ILS_ORIGIN_X = 10,
-        BUILDING_ILS_ORIGIN_Y = 22,
-
-        BUILDING_GATE_ORIGIN_X = 20,
-        BUILDING_GATE_ORIGIN_Y = 8,
-
-        BUILDING_HANGAR_ORIGIN_X = 20,
-        BUILDING_HANGAR_ORIGIN_Y = 11,
-
-        BUILDING_ATC_TOWER_ORIGIN_X = 12,
-        BUILDING_ATC_TOWER_ORIGIN_Y = 20,
-    };
-
-    memset(GameBuildingData, 0, sizeof (TYPE_BUILDING_DATA) );
-
-    GameBuildingData[BUILDING_GATE].IsoPos.x = BUILDING_GATE_OFFSET_X;
-    GameBuildingData[BUILDING_GATE].IsoPos.y = BUILDING_GATE_OFFSET_Y;
-    // z coordinate set to 0 by default.
-
-    // BUILDING_ATC_LOC coordinates inside tile.
-    GameBuildingData[BUILDING_ATC_LOC].IsoPos.x = BUILDING_ATC_LOC_OFFSET_X;
-    GameBuildingData[BUILDING_ATC_LOC].IsoPos.y = BUILDING_ATC_LOC_OFFSET_Y;
-    // z coordinate set to 0 by default.
-    GameBuildingData[BUILDING_GATE].orig_x = BUILDING_GATE_ORIGIN_X;
-    GameBuildingData[BUILDING_GATE].orig_y = BUILDING_GATE_ORIGIN_Y;
-    GameBuildingData[BUILDING_GATE].u = BUILDING_GATE_U;
-    GameBuildingData[BUILDING_GATE].v = BUILDING_GATE_V;
-    GameBuildingData[BUILDING_GATE].w = BUILDING_GATE_W;
-    GameBuildingData[BUILDING_GATE].h = BUILDING_GATE_H;
-
-    // BUILDING_ILS coordinates inside tile.
-    GameBuildingData[BUILDING_ILS].IsoPos.x = BUILDING_ILS_OFFSET_X;
-    GameBuildingData[BUILDING_ILS].IsoPos.y = BUILDING_ILS_OFFSET_Y;
-    // z coordinate set to 0 by default.
-    GameBuildingData[BUILDING_ILS].orig_x = BUILDING_ILS_ORIGIN_X;
-    GameBuildingData[BUILDING_ILS].orig_y = BUILDING_ILS_ORIGIN_Y;
-    GameBuildingData[BUILDING_ILS].u = BUILDING_ILS_U;
-    GameBuildingData[BUILDING_ILS].v = BUILDING_ILS_V;
-    GameBuildingData[BUILDING_ILS].w = BUILDING_ILS_W;
-    GameBuildingData[BUILDING_ILS].h = BUILDING_ILS_H;
-
-    // BUILDING_HANGAR coordinates inside tile.
-    GameBuildingData[BUILDING_HANGAR].IsoPos.x = BUILDING_HANGAR_OFFSET_X;
-    GameBuildingData[BUILDING_HANGAR].IsoPos.y = BUILDING_HANGAR_OFFSET_Y;
-    // z coordinate set to 0 by default.
-    GameBuildingData[BUILDING_HANGAR].orig_x = BUILDING_HANGAR_ORIGIN_X;
-    GameBuildingData[BUILDING_HANGAR].orig_y = BUILDING_HANGAR_ORIGIN_Y;
-    GameBuildingData[BUILDING_HANGAR].u = BUILDING_HANGAR_U;
-    GameBuildingData[BUILDING_HANGAR].v = BUILDING_HANGAR_V;
-    GameBuildingData[BUILDING_HANGAR].w = BUILDING_HANGAR_W;
-    GameBuildingData[BUILDING_HANGAR].h = BUILDING_HANGAR_H;
-
-    // BUILDING_ATC_TOWER coordinates inside tile.
-    GameBuildingData[BUILDING_ATC_TOWER].IsoPos.x = BUILDING_ATC_TOWER_OFFSET_X;
-    GameBuildingData[BUILDING_ATC_TOWER].IsoPos.y = BUILDING_ATC_TOWER_OFFSET_Y;
-    // z coordinate set to 0 by default.
-    GameBuildingData[BUILDING_ATC_TOWER].orig_x = BUILDING_ATC_TOWER_ORIGIN_X;
-    GameBuildingData[BUILDING_ATC_TOWER].orig_y = BUILDING_ATC_TOWER_ORIGIN_Y;
-    GameBuildingData[BUILDING_ATC_TOWER].u = BUILDING_ATC_TOWER_U;
-    GameBuildingData[BUILDING_ATC_TOWER].v = BUILDING_ATC_TOWER_V;
-    GameBuildingData[BUILDING_ATC_TOWER].w = BUILDING_ATC_TOWER_W;
-    GameBuildingData[BUILDING_ATC_TOWER].h = BUILDING_ATC_TOWER_H;
-
-    // BUILDING_GATE coordinates inside tile.
-    GameBuildingData[BUILDING_GATE].IsoPos.x = BUILDING_GATE_OFFSET_X;
-    GameBuildingData[BUILDING_GATE].IsoPos.y = BUILDING_GATE_OFFSET_Y;
-    // z coordinate set to 0 by default.
-
-    /*BUILDING_ILS,
-    BUILDING_ATC_TOWER,
-    BUILDING_ATC_LOC,
-    BUILDING_TERMINAL,
-    BUILDING_TERMINAL_2,
-    BUILDING_GATE,*/
 }
 
 /* ***************************************************************************************
@@ -1242,6 +1106,133 @@ void GameDrawBackground(TYPE_PLAYER* const ptrPlayer)
 
 void GameRenderBuildingAircraft(TYPE_PLAYER* const ptrPlayer)
 {
+    enum
+    {
+        BUILDING_ATC_LOC_OFFSET_X = TILE_SIZE >> 1,
+        BUILDING_ATC_LOC_OFFSET_Y = TILE_SIZE >> 1,
+
+        BUILDING_ILS_OFFSET_X = 0,
+        BUILDING_ILS_OFFSET_Y = 0,
+
+        BUILDING_GATE_OFFSET_X = (TILE_SIZE >> 1) - 4,
+        BUILDING_GATE_OFFSET_Y = 0,
+
+        BUILDING_HANGAR_OFFSET_X = 4,
+        BUILDING_HANGAR_OFFSET_Y = TILE_SIZE >> 1,
+
+        BUILDING_ATC_TOWER_OFFSET_X = TILE_SIZE >> 2,
+        BUILDING_ATC_TOWER_OFFSET_Y = TILE_SIZE >> 1,
+    };
+
+    enum
+    {
+        BUILDING_ILS_U = 34,
+        BUILDING_ILS_V = 0,
+        BUILDING_ILS_W = 24,
+        BUILDING_ILS_H = 34,
+
+        BUILDING_GATE_U = 0,
+        BUILDING_GATE_V = 70,
+        BUILDING_GATE_W = 28,
+        BUILDING_GATE_H = 25,
+
+        BUILDING_HANGAR_U = 0,
+        BUILDING_HANGAR_V = 34,
+        BUILDING_HANGAR_W = 51,
+        BUILDING_HANGAR_H = 36,
+
+        BUILDING_ATC_TOWER_U = 58,
+        BUILDING_ATC_TOWER_V = 0,
+        BUILDING_ATC_TOWER_W = 29,
+        BUILDING_ATC_TOWER_H = 34,
+    };
+
+    enum
+    {
+        BUILDING_ILS_ORIGIN_X = 10,
+        BUILDING_ILS_ORIGIN_Y = 22,
+
+        BUILDING_GATE_ORIGIN_X = 20,
+        BUILDING_GATE_ORIGIN_Y = 8,
+
+        BUILDING_HANGAR_ORIGIN_X = 20,
+        BUILDING_HANGAR_ORIGIN_Y = 11,
+
+        BUILDING_ATC_TOWER_ORIGIN_X = 12,
+        BUILDING_ATC_TOWER_ORIGIN_Y = 20,
+    };
+
+    static const TYPE_BUILDING_DATA GameBuildingData[MAX_BUILDING_ID] =
+    {
+        [BUILDING_GATE] =
+        {
+            .IsoPos.x = BUILDING_GATE_OFFSET_X,
+            .IsoPos.y = BUILDING_GATE_OFFSET_Y,
+            .orig_x = BUILDING_GATE_ORIGIN_X,
+            .orig_y = BUILDING_GATE_ORIGIN_Y,
+            .u = BUILDING_GATE_U,
+            .v = BUILDING_GATE_V,
+            .w = BUILDING_GATE_W,
+            .h = BUILDING_GATE_H,
+            // z coordinate set to 0 by default.
+        },
+
+        [BUILDING_ATC_LOC] =
+        {
+            .IsoPos.x = BUILDING_ATC_LOC_OFFSET_X,
+            .IsoPos.y = BUILDING_ATC_LOC_OFFSET_Y,
+        },
+
+        [BUILDING_ILS] =
+        {
+            .IsoPos.x = BUILDING_ILS_OFFSET_X,
+            .IsoPos.y = BUILDING_ILS_OFFSET_Y,
+            // z coordinate set to 0 by default.
+            .orig_x = BUILDING_ILS_ORIGIN_X,
+            .orig_y = BUILDING_ILS_ORIGIN_Y,
+            .u = BUILDING_ILS_U,
+            .v = BUILDING_ILS_V,
+            .w = BUILDING_ILS_W,
+            .h = BUILDING_ILS_H,
+        },
+
+        [BUILDING_HANGAR] =
+        {
+            // BUILDING_HANGAR coordinates inside tile.
+            .IsoPos.x = BUILDING_HANGAR_OFFSET_X,
+            .IsoPos.y = BUILDING_HANGAR_OFFSET_Y,
+            // z coordinate set to 0 by default.
+            .orig_x = BUILDING_HANGAR_ORIGIN_X,
+            .orig_y = BUILDING_HANGAR_ORIGIN_Y,
+            .u = BUILDING_HANGAR_U,
+            .v = BUILDING_HANGAR_V,
+            .w = BUILDING_HANGAR_W,
+            .h = BUILDING_HANGAR_H,
+        },
+
+        [BUILDING_ATC_TOWER] =
+        {
+            // BUILDING_ATC_TOWER coordinates inside tile.
+            .IsoPos.x = BUILDING_ATC_TOWER_OFFSET_X,
+            .IsoPos.y = BUILDING_ATC_TOWER_OFFSET_Y,
+            // z coordinate set to 0 by default.
+            .orig_x = BUILDING_ATC_TOWER_ORIGIN_X,
+            .orig_y = BUILDING_ATC_TOWER_ORIGIN_Y,
+            .u = BUILDING_ATC_TOWER_U,
+            .v = BUILDING_ATC_TOWER_V,
+            .w = BUILDING_ATC_TOWER_W,
+            .h = BUILDING_ATC_TOWER_H,
+        },
+
+        [BUILDING_GATE] =
+        {
+            // BUILDING_GATE coordinates inside tile.
+            .IsoPos.x = BUILDING_GATE_OFFSET_X,
+            .IsoPos.y = BUILDING_GATE_OFFSET_Y,
+            // z coordinate set to 0 by default.
+        }
+    };
+
     uint16_t tileNr;
     uint8_t rows = 0;
     uint8_t columns = 0;
@@ -1589,6 +1580,11 @@ static void GameInitTileUVTable(void)
         uint8_t CurrentTile = (uint8_t)(levelBuffer[i] & 0x007F);   // Remove building data
                                                                     // and mirror flag.
 
+        if (CurrentTile >= FIRST_TILE_TILESET2)
+        {
+            CurrentTile -= FIRST_TILE_TILESET2;
+        }
+
         GameLevelBuffer_UVData[i].u = (short)(CurrentTile % COLUMNS_PER_TILESET) << TILE_SIZE_BIT_SHIFT;
         GameLevelBuffer_UVData[i].v = (short)(CurrentTile / COLUMNS_PER_TILESET) * TILE_SIZE_H;
     }
@@ -1843,7 +1839,6 @@ static void GameRenderTerrainPrecalculations(TYPE_PLAYER* const ptrPlayer, const
 void GameRenderTerrain(TYPE_PLAYER* const ptrPlayer)
 {
     uint16_t i;
-    uint8_t aux_id;
 
     for (i = 0 ; i < GameLevelSize; i++)
     {
@@ -1851,7 +1846,7 @@ void GameRenderTerrain(TYPE_PLAYER* const ptrPlayer)
         {
             bool flip_id;
             GsSprite* ptrTileset;
-
+            uint8_t aux_id;
             uint8_t CurrentTile = (uint8_t)(levelBuffer[i] & 0x00FF);
 
             // Flipped tiles have bit 7 set.
@@ -2219,8 +2214,7 @@ static void GameStateSelectTaxiwayParking(TYPE_PLAYER* const ptrPlayer, TYPE_FLI
             ptrPlayer->InvalidPath = true;
         }
 
-#if 0
-        for (i = 0; GAME_MAX_AIRCRAFT; i++)
+        for (i = 0; i < GAME_MAX_AIRCRAFT; i++)
         {
             if (ptrPlayer->InvalidPath == false)
             {
@@ -2241,9 +2235,6 @@ static void GameStateSelectTaxiwayParking(TYPE_PLAYER* const ptrPlayer, TYPE_FLI
                 }
             }
         }
-#endif
-
-        Serial_printf("Yo\n");
 
         if (ptrPlayer->PadKeySinglePress_Callback(PAD_TRIANGLE))
         {

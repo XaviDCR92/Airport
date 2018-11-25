@@ -15,7 +15,7 @@ void MyGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
     QGraphicsItem *it = this->itemAt(mouseEvent->scenePos(), QTransform());
 
-    if (it != NULL)
+    if (it != nullptr)
     {        
         emit positionClicked(mouseEvent->scenePos());
     }

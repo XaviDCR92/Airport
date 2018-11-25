@@ -37,7 +37,7 @@ private:
     void appSettings(void);
     void loadTilesetData(void);
     void loadBuildingData(void);
-    void parseMapData(QDataStream &ds, const QPixmap &tileSet);
+    void parseMapData(QDataStream &ds, const QPixmap &tileSet, const QPixmap &tileSet2);
 
     Ui::MainWindow ui;
     QString _last_dir;
@@ -49,6 +49,7 @@ private:
     QList<QGraphicsTextItem*> textItems;
     QShortcut tileSet;
     QShortcut tileMoveUp;
+    QString tilesetPaths[2];
 
 private slots:
     void loadMap(void);
