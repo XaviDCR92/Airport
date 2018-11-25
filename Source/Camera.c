@@ -185,7 +185,6 @@ void CameraHandler(TYPE_PLAYER* const ptrPlayer)
     {
         if ((ptrPlayer->Camera.X_Offset + ptrPlayer->Camera.X_Speed) <= Camera_Min_X_Limit)
         {
-            DEBUG_PRINT_VAR(ptrPlayer->Camera.X_Offset);
             if (ptrPlayer->Camera.X_Speed < 0)
             {
                 limitAchieved = true;
@@ -208,9 +207,6 @@ void CameraHandler(TYPE_PLAYER* const ptrPlayer)
     }
 
 	ptrPlayer->Camera.Y_Offset += ptrPlayer->Camera.Y_Speed;
-
-    //~ DEBUG_PRINT_VAR(ptrPlayer->Camera.X_Offset);
-    //~ DEBUG_PRINT_VAR(ptrPlayer->Camera.Y_Offset);
 }
 
 bool CameraSpecialConditions(TYPE_PLAYER* const ptrPlayer)

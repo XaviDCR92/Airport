@@ -33,11 +33,39 @@ public:
     void closeEvent(QCloseEvent*);
 
 private:
+    struct IsometricPos
+    {
+        short x;
+        short y;
+        short z;
+    };
+
+    struct CartesianPos
+    {
+        short x;
+        short y;
+    };
+
     bool checkFile(QFile &f, QFile::OpenModeFlag flags = QFile::ReadOnly);
     void appSettings(void);
     void loadTilesetData(void);
     void loadBuildingData(void);
-    void parseMapData(QDataStream &ds, const QPixmap &tileSet, const QPixmap &tileSet2);
+    void parseMapData(QDataStream &ds);
+    void addTile(quint8 CurrentTile, const int i, const int j);
+    void addBuilding(quint8 CurrentBuilding, const int i, const int j);
+    CartesianPos isometricToCartesian(const IsometricPos& ptrIsoPos) const
+    {
+        CartesianPos retCartPos;
+
+        retCartPos.x = ptrIsoPos.x - (ptrIsoPos.x >> 1);
+        retCartPos.x -= ptrIsoPos.y >> 1;
+
+        retCartPos.y = ptrIsoPos.y >> 2;
+        retCartPos.y += ptrIsoPos.x >> 2;
+        retCartPos.y -= ptrIsoPos.z;
+
+        return retCartPos;
+    }
 
     Ui::MainWindow ui;
     QString _last_dir;
@@ -46,10 +74,12 @@ private:
     QByteArray map_buffer;
     int selected_item;
     QHash<int, QString> tilesetData;
+    QHash<int, QString> buildingData;
     QList<QGraphicsTextItem*> textItems;
     QShortcut tileSet;
     QShortcut tileMoveUp;
     QString tilesetPaths[2];
+    QString buildingPath;
 
 private slots:
     void loadMap(void);

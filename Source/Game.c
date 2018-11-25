@@ -49,17 +49,6 @@ typedef struct t_rwyentrydata
     uint16_t rwyHeader;
 }TYPE_RWY_ENTRY_DATA;
 
-typedef struct t_buildingdata
-{
-    TYPE_ISOMETRIC_POS IsoPos;  // Offset inside tile
-    short orig_x;               // Coordinate X origin inside building sprite
-    short orig_y;               // Coordinate Y origin inside building sprite
-    short w;                    // Building width
-    short h;                    // Building height
-    short u;                    // Building X offset inside texture page
-    short v;                    // Building Y offset inside texture page
-}TYPE_BUILDING_DATA;
-
 typedef struct t_GameLevelBuffer_UVData
 {
     short u;
@@ -92,21 +81,6 @@ enum
     UNBOARDING_KEY_SEQUENCE_MEDIUM = 6,
     UNBOARDING_KEY_SEQUENCE_HARD = GAME_MAX_SEQUENCE_KEYS,
     UNBOARDING_PASSENGERS_PER_SEQUENCE = 100
-};
-
-enum
-{
-    BUILDING_NONE,
-    BUILDING_HANGAR,
-    BUILDING_ILS,
-    BUILDING_ATC_TOWER,
-    BUILDING_ATC_LOC,
-    BUILDING_TERMINAL,
-    BUILDING_TERMINAL_2,
-    BUILDING_GATE,
-
-    LAST_BUILDING = BUILDING_GATE,
-    MAX_BUILDING_ID
 };
 
 enum
@@ -1108,6 +1082,21 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* const ptrPlayer)
 {
     enum
     {
+        BUILDING_NONE,
+        BUILDING_HANGAR,
+        BUILDING_ILS,
+        BUILDING_ATC_TOWER,
+        BUILDING_ATC_LOC,
+        BUILDING_TERMINAL,
+        BUILDING_TERMINAL_2,
+        BUILDING_GATE,
+
+        LAST_BUILDING = BUILDING_GATE,
+        MAX_BUILDING_ID
+    };
+
+    enum
+    {
         BUILDING_ATC_LOC_OFFSET_X = TILE_SIZE >> 1,
         BUILDING_ATC_LOC_OFFSET_Y = TILE_SIZE >> 1,
 
@@ -1119,6 +1108,12 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* const ptrPlayer)
 
         BUILDING_HANGAR_OFFSET_X = 4,
         BUILDING_HANGAR_OFFSET_Y = TILE_SIZE >> 1,
+
+        BUILDING_TERMINAL_OFFSET_X = 0,
+        BUILDING_TERMINAL_OFFSET_Y = TILE_SIZE >> 1,
+
+        BUILDING_TERMINAL_2_OFFSET_X = BUILDING_TERMINAL_OFFSET_X,
+        BUILDING_TERMINAL_2_OFFSET_Y = BUILDING_TERMINAL_OFFSET_Y,
 
         BUILDING_ATC_TOWER_OFFSET_X = TILE_SIZE >> 2,
         BUILDING_ATC_TOWER_OFFSET_Y = TILE_SIZE >> 1,
@@ -1137,9 +1132,19 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* const ptrPlayer)
         BUILDING_GATE_H = 25,
 
         BUILDING_HANGAR_U = 0,
-        BUILDING_HANGAR_V = 34,
-        BUILDING_HANGAR_W = 51,
-        BUILDING_HANGAR_H = 36,
+        BUILDING_HANGAR_V = 0,
+        BUILDING_HANGAR_W = 34,
+        BUILDING_HANGAR_H = 28,
+
+        BUILDING_TERMINAL_U = 0,
+        BUILDING_TERMINAL_V = 34,
+        BUILDING_TERMINAL_W = 51,
+        BUILDING_TERMINAL_H = 36,
+
+        BUILDING_TERMINAL_2_U = 51,
+        BUILDING_TERMINAL_2_V = BUILDING_TERMINAL_V,
+        BUILDING_TERMINAL_2_W = BUILDING_TERMINAL_W,
+        BUILDING_TERMINAL_2_H = BUILDING_TERMINAL_H,
 
         BUILDING_ATC_TOWER_U = 58,
         BUILDING_ATC_TOWER_V = 0,
@@ -1155,14 +1160,29 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* const ptrPlayer)
         BUILDING_GATE_ORIGIN_X = 20,
         BUILDING_GATE_ORIGIN_Y = 8,
 
-        BUILDING_HANGAR_ORIGIN_X = 20,
-        BUILDING_HANGAR_ORIGIN_Y = 11,
+        BUILDING_TERMINAL_ORIGIN_X = 20,
+        BUILDING_TERMINAL_ORIGIN_Y = 11,
+
+        BUILDING_TERMINAL_2_ORIGIN_X = BUILDING_TERMINAL_ORIGIN_X,
+        BUILDING_TERMINAL_2_ORIGIN_Y = BUILDING_TERMINAL_ORIGIN_Y,
+
+        BUILDING_HANGAR_ORIGIN_X = 16,
+        BUILDING_HANGAR_ORIGIN_Y = 12,
 
         BUILDING_ATC_TOWER_ORIGIN_X = 12,
         BUILDING_ATC_TOWER_ORIGIN_Y = 20,
     };
 
-    static const TYPE_BUILDING_DATA GameBuildingData[MAX_BUILDING_ID] =
+    static const struct
+    {
+        TYPE_ISOMETRIC_POS IsoPos;  // Offset inside tile
+        short orig_x;               // Coordinate X origin inside building sprite
+        short orig_y;               // Coordinate Y origin inside building sprite
+        short w;                    // Building width
+        short h;                    // Building height
+        short u;                    // Building X offset inside texture page
+        short v;                    // Building Y offset inside texture page
+    } GameBuildingData[MAX_BUILDING_ID] =
     {
         [BUILDING_GATE] =
         {
@@ -1210,6 +1230,34 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* const ptrPlayer)
             .h = BUILDING_HANGAR_H,
         },
 
+        [BUILDING_TERMINAL] =
+        {
+            // BUILDING_TERMINAL coordinates inside tile.
+            .IsoPos.x = BUILDING_TERMINAL_OFFSET_X,
+            .IsoPos.y = BUILDING_TERMINAL_OFFSET_Y,
+            // z coordinate set to 0 by default.
+            .orig_x = BUILDING_TERMINAL_ORIGIN_X,
+            .orig_y = BUILDING_TERMINAL_ORIGIN_Y,
+            .u = BUILDING_TERMINAL_U,
+            .v = BUILDING_TERMINAL_V,
+            .w = BUILDING_TERMINAL_W,
+            .h = BUILDING_TERMINAL_H,
+        },
+
+        [BUILDING_TERMINAL_2] =
+        {
+            // BUILDING_TERMINAL_2 coordinates inside tile.
+            .IsoPos.x = BUILDING_TERMINAL_2_OFFSET_X,
+            .IsoPos.y = BUILDING_TERMINAL_2_OFFSET_Y,
+            // z coordinate set to 0 by default.
+            .orig_x = BUILDING_TERMINAL_2_ORIGIN_X,
+            .orig_y = BUILDING_TERMINAL_2_ORIGIN_Y,
+            .u = BUILDING_TERMINAL_2_U,
+            .v = BUILDING_TERMINAL_2_V,
+            .w = BUILDING_TERMINAL_2_W,
+            .h = BUILDING_TERMINAL_2_H,
+        },
+
         [BUILDING_ATC_TOWER] =
         {
             // BUILDING_ATC_TOWER coordinates inside tile.
@@ -1230,7 +1278,13 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* const ptrPlayer)
             .IsoPos.x = BUILDING_GATE_OFFSET_X,
             .IsoPos.y = BUILDING_GATE_OFFSET_Y,
             // z coordinate set to 0 by default.
-        }
+            .orig_x = BUILDING_GATE_ORIGIN_X,
+            .orig_y = BUILDING_GATE_ORIGIN_Y,
+            .u = BUILDING_GATE_U,
+            .v = BUILDING_GATE_V,
+            .w = BUILDING_GATE_W,
+            .h = BUILDING_GATE_H,
+        },
     };
 
     uint16_t tileNr;
@@ -1305,9 +1359,12 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* const ptrPlayer)
             short orig_u = GameBuildingSpr.u;
             short orig_v = GameBuildingSpr.v;
 
-            TYPE_ISOMETRIC_POS buildingIsoPos = {   .x = (columns << (TILE_SIZE_BIT_SHIFT)) + x_bldg_offset,
-                                                    .y = (rows << (TILE_SIZE_BIT_SHIFT)) + y_bldg_offset,
-                                                    .z = z_bldg_offset  };
+            TYPE_ISOMETRIC_POS buildingIsoPos =
+            {
+                .x = (columns << (TILE_SIZE_BIT_SHIFT)) + x_bldg_offset,
+                .y = (rows << (TILE_SIZE_BIT_SHIFT)) + y_bldg_offset,
+                .z = z_bldg_offset
+            };
 
             // Isometric -> Cartesian conversion
             TYPE_CARTESIAN_POS buildingCartPos = GfxIsometricToCartesian(&buildingIsoPos);
@@ -1446,15 +1503,31 @@ static void GameLoadLevel(const char* path)
 
     Serial_printf("Game level title: %s\n",GameLevelTitle);
 
-    DEBUG_PRINT_VAR(GameLevelSize);
-
     i += LEVEL_TITLE_SIZE;
 
     memset(levelBuffer, 0, GAME_MAX_MAP_SIZE);
 
     i = LEVEL_HEADER_SIZE;
 
-    memcpy(levelBuffer, &ptrBuffer[i], GameLevelSize * sizeof (uint16_t)); // 2 bytes per tile
+    {
+        size_t j;
+        size_t k;
+
+        for (j = LEVEL_HEADER_SIZE, k = 0; k < GameLevelSize; j += sizeof (uint16_t), k++)
+        {
+            levelBuffer[k] = ptrBuffer[j + 1];
+            levelBuffer[k] |= (ptrBuffer[j] << 8);
+        }
+    }
+
+    {
+        size_t i;
+
+        for (i = 0; i < (GameLevelSize * sizeof (uint16_t)); i++)
+        {
+            Serial_printf("levelBuffer[%d] = 0x%02X\n", i, levelBuffer[i]);
+        }
+    }
 }
 
 /* ******************************************************************************************
@@ -2699,11 +2772,7 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t s
         }
     }
 
-    //DEBUG_PRINT_VAR(i);
-
     rwyArray[i++] = last_tile;
-
-    //DEBUG_PRINT_VAR(rwyArray[i -1]);
 
     switch(dir)
     {
@@ -2727,7 +2796,6 @@ void GameGetSelectedRunwayArray(uint16_t rwyHeader, uint16_t* rwyArray, size_t s
             // Fall through
         default:
             Serial_printf("Invalid runway direction.\n");
-            DEBUG_PRINT_VAR(rwyHeader);
         return;
     }
 
