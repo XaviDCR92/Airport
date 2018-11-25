@@ -95,7 +95,7 @@ static unsigned short pad2_cheat_array[CHEAT_ARRAY_SIZE];
 static TYPE_TIMER* pad1_cheat_timer;
 static TYPE_TIMER* pad2_cheat_timer;
 
-static TYPE_CHEAT * cheatsArray[PAD_MAX_CHEATS];
+static const TYPE_CHEAT* cheatsArray[PAD_MAX_CHEATS];
 
 psx_pad_state PadOneGetState(void)
 {
@@ -558,7 +558,7 @@ void PadCheatHandler(uint8_t n_pad)
 	cheat_array[j] = key;
 }
 
-bool PadAddCheat(TYPE_CHEAT * cheat)
+bool PadAddCheat(const TYPE_CHEAT* const cheat)
 {
 	static uint8_t idx = 0;
 

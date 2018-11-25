@@ -47,7 +47,7 @@ fix16_t 	GameGetYFromTile(uint16_t tile);
 short		GameGetXFromTile_short(uint16_t tile);
 short		GameGetYFromTile_short(uint16_t tile);
 FL_STATE 	GameTargetsReached(uint16_t firstTarget, uint8_t index);
-uint16_t	GameGetTileFromIsoPosition(TYPE_ISOMETRIC_POS* IsoPos);
+uint16_t	GameGetTileFromIsoPosition(const TYPE_ISOMETRIC_POS* const IsoPos);
 FL_STATE	GameGetFlightDataStateFromIdx(uint8_t FlightDataIdx);
 uint32_t	GameGetScore(void);
 bool		GameInsideLevelFromIsoPos(TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos);

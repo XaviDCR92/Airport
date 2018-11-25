@@ -214,10 +214,10 @@ typedef struct
     uint16_t NextAircraftTime;
 
     // Pad callbacks.
-	bool	(*PadKeyPressed_Callback)(unsigned short);
-	bool	(*PadKeyReleased_Callback)(unsigned short);
-	bool	(*PadKeySinglePress_Callback)(unsigned short);
-	bool	(*PadDirectionKeyPressed_Callback)(void);
+	bool	(*const PadKeyPressed_Callback)(unsigned short);
+	bool	(*const PadKeyReleased_Callback)(unsigned short);
+	bool	(*const PadKeySinglePress_Callback)(unsigned short);
+	bool	(*const PadDirectionKeyPressed_Callback)(void);
 	unsigned short	(*PadLastKeySinglePressed_Callback)(void);
 }TYPE_PLAYER;
 

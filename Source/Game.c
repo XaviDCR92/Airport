@@ -245,7 +245,27 @@ static SsVag TakeoffSnd;
 static SsVag BeepSnd;
 
 // Instances for player-specific data
-static TYPE_PLAYER PlayerData[MAX_PLAYERS];
+static TYPE_PLAYER PlayerData[MAX_PLAYERS] =
+{
+    [PLAYER_ONE] =
+    {
+        .PadKeyPressed_Callback = &PadOneKeyPressed,
+        .PadKeyReleased_Callback = &PadOneKeyReleased,
+        .PadKeySinglePress_Callback = &PadOneKeySinglePress,
+        .PadDirectionKeyPressed_Callback = &PadOneDirectionKeyPressed,
+        .PadLastKeySinglePressed_Callback = &PadOneGetLastKeySinglePressed
+    },
+
+    [PLAYER_TWO] =
+    {
+        .PadKeyPressed_Callback = &PadTwoKeyPressed,
+        .PadKeyReleased_Callback = &PadTwoKeyReleased,
+        .PadDirectionKeyPressed_Callback = &PadTwoDirectionKeyPressed,
+        .PadKeySinglePress_Callback = &PadTwoKeySinglePress,
+        .PadLastKeySinglePressed_Callback = &PadTwoGetLastKeySinglePressed
+    }
+
+};
 
 static void* GamePltDest[] = {(TYPE_FLIGHT_DATA*)&FlightData    };
 
@@ -434,7 +454,6 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
     };
 
     uint8_t i;
-    uint32_t track;
     static bool loaded;
 
     GameStartupFlag = true;
@@ -452,7 +471,7 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
     LoadMenu(   &pGameCfg->PLTPath,
                 GamePltDest,
                 sizeof (char),
-                sizeof (GamePltDest) / sizeof (GamePltDest[0]) );
+                ARRAY_SIZE(GamePltDest));
 
     GameLoadLevel(pGameCfg->LVLPath);
 
@@ -465,11 +484,6 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
     memset(GameUsedRwy, 0, GAME_MAX_RUNWAYS * sizeof (uint16_t) );
 
     PlayerData[PLAYER_ONE].Active = true;
-    PlayerData[PLAYER_ONE].PadKeyPressed_Callback = &PadOneKeyPressed;
-    PlayerData[PLAYER_ONE].PadKeyReleased_Callback = &PadOneKeyReleased;
-    PlayerData[PLAYER_ONE].PadKeySinglePress_Callback = &PadOneKeySinglePress;
-    PlayerData[PLAYER_ONE].PadDirectionKeyPressed_Callback = &PadOneDirectionKeyPressed;
-    PlayerData[PLAYER_ONE].PadLastKeySinglePressed_Callback = &PadOneGetLastKeySinglePressed;
     PlayerData[PLAYER_ONE].FlightDataPage = 0;
     PlayerData[PLAYER_ONE].UnboardingSequenceIdx = 0;
 
@@ -488,12 +502,7 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
 
     if (PlayerData[PLAYER_TWO].Active)
     {
-        PlayerData[PLAYER_TWO].PadKeyPressed_Callback = &PadTwoKeyPressed;
-        PlayerData[PLAYER_TWO].PadKeyReleased_Callback = &PadTwoKeyReleased;
-        PlayerData[PLAYER_TWO].PadDirectionKeyPressed_Callback = &PadTwoDirectionKeyPressed;
         PlayerData[PLAYER_TWO].FlightDataPage = 0;
-        PlayerData[PLAYER_TWO].PadKeySinglePress_Callback = &PadTwoKeySinglePress;
-        PlayerData[PLAYER_TWO].PadLastKeySinglePressed_Callback = &PadTwoGetLastKeySinglePressed;
         PlayerData[PLAYER_TWO].UnboardingSequenceIdx = 0;
 
         PlayerData[PLAYER_TWO].ShowAircraftData = false;
@@ -553,7 +562,10 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
     GameMouseSpr.g = NORMAL_LUMINANCE;
     GameMouseSpr.b = NORMAL_LUMINANCE;
 
-    GameSpawnMinTime = TimerCreate(GAME_MINIMUM_PARKING_SPAWN_TIME, false, &GameMinimumSpawnTimeout);
+    if (GameSpawnMinTime != NULL)
+    {
+        GameSpawnMinTime = TimerCreate(GAME_MINIMUM_PARKING_SPAWN_TIME, false, &GameMinimumSpawnTimeout);
+    }
 
     spawnMinTimeFlag = false;
 
@@ -573,9 +585,11 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
 
     GfxSetGlobalLuminance(0);
 
-    track = SystemRand(GAMEPLAY_FIRST_TRACK, GAMEPLAY_LAST_TRACK);
+    {
+        const uint32_t track = SystemRand(GAMEPLAY_FIRST_TRACK, GAMEPLAY_LAST_TRACK);
 
-    SfxPlayTrack(track);
+        SfxPlayTrack(track);
+    }
 }
 
 /* ***************************************************************************************
@@ -732,20 +746,10 @@ void GameEmergencyMode(void)
 {
     uint8_t i;
     uint8_t disconnected_players = 0x00;
-    bool (*PadXConnected[MAX_PLAYERS])(void) = {    [PLAYER_ONE] = &PadOneConnected,
-                                                    [PLAYER_TWO] = &PadTwoConnected };
-
-    enum
+    static bool (*const PadXConnected[MAX_PLAYERS])(void) =
     {
-        ERROR_RECT_X = 32,
-        ERROR_RECT_W = X_SCREEN_RESOLUTION - (ERROR_RECT_X << 1),
-
-        ERROR_RECT_Y = 16,
-        ERROR_RECT_H = Y_SCREEN_RESOLUTION - (ERROR_RECT_Y << 1),
-
-        ERROR_RECT_R = 0,
-        ERROR_RECT_G = 32,
-        ERROR_RECT_B = NORMAL_LUMINANCE
+        [PLAYER_ONE] = &PadOneConnected,
+        [PLAYER_TWO] = &PadTwoConnected
     };
 
     enum
@@ -759,21 +763,37 @@ void GameEmergencyMode(void)
     {
         bool enabled = false;
 
-        GsRectangle errorRct = {.x = ERROR_RECT_X,
-                                .w = ERROR_RECT_W,
-                                .y = ERROR_RECT_Y,
-                                .h = ERROR_RECT_H,
-                                .r = ERROR_RECT_R,
-                                .g = ERROR_RECT_G,
-                                .b = ERROR_RECT_B   };
-
         if (SystemGetEmergencyMode())
         {
+            enum
+            {
+                ERROR_RECT_X = 32,
+                ERROR_RECT_W = X_SCREEN_RESOLUTION - (ERROR_RECT_X << 1),
+
+                ERROR_RECT_Y = 16,
+                ERROR_RECT_H = Y_SCREEN_RESOLUTION - (ERROR_RECT_Y << 1),
+
+                ERROR_RECT_R = 0,
+                ERROR_RECT_G = 32,
+                ERROR_RECT_B = NORMAL_LUMINANCE
+            };
+
+            static const GsRectangle errorRct =
+            {
+                .x = ERROR_RECT_X,
+                .w = ERROR_RECT_W,
+                .y = ERROR_RECT_Y,
+                .h = ERROR_RECT_H,
+                .r = ERROR_RECT_R,
+                .g = ERROR_RECT_G,
+                .b = ERROR_RECT_B
+            };
+
             // One of the pads has been disconnected during gameplay
             // Show an error screen until it is disconnected again.
 
             GsSortCls(0,0,0);
-            GsSortRectangle(&errorRct);
+            GsSortRectangle((GsRectangle*)&errorRct);
 
             for (i = 0; i < MAX_PLAYERS; i++)
             {
@@ -1466,12 +1486,6 @@ static void GameLoadLevel(const char* path)
 
 static void GameAircraftState(const uint8_t i)
 {
-    uint16_t target[2] = {0};
-    // Arrays are copied to AircraftAddNew, so we create a first and only
-    // target which is the parking tile itself, and the second element
-    // is just the NULL character.
-    // Not an ideal solution, but the best one currently available.
-
     if (FlightData.Finished[i] == false)
     {
         if ((FlightData.Hours[i] == 0)
@@ -1515,6 +1529,12 @@ static void GameAircraftState(const uint8_t i)
 
                 if (bParkingBusy == false)
                 {
+                    uint16_t target[2] = {0};
+                    // Arrays are copied to AircraftAddNew, so we create a first and only
+                    // target which is the parking tile itself, and the second element
+                    // is just the NULL character.
+                    // Not an ideal solution, but the best one currently available.
+
                     FlightData.State[i] = STATE_PARKED;
 
                     aircraftCreated = true;
@@ -1535,11 +1555,11 @@ static void GameAircraftState(const uint8_t i)
             }
             else if (FlightData.FlightDirection[i] == ARRIVAL)
             {
+                const uint32_t idx = SystemRand(SOUND_M1_INDEX, ARRAY_SIZE(ApproachSnds));
+
                 Serial_printf("Flight %d set to STATE_APPROACH.\n", i);
                 FlightData.State[i] = STATE_APPROACH;
                 aircraftCreated = true;
-
-                const uint32_t idx = SystemRand(SOUND_M1_INDEX, ARRAY_SIZE(ApproachSnds));
 
                 // Play chatter sound.
                 SfxPlaySound(&ApproachSnds[idx]);
@@ -1727,9 +1747,38 @@ static void GameRenderTerrainPrecalculations(TYPE_PLAYER* const ptrPlayer, const
                                             ||
                                     (CurrentTile == TILE_PARKING_2) )   )
                     {
-                        tileData->r = NORMAL_LUMINANCE >> 2;
-                        tileData->g = rwy_sine;
-                        tileData->b = NORMAL_LUMINANCE >> 2;
+                        bool parkingBusy = false;
+
+                        uint8_t aircraftIndex;
+
+                        for (aircraftIndex = 0; aircraftIndex < GAME_MAX_AIRCRAFT; aircraftIndex++)
+                        {
+                            const TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(aircraftIndex);
+
+                            if (ptrAircraft->State == STATE_PARKED)
+                            {
+                                const uint16_t tile = AircraftGetTileFromFlightDataIndex(aircraftIndex);
+
+                                if (i == tile)
+                                {
+                                    parkingBusy = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (parkingBusy)
+                        {
+                            tileData->r = rwy_sine;
+                            tileData->g = NORMAL_LUMINANCE >> 2;
+                            tileData->b = NORMAL_LUMINANCE >> 2;
+                        }
+                        else
+                        {
+                            tileData->r = NORMAL_LUMINANCE >> 2;
+                            tileData->g = rwy_sine;
+                            tileData->b = NORMAL_LUMINANCE >> 2;
+                        }
                     }
                 }
                 else if (ptrPlayer->ShowAircraftData)
@@ -2050,7 +2099,6 @@ static void GameStateLockTarget(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* 
 
 static void GameStateSelectTaxiwayRunway(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* const ptrFlightData)
 {
-    TYPE_ISOMETRIC_POS IsoPos = CameraGetIsoPos(ptrPlayer);
     uint8_t i;
     uint16_t target_tile;
 
@@ -2061,8 +2109,6 @@ static void GameStateSelectTaxiwayRunway(TYPE_PLAYER* const ptrPlayer, TYPE_FLIG
         // Under this mode, always reset locking target.
         ptrPlayer->LockTarget = false;
         ptrPlayer->LockedAircraft = FLIGHT_DATA_INVALID_IDX;
-
-        ptrPlayer->SelectedTile = GameGetTileFromIsoPosition(&IsoPos);
 
         if (GamePathToTile(ptrPlayer, ptrFlightData) == false)
         {
@@ -2159,7 +2205,6 @@ static void GameStateSelectTaxiwayRunway(TYPE_PLAYER* const ptrPlayer, TYPE_FLIG
  * **************************************************************************************************/
 static void GameStateSelectTaxiwayParking(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* const ptrFlightData)
 {
-    TYPE_ISOMETRIC_POS IsoPos = CameraGetIsoPos(ptrPlayer);
     uint8_t i;
     uint16_t target_tile;
 
@@ -2169,12 +2214,36 @@ static void GameStateSelectTaxiwayParking(TYPE_PLAYER* const ptrPlayer, TYPE_FLI
         ptrPlayer->LockTarget = false;
         ptrPlayer->LockedAircraft = FLIGHT_DATA_INVALID_IDX;
 
-        ptrPlayer->SelectedTile = GameGetTileFromIsoPosition(&IsoPos);
-
         if (GamePathToTile(ptrPlayer, ptrFlightData) == false)
         {
             ptrPlayer->InvalidPath = true;
         }
+
+#if 0
+        for (i = 0; GAME_MAX_AIRCRAFT; i++)
+        {
+            if (ptrPlayer->InvalidPath == false)
+            {
+                const TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(i);
+
+                if (ptrAircraft != NULL)
+                {
+                    if (ptrAircraft->State == STATE_PARKED)
+                    {
+                        const uint16_t tile = AircraftGetTileFromFlightDataIndex(i);
+
+                        if (ptrPlayer->SelectedTile == tile)
+                        {
+                            ptrPlayer->InvalidPath = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+#endif
+
+        Serial_printf("Yo\n");
 
         if (ptrPlayer->PadKeySinglePress_Callback(PAD_TRIANGLE))
         {
@@ -2200,13 +2269,6 @@ static void GameStateSelectTaxiwayParking(TYPE_PLAYER* const ptrPlayer, TYPE_FLI
                 }
 
                 target_tile = levelBuffer[ptrPlayer->Waypoints[ptrPlayer->LastWaypointIdx]] & ~(TILE_MIRROR_FLAG);
-
-                Serial_printf("ptrPlayer->LastWaypointIdx = %d\n",
-                        ptrPlayer->LastWaypointIdx);
-
-                Serial_printf("target_tile = %d, TILE_PARKING = %d\n",
-                        target_tile,
-                        TILE_PARKING);
 
                 SfxPlaySound(&BeepSnd);
 
@@ -2287,7 +2349,6 @@ static void GameStateSelectRunway(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA
         }
         else if (ptrPlayer->PadKeySinglePress_Callback(PAD_CROSS))
         {
-            ptrPlayer->SelectRunway = false;
             bool success = false;
 
             if (SystemContains_u16(GameRwy[ptrPlayer->SelectedRunway], GameUsedRwy, GAME_MAX_RUNWAYS) == false)
@@ -2725,10 +2786,13 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* 
         // TODO: Algorithm is not correct. If TILE_RWY_EXIT is placed further,
         // but returns a match earlier than other rwyExitTiles[], invalid targets
         // are returned to aircraft. We should check this before proceeding.
-        uint8_t rwyExitTiles[] = {  TILE_RWY_EXIT,
-                                    TILE_RWY_EXIT | TILE_MIRROR_FLAG,
-                                    TILE_RWY_EXIT_2,
-                                    TILE_RWY_EXIT_2 | TILE_MIRROR_FLAG  };
+        static const uint8_t rwyExitTiles[] =
+        {
+            TILE_RWY_EXIT,
+            TILE_RWY_EXIT | TILE_MIRROR_FLAG,
+            TILE_RWY_EXIT_2,
+            TILE_RWY_EXIT_2 | TILE_MIRROR_FLAG
+        };
 
         ptrFlightData->State[aircraftIndex] = STATE_FINAL;
         GameScore += SCORE_REWARD_FINAL;
@@ -2742,7 +2806,7 @@ void GameAssignRunwaytoAircraft(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* 
 
         for (i = 0; (i < GAME_MAX_RWY_LENGTH) && (rwyExit == 0); i++)
         {
-            for (j = 0; j < (sizeof (rwyExitTiles) / sizeof (rwyExitTiles[0])); j++)
+            for (j = 0; j < ARRAY_SIZE(rwyExitTiles); j++)
             {
                 if (rwyTiles[i] == rwyExitTiles[j])
                 {
@@ -2995,7 +3059,7 @@ FL_STATE GameTargetsReached(uint16_t firstTarget, uint8_t index)
  *
  * ****************************************************************************/
 
-uint16_t GameGetTileFromIsoPosition(TYPE_ISOMETRIC_POS* IsoPos)
+uint16_t GameGetTileFromIsoPosition(const TYPE_ISOMETRIC_POS* const IsoPos)
 {
     uint16_t tile;
 
@@ -3193,6 +3257,10 @@ bool GamePathToTile(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* const ptrFli
     uint16_t x_diff;
     uint16_t y_diff;
     uint16_t temp_tile;
+
+    const TYPE_ISOMETRIC_POS IsoPos = CameraGetIsoPos(ptrPlayer);
+
+    ptrPlayer->SelectedTile = GameGetTileFromIsoPosition(&IsoPos);
 
     if (ptrPlayer->SelectedTile == GAME_INVALID_TILE_SELECTION)
     {

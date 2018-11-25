@@ -1,5 +1,5 @@
 /* *************************************
- * 	Includes
+ *  Includes
  * *************************************/
 #include "System.h"
 #include "Pad.h"
@@ -10,7 +10,7 @@
 #include "Timer.h"
 
 /* *************************************
- * 	Defines
+ *  Defines
  * *************************************/
 #define FILE_BUFFER_SIZE (128 << 10)    // 128 KB
 
@@ -20,14 +20,14 @@
 #define I_MASK (*(volatile unsigned int*)0x1F801074)
 
 /* *************************************
- * 	Local Prototypes
+ *  Local Prototypes
  * *************************************/
 static void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step);
 static void SystemSetStackPattern(void);
 static void ISR_RootCounter2(void);
 
 /* *************************************
- * 	Local Variables
+ *  Local Variables
  * *************************************/
 //Buffer to store any kind of files. It supports files up to 128 kB
 static uint8_t file_buffer[FILE_BUFFER_SIZE];
@@ -67,17 +67,17 @@ static unsigned char sine_counter;
  * *******************************************************************/
 void SystemInit(void)
 {
-	enum
-	{
-		RCNT2_100US_TICK_COUNTER = 0xA560
-	};
+    enum
+    {
+        RCNT2_100US_TICK_COUNTER = 0xA560
+    };
 
-	//Reset global timer
-	global_timer = 0;
-	//Reset 1 second timer
-	one_second_timer = 0;
+    //Reset global timer
+    global_timer = 0;
+    //Reset 1 second timer
+    one_second_timer = 0;
 
-	//PSXSDK init
+    //PSXSDK init
 #ifdef SERIAL_INTERFACE
     // PSX_INIT_SAVESTATE | PSX_INIT_CD flags are not needed
     // when coming from OpenSend.
@@ -86,46 +86,46 @@ void SystemInit(void)
     PSX_InitEx(PSX_INIT_SAVESTATE | PSX_INIT_CD);
 #endif // SERIAL_INTERFACE
 
-	//Graphics init
-	GsInit();
-	//Clear VRAM
-	GsClearMem();
-	//Set Video Resolution
+    //Graphics init
+    GsInit();
+    //Clear VRAM
+    GsClearMem();
+    //Set Video Resolution
 #ifdef _PAL_MODE_
-	GsSetVideoMode(X_SCREEN_RESOLUTION, Y_SCREEN_RESOLUTION, VMODE_PAL);
+    GsSetVideoMode(X_SCREEN_RESOLUTION, Y_SCREEN_RESOLUTION, VMODE_PAL);
 #else
-	GsSetVideoMode(X_SCREEN_RESOLUTION, Y_SCREEN_RESOLUTION, VMODE_NTSC);
+    GsSetVideoMode(X_SCREEN_RESOLUTION, Y_SCREEN_RESOLUTION, VMODE_NTSC);
 #endif //_PAL_MODE_
-	//SPU init
-	SsInit();
-	//Reset all user-handled timers
-	TimerReset();
-	//Pads init
-	PadInit();
-	//Set Drawing Environment
-	GfxInitDrawEnv();
-	//Set Display Environment
-	GfxInitDispEnv();
-	//Set VBlank Handler for screen refresh
-	SetVBlankHandler(&ISR_SystemDefaultVBlank);
-	//Set Primitive List
-	GfxSetDefaultPrimitiveList();
-	// Init memory card
-	MemCardInit();
-	//Initial value for system_busy
-	system_busy = false;
+    //SPU init
+    SsInit();
+    //Reset all user-handled timers
+    TimerReset();
+    //Pads init
+    PadInit();
+    //Set Drawing Environment
+    GfxInitDrawEnv();
+    //Set Display Environment
+    GfxInitDispEnv();
+    //Set VBlank Handler for screen refresh
+    SetVBlankHandler(&ISR_SystemDefaultVBlank);
+    //Set Primitive List
+    GfxSetDefaultPrimitiveList();
+    // Init memory card
+    MemCardInit();
+    //Initial value for system_busy
+    system_busy = false;
     //Development menu flag
     devmenu_flag = false;
     //Emergency mode flag
     emergency_mode = false;
 
-	GfxSetGlobalLuminance(NORMAL_LUMINANCE);
+    GfxSetGlobalLuminance(NORMAL_LUMINANCE);
 
-	SystemSetStackPattern();
+    SystemSetStackPattern();
 
-	// Configure root counter 2 so that ISR_RootCounter2
-	// is executed every 100 us.
-	SetRCntHandler(&ISR_RootCounter2, 2, RCNT2_100US_TICK_COUNTER);
+    // Configure root counter 2 so that ISR_RootCounter2
+    // is executed every 100 us.
+    SetRCntHandler(&ISR_RootCounter2, 2, RCNT2_100US_TICK_COUNTER);
     SystemEnableRCnt2Interrupt();
 }
 
@@ -139,7 +139,7 @@ static volatile uint16_t u16_0_01seconds_cnt_prev;
  * @author: Xavier Del Campo
  *
  * @brief:
- * 	Executed on RCnt2 ISR every 100 us.
+ *  Executed on RCnt2 ISR every 100 us.
  *
  * *******************************************************************/
 void ISR_RootCounter2(void)
@@ -148,9 +148,9 @@ void ISR_RootCounter2(void)
 
     if ((int16_t)(u16_0_01seconds_cnt - 1000) >= (int16_t)(u16_0_01seconds_cnt_prev))
     {
-		u16_0_01seconds_cnt_prev = u16_0_01seconds_cnt;
-		//~ DEBUG_PRINT_VAR(u16_0_01seconds_cnt_prev);
-	}
+        u16_0_01seconds_cnt_prev = u16_0_01seconds_cnt;
+        //~ DEBUG_PRINT_VAR(u16_0_01seconds_cnt_prev);
+    }
 }
 
 /* *******************************************************************
@@ -160,24 +160,24 @@ void ISR_RootCounter2(void)
  * @author: Xavier Del Campo
  *
  * @brief:
- * 	Calls srand() while avoiding multiple calls by setting internal
- *	variable rand_seed to true. Internal variable "global_timer" is
- *	used to generate the new seed.
+ *  Calls srand() while avoiding multiple calls by setting internal
+ *  variable rand_seed to true. Internal variable "global_timer" is
+ *  used to generate the new seed.
  *
  * @remarks:
- * 	It is recommended to call it once user has pressed any key.
+ *  It is recommended to call it once user has pressed any key.
  *
  * *******************************************************************/
 void SystemSetRandSeed(void)
 {
-	if (rand_seed == false)
-	{
-		rand_seed = true;
-		//Set random seed using global timer as reference
-		srand((unsigned int)global_timer);
+    if (rand_seed == false)
+    {
+        rand_seed = true;
+        //Set random seed using global timer as reference
+        srand((unsigned int)global_timer ^ GetRCnt(2));
 
-		Serial_printf("Seed used: %d\n",(unsigned int)global_timer);
-	}
+        Serial_printf("Seed used: %d\n",(unsigned int)global_timer);
+    }
 }
 
 /* *******************************************************************
@@ -187,17 +187,17 @@ void SystemSetRandSeed(void)
  * @author: Xavier Del Campo
  *
  * @brief:
- * 	Reportedly, returns whether rand seed has already been set.
+ *  Reportedly, returns whether rand seed has already been set.
  *
  * @remarks:
  *
  * @return:
- *	 Reportedly, returns whether rand seed has already been set.
+ *   Reportedly, returns whether rand seed has already been set.
  *
  * *******************************************************************/
 bool SystemIsRandSeedSet(void)
 {
-	return rand_seed;
+    return rand_seed;
 }
 
 /* *******************************************************************
@@ -211,12 +211,12 @@ bool SystemIsRandSeedSet(void)
  * @remarks:
  *
  * @return:
- *	 Returns whether VSync flag has been enabled.
+ *   Returns whether VSync flag has been enabled.
  *
  * *******************************************************************/
 bool SystemRefreshNeeded(void)
 {
-	return refresh_needed;
+    return refresh_needed;
 }
 
 /* *******************************************************************
@@ -228,8 +228,8 @@ bool SystemRefreshNeeded(void)
  * @brief:
  *
  * @remarks:
- * 	Called from VSync interrupt. Called 50 times a second in PAL mode,
- * 	60 times a second in NTSC mode.
+ *  Called from VSync interrupt. Called 50 times a second in PAL mode,
+ *  60 times a second in NTSC mode.
  *
  * *******************************************************************/
 void ISR_SystemDefaultVBlank(void)
@@ -240,7 +240,7 @@ void ISR_SystemDefaultVBlank(void)
         temp_fps = 0;
     }
 
-	refresh_needed = true;
+    refresh_needed = true;
 }
 
 /* *******************************************************************
@@ -252,7 +252,7 @@ void ISR_SystemDefaultVBlank(void)
  * @brief:
  *
  * @remarks:
- * 	Called by Game module in order to calculate frames per second.
+ *  Called by Game module in order to calculate frames per second.
  *
  * *******************************************************************/
 void SystemAcknowledgeFrame(void)
@@ -271,7 +271,7 @@ void SystemAcknowledgeFrame(void)
  *  stores its value into a variable.
  *
  * @remarks:
- * 	To be called only once, preferibly on SystemCyclic().
+ *  To be called only once, preferibly on SystemCyclic().
  *
  * *******************************************************************/
 void SystemCalculateSine(void)
@@ -282,7 +282,7 @@ void SystemCalculateSine(void)
         SINE_EFFECT_MAX = 240
     };
 
-	static bool sine_decrease = false;
+    static bool sine_decrease = false;
 
     if (sine_decrease == false)
     {
@@ -331,15 +331,15 @@ unsigned char SystemGetSineValue(void)
  * @author: Xavier Del Campo
  *
  * @brief:
- * 	Increases internal variable responsible for time handling.
+ *  Increases internal variable responsible for time handling.
  *
  * @remarks:
- * 	Usually called from ISR_SystemDefaultVBlank().
+ *  Usually called from ISR_SystemDefaultVBlank().
  *
  * *******************************************************************/
 void SystemIncreaseGlobalTimer(void)
 {
-	global_timer++;
+    global_timer++;
 }
 
 /* *******************************************************************
@@ -353,7 +353,7 @@ void SystemIncreaseGlobalTimer(void)
  * *******************************************************************/
 volatile uint64_t SystemGetGlobalTimer(void)
 {
-	return global_timer;
+    return global_timer;
 }
 
 /* *******************************************************************
@@ -367,7 +367,7 @@ volatile uint64_t SystemGetGlobalTimer(void)
  * *******************************************************************/
 void SystemDisableScreenRefresh(void)
 {
-	refresh_needed = false;
+    refresh_needed = false;
 }
 
 /* *******************************************************************
@@ -377,12 +377,12 @@ void SystemDisableScreenRefresh(void)
  * @author: Xavier Del Campo
  *
  * @return: bool variable with a 1-cycle-length pulse that gets
- * 			set each second.
+ *          set each second.
  *
  * *******************************************************************/
 bool System1SecondTick(void)
 {
-	return one_second_timer;
+    return one_second_timer;
 }
 
 /* *******************************************************************
@@ -392,114 +392,114 @@ bool System1SecondTick(void)
  * @author: Xavier Del Campo
  *
  * @return: bool variable with a 1-cycle-length pulse that gets
- * 			set every 100 milliseconds.
+ *          set every 100 milliseconds.
  *
  * *******************************************************************/
 bool System100msTick(void)
 {
-	return hundred_ms_timer;
+    return hundred_ms_timer;
 }
 
 /* *******************************************************************
  *
- * @name	bool System500msTick(void)
+ * @name    bool System500msTick(void)
  *
  * @author: Xavier Del Campo
  *
  * @return: bool variable with a 1-cycle-length pulse that gets
- * 			set every 500 milliseconds.
+ *          set every 500 milliseconds.
  *
  * *******************************************************************/
 bool System500msTick(void)
 {
-	return five_hundred_ms_timer;
+    return five_hundred_ms_timer;
 }
 
 /* *******************************************************************
  *
- * @name	void SystemRunTimers(void)
+ * @name    void SystemRunTimers(void)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	general timer handler
+ * @brief:  general timer handler
  *
- * @remarks:	1 second, 500 ms and 100 ms ticks get updated here.
+ * @remarks:    1 second, 500 ms and 100 ms ticks get updated here.
  *
  * *******************************************************************/
 void SystemRunTimers(void)
 {
-	static uint64_t last_one_second_tick;
-	static uint64_t last_100_ms_tick;
-	static uint64_t last_500_ms_tick;
+    static uint64_t last_one_second_tick;
+    static uint64_t last_100_ms_tick;
+    static uint64_t last_500_ms_tick;
 
-	SystemCheckTimer(&one_second_timer, &last_one_second_tick, REFRESH_FREQUENCY);
+    SystemCheckTimer(&one_second_timer, &last_one_second_tick, REFRESH_FREQUENCY);
 
 #ifdef _PAL_MODE_
-	SystemCheckTimer(&hundred_ms_timer, &last_100_ms_tick, 2 /* 2 * 50 ms = 100 ms */);
-	SystemCheckTimer(&five_hundred_ms_timer, &last_500_ms_tick, 10 /* 10 * 50 ms = 500 ms */);
+    SystemCheckTimer(&hundred_ms_timer, &last_100_ms_tick, 2 /* 2 * 50 ms = 100 ms */);
+    SystemCheckTimer(&five_hundred_ms_timer, &last_500_ms_tick, 10 /* 10 * 50 ms = 500 ms */);
 #else // _PAL_MODE_
-	SystemCheckTimer(&hundred_ms_timer, &last_100_ms_tick, 3);
+    SystemCheckTimer(&hundred_ms_timer, &last_100_ms_tick, 3);
 #endif // _PAL_MODE_
 
 }
 
 /* ********************************************************************************
  *
- * @name	void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
+ * @name    void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Checks if needed time step has been elapsed. If true, flag gets set.
+ * @brief:  Checks if needed time step has been elapsed. If true, flag gets set.
  *
  * *******************************************************************************/
 void SystemCheckTimer(bool* timer, uint64_t* last_timer, uint8_t step)
 {
-	if (*timer)
-	{
-		*timer = false;
-	}
+    if (*timer)
+    {
+        *timer = false;
+    }
 
-	if (global_timer >= (*last_timer + step) )
-	{
-		*timer = true;
-		*last_timer = global_timer;
-	}
+    if (global_timer >= (*last_timer + step) )
+    {
+        *timer = true;
+        *last_timer = global_timer;
+    }
 }
 
 /* ****************************************************************************************
  *
- * @name	bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
+ * @name    bool SystemLoadFileToBuffer(char* fname, uint8_t* buffer, uint32_t szBuffer)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Given an input path, it fills a buffer pointed to by "buffer" with
- * 			maximum size "szBuffer" with data from CD-ROM.
+ * @brief:  Given an input path, it fills a buffer pointed to by "buffer" with
+ *          maximum size "szBuffer" with data from CD-ROM.
  *
- * @return:	true if file has been loaded successfully, false otherwise.
+ * @return: true if file has been loaded successfully, false otherwise.
  *
  * ****************************************************************************************/
 bool SystemLoadFileToBuffer(const char* fname, uint8_t* buffer, uint32_t szBuffer)
 {
 #ifdef SERIAL_INTERFACE
-	uint8_t fileSizeBuffer[sizeof (uint32_t)] = {0};
+    uint8_t fileSizeBuffer[sizeof (uint32_t)] = {0};
     uint32_t i;
 #else // SERIAL_INTERFACE
     FILE *f;
 #endif // SERIAL_INTERFACE
-	int32_t size = 0;
+    int32_t size = 0;
 
-	// Wait for possible previous operation from the GPU before entering this section.
-	while ( (SystemIsBusy()) || (GfxIsGPUBusy()) );
+    // Wait for possible previous operation from the GPU before entering this section.
+    while ( (SystemIsBusy()) || (GfxIsGPUBusy()) );
 
-	SystemDisableRCnt2Interrupt();
+    SystemDisableRCnt2Interrupt();
 
-	if (fname == NULL)
-	{
-		Serial_printf("SystemLoadFile: NULL fname!\n");
-		return false;
-	}
+    if (fname == NULL)
+    {
+        Serial_printf("SystemLoadFile: NULL fname!\n");
+        return false;
+    }
 
-	memset(buffer,0,szBuffer);
+    memset(buffer,0,szBuffer);
 
     static char completeFileName[256];
 
@@ -546,29 +546,29 @@ bool SystemLoadFileToBuffer(const char* fname, uint8_t* buffer, uint32_t szBuffe
 
     f = fopen((char*)completeFileName, "r");
 
-	if (f == NULL)
-	{
-		Serial_printf("SystemLoadFile: file could not be found!\n");
-		//File couldn't be found
-		return false;
-	}
+    if (f == NULL)
+    {
+        Serial_printf("SystemLoadFile: file could not be found!\n");
+        //File couldn't be found
+        return false;
+    }
 
-	fseek(f, 0, SEEK_END);
+    fseek(f, 0, SEEK_END);
 
-	size = ftell(f);
+    size = ftell(f);
 
-	if (size > szBuffer)
-	{
-		Serial_printf("SystemLoadFile: Exceeds file buffer size (%d bytes)\n",size);
-		//Bigger than 128 kB (buffer's max size)
-		return false;
-	}
+    if (size > szBuffer)
+    {
+        Serial_printf("SystemLoadFile: Exceeds file buffer size (%d bytes)\n",size);
+        //Bigger than 128 kB (buffer's max size)
+        return false;
+    }
 
-	fseek(f, 0, SEEK_SET); //f->pos = 0;
+    fseek(f, 0, SEEK_SET); //f->pos = 0;
 
-	fread(buffer, sizeof (char), size, f);
+    fread(buffer, sizeof (char), size, f);
 
-	fclose(f);
+    fclose(f);
 
     SystemEnableVBlankInterrupt();
     SystemEnableRCnt2Interrupt();
@@ -577,65 +577,65 @@ bool SystemLoadFileToBuffer(const char* fname, uint8_t* buffer, uint32_t szBuffe
 
 #endif // SERIAL_INTERFACE
 
-	Serial_printf("File \"%s\" loaded successfully!\n",completeFileName);
+    Serial_printf("File \"%s\" loaded successfully!\n",completeFileName);
 
-	return true;
+    return true;
 }
 
 /* ****************************************************************************************
  *
- * @name	bool SystemLoadFile(char*fname)
+ * @name    bool SystemLoadFile(char*fname)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Given an input file name, it loads its conents into internal buffer.
+ * @brief:  Given an input file name, it loads its conents into internal buffer.
  *
- * @return:	true if file has been loaded successfully, false otherwise.
+ * @return: true if file has been loaded successfully, false otherwise.
  *
  * ****************************************************************************************/
 bool SystemLoadFile(const char* fname)
 {
-	return SystemLoadFileToBuffer(fname,file_buffer,sizeof (file_buffer));
+    return SystemLoadFileToBuffer(fname,file_buffer,sizeof (file_buffer));
 }
 
 /* ******************************************************************
  *
- * @name	uint8_t* SystemGetBufferAddress(void)
+ * @name    uint8_t* SystemGetBufferAddress(void)
  *
  * @author: Xavier Del Campo
  *
- * @return:	Reportedly, returns internal buffer initial address.
+ * @return: Reportedly, returns internal buffer initial address.
  *
  * *****************************************************************/
 uint8_t* SystemGetBufferAddress(void)
 {
-	return file_buffer;
+    return file_buffer;
 }
 
 /* ******************************************************************
  *
- * @name	void SystemClearFileBuffer(void)
+ * @name    void SystemClearFileBuffer(void)
  *
  * @author: Xavier Del Campo
  *
- * @return:	Fills internal buffer with zeros
+ * @return: Fills internal buffer with zeros
  *
  * *****************************************************************/
 void SystemClearFileBuffer(void)
 {
-	memset(file_buffer, 0, sizeof (file_buffer));
+    memset(file_buffer, 0, sizeof (file_buffer));
 }
 
 /* ******************************************************************
  *
- * @name	uint32_t SystemRand(uint32_t min, uint32_t max)
+ * @name    uint32_t SystemRand(uint32_t min, uint32_t max)
  *
  * @author: Xavier Del Campo
  *
- * @return:	random number between "min" and "max".
+ * @return: random number between "min" and "max".
  *
  * @remarks: rand seed must be set before using this function, or
- * 			 you will predictable values otherwise!
+ *           you will predictable values otherwise!
  *
  * *****************************************************************/
 uint32_t SystemRand(uint32_t min, uint32_t max)
@@ -645,272 +645,267 @@ uint32_t SystemRand(uint32_t min, uint32_t max)
         //~ Serial_printf("Warning: calling rand() before srand()\n");
     }
 
-	return rand() % (max - min + 1) + min;
+    return rand() % (max - min + 1) + min;
 }
 
 /* ***********************************************************************
  *
- * @name	void SystemSetEmergencyMode(bool value)
+ * @name    void SystemSetEmergencyMode(bool value)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Sets emergency mode flag.
+ * @brief:  Sets emergency mode flag.
  *
  * @remarks: emergency mode is set once that a controller is unplugged.
  *
  * ***********************************************************************/
 void SystemSetEmergencyMode(bool value)
 {
-	emergency_mode = value;
+    emergency_mode = value;
 }
 
 /* ***********************************************************************
  *
- * @name	bool SystemGetEmergencyMode(void)
+ * @name    bool SystemGetEmergencyMode(void)
  *
  * @author: Xavier Del Campo
  *
- * @return:	returns emergency mode flag.
+ * @return: returns emergency mode flag.
  *
  * ***********************************************************************/
 bool SystemGetEmergencyMode(void)
 {
-	return emergency_mode;
+    return emergency_mode;
 }
 
 /* ***********************************************************************
  *
- * @name	volatile bool SystemIsBusy(void)
+ * @name    volatile bool SystemIsBusy(void)
  *
  * @author: Xavier Del Campo
  *
- * @return:	returns system busy flag.
+ * @return: returns system busy flag.
  *
  * ***********************************************************************/
 volatile bool SystemIsBusy(void)
 {
-	return system_busy;
+    return system_busy;
 }
 
 /* ****************************************************************************
  *
- * @name	bool SystemContains_u8(uint8_t value, uint8_t* buffer, size_t sz)
+ * @name    bool SystemContains_u8(uint8_t value, uint8_t* buffer, size_t sz)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	checks if a certain value is contained in a buffer with size "sz".
+ * @brief:  checks if a certain value is contained in a buffer with size "sz".
  *
- * @return:	true if value is contained inside buffer, false otherwise.
+ * @return: true if value is contained inside buffer, false otherwise.
  *
  * ****************************************************************************/
 bool SystemContains_u8(const uint8_t value, const uint8_t* const buffer, const size_t sz)
 {
-	size_t i = 0;
+    size_t i = 0;
 
-	for (i = 0; i < sz; i++)
-	{
-		if (buffer[i] == value)
-		{
-			return true;
-		}
-	}
+    for (i = 0; i < sz; i++)
+    {
+        if (buffer[i] == value)
+        {
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
 /* ****************************************************************************
  *
- * @name	bool SystemContains_u16(uint16_t value, uint16_t* buffer, size_t sz)
+ * @name    bool SystemContains_u16(uint16_t value, uint16_t* buffer, size_t sz)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	checks if a certain value is contained in a buffer with size "sz".
- * 			Variant for u16 variables.
+ * @brief:  checks if a certain value is contained in a buffer with size "sz".
+ *          Variant for u16 variables.
  *
- * @return:	true if value is contained inside buffer, false otherwise.
+ * @return: true if value is contained inside buffer, false otherwise.
  *
  * ****************************************************************************/
 bool SystemContains_u16(const uint16_t value, const uint16_t* const buffer, const size_t sz)
 {
-	size_t i = 0;
+    size_t i = 0;
 
-	for (i = 0; i < sz; i++)
-	{
-		if (buffer[i] == value)
-		{
-			return true;
-		}
-	}
+    for (i = 0; i < sz; i++)
+    {
+        if (buffer[i] == value)
+        {
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
 /* ****************************************************************************************
  *
- * @name	bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz)
+ * @name    bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Reportedly, it compares two arrays "arr1" and "arr2", with size "sz".
+ * @brief:  Reportedly, it compares two arrays "arr1" and "arr2", with size "sz".
  *
  * @return: true if they are equal, false otherwise.
  *
  * ****************************************************************************************/
-bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz)
+bool SystemArrayCompare(const unsigned short* const arr1, const unsigned short* const arr2, const size_t sz)
 {
-	size_t i;
+    size_t i;
 
-	for (i = 0; i < sz; i++)
-	{
-		if (arr1[i] != arr2[i])
-		{
-			return false;
-		}
-	}
+    for (i = 0; i < sz; i++)
+    {
+        if (arr1[i] != arr2[i])
+        {
+            return false;
+        }
+    }
 
-	return true;
+    return true;
 }
 
 /* ****************************************************************************************
  *
- * @name	void SystemPrintStackPointerAddress(void)
+ * @name    void SystemPrintStackPointerAddress(void)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Prints stack usage in percentage via dprintf calls.
+ * @brief:  Prints stack usage in percentage via dprintf calls.
  *
  * ****************************************************************************************/
 void SystemPrintStackPointerAddress(void)
 {
 #ifdef PSXSDK_DEBUG // Used to avoid unused variable warning
-	void* ptr = NULL;
-	fix16_t used_bytes = fix16_from_int((int)((void*)BEGIN_STACK_ADDRESS - (void*)&ptr));
-	fix16_t stackPercent = fix16_sdiv(used_bytes,fix16_from_int((int)STACK_SIZE));
+    void* ptr = NULL;
+    fix16_t used_bytes = fix16_from_int((int)((void*)BEGIN_STACK_ADDRESS - (void*)&ptr));
+    fix16_t stackPercent = fix16_sdiv(used_bytes,fix16_from_int((int)STACK_SIZE));
 
-	stackPercent = fix16_smul(stackPercent, fix16_from_int((int)100));
+    stackPercent = fix16_smul(stackPercent, fix16_from_int((int)100));
 
-	Serial_printf("stackPercent: %d\n", stackPercent);
+    Serial_printf("stackPercent: %d\n", stackPercent);
 
-	Serial_printf("Stack begin pointer: 0x%08X\n"
-			"Stack pointer address: 0x%08X\n"
-			"Used %d%% of stack size.\n"
-			"\tUsed bytes: %d\n",
-			(void*)BEGIN_STACK_ADDRESS,
-			(void*)&ptr,
-			fix16_to_int(stackPercent),
-			fix16_to_int(used_bytes)	);
+    Serial_printf("Stack begin pointer: 0x%08X\n"
+            "Stack pointer address: 0x%08X\n"
+            "Used %d%% of stack size.\n"
+            "\tUsed bytes: %d\n",
+            (void*)BEGIN_STACK_ADDRESS,
+            (void*)&ptr,
+            fix16_to_int(stackPercent),
+            fix16_to_int(used_bytes)    );
 #endif // PSXSDK_DEBUG
 
 }
 
 /* ****************************************************************************************
  *
- * @name	void SystemCheckStack(void)
+ * @name    void SystemCheckStack(void)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Compares stack top with expected byte pattern. If does not match, a stack
+ * @brief:  Compares stack top with expected byte pattern. If does not match, a stack
  *          overflow has been caused, and application returns to a safe state.
  *
  * ****************************************************************************************/
 void SystemCheckStack(void)
 {
-	uint32_t * ptrStack = BEGIN_STACK_ADDRESS;
-	uint32_t data;
+    const uint32_t* const ptrStack = BEGIN_STACK_ADDRESS - STACK_SIZE;
+    const uint32_t data = *ptrStack;
 
-	ptrStack -= STACK_SIZE;
-	data = (*ptrStack);
+    if (data != END_STACK_PATTERN)
+    {
+        Serial_printf("Stack overflow?\n");
 
-	if (data != END_STACK_PATTERN)
-	{
-		Serial_printf("Stack overflow?\n");
-
-		while (1);
-	}
+        while (1);
+    }
 }
 
 
 /* ****************************************************************************************
  *
- * @name	void SystemSetStackPattern(void)
+ * @name    void SystemSetStackPattern(void)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Sets a determined byte pattern on stack top to detect possible stack
+ * @brief:  Sets a determined byte pattern on stack top to detect possible stack
  *          overflow during execution.
  *
  * ****************************************************************************************/
 void SystemSetStackPattern(void)
 {
-	uint32_t * ptrStack = BEGIN_STACK_ADDRESS;
+    uint32_t* const ptrStack = BEGIN_STACK_ADDRESS - STACK_SIZE;
 
-	ptrStack -= STACK_SIZE;
-
-	*ptrStack = END_STACK_PATTERN;
+    *ptrStack = END_STACK_PATTERN;
 }
 
 /* ****************************************************************************************
  *
- * @name	int32_t SystemIndexOfStringArray(char* str, char** array)
+ * @name    int32_t SystemIndexOfStringArray(char* str, char** array)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Finds string "str" inside an array of strings "array".
+ * @brief:  Finds string "str" inside an array of strings "array".
  *
  * @return  Index for a string "str" inside "array". -1 if it could not be found.
  *
  * ****************************************************************************************/
-int32_t SystemIndexOfStringArray(char* str, char** array)
+int32_t SystemIndexOfStringArray(const char* str, const char* const* array)
 {
-	int32_t i;
+    int32_t i;
 
-	for (i = 0; array[i] != NULL; i++)
-	{
-		Serial_printf("String to find: %s\nEntry: %s\n", str, array[i]);
+    for (i = 0; array[i] != NULL; i++)
+    {
+        Serial_printf("String to find: %s\nEntry: %s\n", str, array[i]);
 
-		if (strcmp(str, array[i]) == 0)
-		{
-			Serial_printf("Match! Returning index %d...\n", i);
-			return i;
-		}
-	}
+        if (strcmp(str, array[i]) == 0)
+        {
+            Serial_printf("Match! Returning index %d...\n", i);
+            return i;
+        }
+    }
 
-	return -1;
+    return -1;
 }
 
 /* ****************************************************************************************
  *
- * @name	int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz)
+ * @name    int32_t SystemIndexOf_U16(uint16_t value, uint16_t* array, uint32_t sz)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	For a uint16_t array, it returns index of a variable "value" inside an array.
+ * @brief:  For a uint16_t array, it returns index of a variable "value" inside an array.
  *
  * @return  Index for a variable "value" inside "array". -1 if it could not be found.
  *
  * ****************************************************************************************/
 int32_t SystemIndexOf_U16(const uint16_t value, const uint16_t* const array, const uint32_t sz)
 {
-	int32_t i;
+    int32_t i;
 
-	for (i = 0; i < sz; i++)
-	{
-		if (value == array[i])
-		{
-			return i;
-		}
-	}
+    for (i = 0; i < sz; i++)
+    {
+        if (value == array[i])
+        {
+            return i;
+        }
+    }
 
-	return -1;
+    return -1;
 }
 
 /* ****************************************************************************************
  *
- * @name	int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t sz)
+ * @name    int32_t SystemIndexOf_U8(uint8_t value, uint8_t* array, uint32_t from, uint32_t sz)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	For a uint8_t array, it returns index of a variable "value" inside an array.
+ * @brief:  For a uint8_t array, it returns index of a variable "value" inside an array.
  *          "from" and "size_t" can be used to determine initial/ending positions.
  *
  * @return  Index for a variable "value" inside "array". -1 if it could not be found.
@@ -919,22 +914,22 @@ int32_t SystemIndexOf_U16(const uint16_t value, const uint16_t* const array, con
 
 int32_t SystemIndexOf_U8(const uint8_t value, const uint8_t* const array, const uint32_t from, const uint32_t sz)
 {
-	int32_t i;
+    int32_t i;
 
-	for (i = from; i < sz; i++)
-	{
-		if (value == array[i])
-		{
-			return i;
-		}
-	}
+    for (i = from; i < sz; i++)
+    {
+        if (value == array[i])
+        {
+            return i;
+        }
+    }
 
-	return -1;
+    return -1;
 }
 
 /* ****************************************************************************************
  *
- * @name	volatile uint8_t SystemGetFPS(void)
+ * @name    volatile uint8_t SystemGetFPS(void)
  *
  * @author: Xavier Del Campo
  *
@@ -948,11 +943,11 @@ volatile uint8_t SystemGetFPS(void)
 
 /* ****************************************************************************************
  *
- * @name	void SystemCyclicHandler(void)
+ * @name    void SystemCyclicHandler(void)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	It calls system handlers once an execution cycle has finished.
+ * @brief:  It calls system handlers once an execution cycle has finished.
  *
  *
  * ****************************************************************************************/
@@ -962,26 +957,26 @@ void SystemCyclicHandler(void)
 
     SystemIncreaseGlobalTimer();
 
-	SystemRunTimers();
+    SystemRunTimers();
 
-	TimerHandler();
+    TimerHandler();
 
-	SystemDisableScreenRefresh();
+    SystemDisableScreenRefresh();
 
-	MemCardHandler();
+    MemCardHandler();
 
     SystemCalculateSine();
 
-	SystemCheckStack();
+    SystemCheckStack();
 }
 
 /* ****************************************************************************************
  *
- * @name	void SystemDisableVBlankInterrupt(void)
+ * @name    void SystemDisableVBlankInterrupt(void)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Reportedly, this routine enables VBLANK interrupt flag.
+ * @brief:  Reportedly, this routine enables VBLANK interrupt flag.
  *
  * @remark: Used when critical timing is needed or GPU activity is not desired
  *          e.g.: when reading files from CD-ROM.
@@ -989,31 +984,31 @@ void SystemCyclicHandler(void)
  * ****************************************************************************************/
 void SystemDisableVBlankInterrupt(void)
 {
-	I_MASK &= ~(0x0001);
+    I_MASK &= ~(0x0001);
 }
 
 /* ****************************************************************************************
  *
- * @name	void SystemEnableVBlankInterrupt(void)
+ * @name    void SystemEnableVBlankInterrupt(void)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Reportedly, this routine enables VBLANK interrupt flag.
+ * @brief:  Reportedly, this routine enables VBLANK interrupt flag.
  *
  *
  * ****************************************************************************************/
 void SystemEnableVBlankInterrupt(void)
 {
-	I_MASK |= (0x0001);
+    I_MASK |= (0x0001);
 }
 
 /* ****************************************************************************************
  *
- * @name	void SystemReturnToLoader(void)
+ * @name    void SystemReturnToLoader(void)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Deinitializes PSXSDK library and returns to OpenSend loader,
+ * @brief:  Deinitializes PSXSDK library and returns to OpenSend loader,
  *          located at memory address 0x801A0000
  *
  * ****************************************************************************************/
@@ -1030,11 +1025,11 @@ void SystemReturnToLoader(void)
 
 /* ****************************************************************************************
  *
- * @name	void SystemDevMenuToggle(void)
+ * @name    void SystemDevMenuToggle(void)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	It toggles a flag called "devmenu_flag" which, if true, shows information on
+ * @brief:  It toggles a flag called "devmenu_flag" which, if true, shows information on
  *          top of all drawn primitives for debugging/development purposes.
  *
  * ****************************************************************************************/
@@ -1045,11 +1040,11 @@ void SystemDevMenuToggle(void)
 
 /* ****************************************************************************************
  *
- * @name	void SystemEnableRCnt2Interrupt(void)
+ * @name    void SystemEnableRCnt2Interrupt(void)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Enables bit 6 from I_MASK (0x1F801074)/IRQ6 RCNT2 (System clock / 8)
+ * @brief:  Enables bit 6 from I_MASK (0x1F801074)/IRQ6 RCNT2 (System clock / 8)
  *
  * ****************************************************************************************/
 void SystemEnableRCnt2Interrupt(void)
@@ -1060,11 +1055,11 @@ void SystemEnableRCnt2Interrupt(void)
 
 /* ****************************************************************************************
  *
- * @name	void SystemDisableRCnt2Interrupt(void)
+ * @name    void SystemDisableRCnt2Interrupt(void)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Disables bit 6 from I_MASK (0x1F801074)/IRQ6 RCNT2 (System clock / 8)
+ * @brief:  Disables bit 6 from I_MASK (0x1F801074)/IRQ6 RCNT2 (System clock / 8)
  *
  * ****************************************************************************************/
 void SystemDisableRCnt2Interrupt(void)
@@ -1074,11 +1069,11 @@ void SystemDisableRCnt2Interrupt(void)
 
 /* ****************************************************************************************
  *
- * @name	void SystemDevMenu(void)
+ * @name    void SystemDevMenu(void)
  *
  * @author: Xavier Del Campo
  *
- * @brief:	Shows information on top of all drawn primitives for debugging/development purposes.
+ * @brief:  Shows information on top of all drawn primitives for debugging/development purposes.
  *
  * ****************************************************************************************/
 void SystemDevMenu(void)
@@ -1129,16 +1124,19 @@ void SystemDevMenu(void)
 
     if (devmenu_flag)
     {
-        GsRectangle devMenuBg = {   .x = DEVMENU_BG_X,
-                                    .y = DEVMENU_BG_Y,
-                                    .w = DEVMENU_BG_W,
-                                    .h = DEVMENU_BG_H,
-                                    .r = DEVMENU_BG_R,
-                                    .g = DEVMENU_BG_G,
-                                    .b = DEVMENU_BG_B,
-                                    .attribute = ENABLE_TRANS | TRANS_MODE(0) };
+        static const GsRectangle devMenuBg =
+        {
+            .x = DEVMENU_BG_X,
+            .y = DEVMENU_BG_Y,
+            .w = DEVMENU_BG_W,
+            .h = DEVMENU_BG_H,
+            .r = DEVMENU_BG_R,
+            .g = DEVMENU_BG_G,
+            .b = DEVMENU_BG_B,
+            .attribute = ENABLE_TRANS | TRANS_MODE(0)
+        };
 
-        GsSortRectangle(&devMenuBg);
+        GsSortRectangle((GsRectangle*)&devMenuBg);
 
         FontPrintText(  &SmallFont,
                         DEVMENU_PAD1_STATUS_TEXT_X,

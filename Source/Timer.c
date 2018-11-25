@@ -54,13 +54,15 @@ TYPE_TIMER* TimerCreate(uint32_t t, bool rf, void (*timer_callback)(void) )
 
 	for (i = 0; i < MAX_TIMERS; i++)
 	{
-		if (timer_array[i].busy == false)
+        TYPE_TIMER* const ptrTimer = &timer_array[i];
+
+		if (ptrTimer->busy == false)
 		{
-			timer_array[i].Timeout_Callback = timer_callback;
-			timer_array[i].time = t;
-			timer_array[i].orig_time = t;
-			timer_array[i].repeat_flag = rf;
-			timer_array[i].busy = true;
+			ptrTimer->Timeout_Callback = timer_callback;
+			ptrTimer->time = t;
+			ptrTimer->orig_time = t;
+			ptrTimer->repeat_flag = rf;
+			ptrTimer->busy = true;
 			success = true;
 			break;
 		}

@@ -61,7 +61,7 @@ bool PadTwoIsVibrationEnabled(void);
 unsigned short PadOneGetRawData(void);
 unsigned short PadTwoGetRawData(void);
 
-bool PadAddCheat(TYPE_CHEAT * cheat);
+bool PadAddCheat(const TYPE_CHEAT* const cheat);
 
 unsigned short* PadGetPlayerOneCheatArray(void);
 

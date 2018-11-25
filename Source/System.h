@@ -81,7 +81,7 @@ bool SystemContains_u8(const uint8_t value, const uint8_t* const buffer, const s
 bool SystemContains_u16(const uint16_t value, const uint16_t* const buffer, const size_t sz);
 
 // Compares two arrays of unsigned short type.
-bool SystemArrayCompare(unsigned short* arr1, unsigned short* arr2, size_t sz);
+bool SystemArrayCompare(const unsigned short* const arr1, const unsigned short* const arr2, const size_t sz);
 
 // Prints stack pointer address using Serial_printf()
 void SystemPrintStackPointerAddress(void);
@@ -92,7 +92,7 @@ void SystemCheckStack(void);
 
 // Looks for string "str" inside a string array pointed to by "array".
 // Returns index inside string array on success, -1 if not found.
-int32_t SystemIndexOfStringArray(char* str, char** array);
+int32_t SystemIndexOfStringArray(const char* str, const char* const* array);
 
 // Function overload for uint16_t data type.
 int32_t SystemIndexOf_U16(const uint16_t value, const uint16_t* array, const uint32_t sz);

@@ -55,7 +55,6 @@ static GsSprite UpDownArrowSpr;
 static GsSprite LeftRightArrowSpr;
 static TYPE_ISOMETRIC_POS AircraftCenterIsoPos;
 static TYPE_CARTESIAN_POS AircraftCenterPos;
-static char* AircraftLiveryNamesTable[] = {"PHX", NULL};
 static AIRCRAFT_LIVERY AircraftLiveryTable[] = {AIRCRAFT_LIVERY_0, AIRCRAFT_LIVERY_UNKNOWN};
 
 // Used to quickly link FlightData indexes against AircraftData indexes.
@@ -245,6 +244,12 @@ bool AircraftAddNew(    TYPE_FLIGHT_DATA* const ptrFlightData,
 
 static AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char* strFlightNumber)
 {
+    static const char* const AircraftLiveryNamesTable[] =
+    {
+        "PHX",
+        NULL
+    };
+
     int32_t liveryIndex;
     char strLivery[4];
 
@@ -811,7 +816,7 @@ TYPE_ISOMETRIC_POS AircraftGetIsoPos(const uint8_t FlightDataIdx)
     return retIsoPos;
 }
 
-void AircraftAddTargets(TYPE_AIRCRAFT_DATA* const ptrAircraft, uint16_t* targets)
+void AircraftAddTargets(TYPE_AIRCRAFT_DATA* const ptrAircraft, const uint16_t* const targets)
 {
     memcpy(ptrAircraft->Target, targets, sizeof (uint16_t) * AIRCRAFT_MAX_TARGETS);
     ptrAircraft->TargetIdx = 0;
@@ -851,7 +856,7 @@ TYPE_AIRCRAFT_DATA* AircraftFromFlightDataIndex(const uint8_t index)
     return NULL;
 }
 
-void AircraftFromFlightDataIndexAddTargets(uint8_t index, uint16_t* targets)
+void AircraftFromFlightDataIndexAddTargets(const uint8_t index, const uint16_t* const targets)
 {
     TYPE_AIRCRAFT_DATA* const ptrAircraft = AircraftFromFlightDataIndex(index);
 
