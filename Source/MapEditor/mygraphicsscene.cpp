@@ -11,12 +11,12 @@ MyGraphicsScene::~MyGraphicsScene()
 
 }
 
-void MyGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
+void MyGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* const mouseEvent)
 {
-    QGraphicsItem *it = this->itemAt(mouseEvent->scenePos(), QTransform());
+    const QGraphicsItem* const it = itemAt(mouseEvent->scenePos(), QTransform());
 
     if (it != nullptr)
-    {        
+    {
         emit positionClicked(mouseEvent->scenePos());
     }
     else
@@ -26,7 +26,7 @@ void MyGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
     }
 }
 
-void MyGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
+void MyGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* const mouseEvent)
 {
-    emit updateSelectedItem();
+    emit updateSelectedItem(mouseEvent->button());
 }

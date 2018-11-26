@@ -14,13 +14,13 @@ public:
     ~MyGraphicsScene();
 
 signals:
-    void positionClicked(QPointF);
+    void positionClicked(QPointF position);
     void noItemSelected(void);
-    void updateSelectedItem(void);
+    void updateSelectedItem(Qt::MouseButton button);
 
 private:
-    void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *);
+    void mousePressEvent(QGraphicsSceneMouseEvent * const mouseEvent);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent * const mouseEvent);
 
 };
 

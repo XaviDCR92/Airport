@@ -1519,15 +1519,6 @@ static void GameLoadLevel(const char* path)
             levelBuffer[k] |= (ptrBuffer[j] << 8);
         }
     }
-
-    {
-        size_t i;
-
-        for (i = 0; i < (GameLevelSize * sizeof (uint16_t)); i++)
-        {
-            Serial_printf("levelBuffer[%d] = 0x%02X\n", i, levelBuffer[i]);
-        }
-    }
 }
 
 /* ******************************************************************************************
@@ -3308,7 +3299,8 @@ bool GamePathToTile(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* const ptrFli
         TILE_TAXIWAY_4WAY_CROSSING,
         TILE_PARKING_2,
         TILE_RWY_HOLDING_POINT,
-        TILE_RWY_HOLDING_POINT_2
+        TILE_RWY_HOLDING_POINT_2,
+        TILE_TAXIWAY_CORNER_GRASS_3
     };
 
     uint8_t i;
@@ -3452,6 +3444,7 @@ bool GamePathToTile(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* const ptrFli
                 TILE_PARKING_2 | TILE_MIRROR_FLAG,
                 TILE_RWY_HOLDING_POINT | TILE_MIRROR_FLAG,
                 TILE_RWY_HOLDING_POINT_2 | TILE_MIRROR_FLAG,
+                TILE_TAXIWAY_CORNER_GRASS_3 | TILE_MIRROR_FLAG
             };
 
             if (SystemContains_u8(  levelBuffer[ptrPlayer->Waypoints[i]],

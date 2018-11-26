@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(&gscene, SIGNAL(positionClicked(QPointF)),   this,   SLOT(onMapItemClicked(QPointF)));
     connect(&gscene, SIGNAL(noItemSelected(void)),       this,   SLOT(onNoItemSelected(void)));
-    connect(&gscene, SIGNAL(updateSelectedItem(void)),   this,   SLOT(onListItemSelected(void)));
+    connect(&gscene, SIGNAL(updateSelectedItem(Qt::MouseButton)),   this,   SLOT(onListItemSelected(Qt::MouseButton)));
 
     // Configure keyboard shortcuts.
     connect(&tileSet, SIGNAL(activated()), this, SLOT(onListItemSelected(void)));
@@ -39,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+#if 0
     foreach (QGraphicsTextItem* it, textItems)
     {
         if (it != nullptr)
@@ -46,6 +47,7 @@ MainWindow::~MainWindow()
             delete it;
         }
     }
+#endif
 }
 
 void MainWindow::loadBuildingData(void)
@@ -89,14 +91,14 @@ void MainWindow::onShowNumbers(int)
     processMapFile(map_buffer);
 }
 
-void MainWindow::onMapItemClicked(QPointF pos)
+void MainWindow::onMapItemClicked(QPointF position)
 {
     QPoint realPos;
 
-    pos.setX(pos.x() - (TILE_SIZE / 2));
+    position.setX(position.x() - (TILE_SIZE / 2));
 
-    realPos.setX(static_cast<int>(pos.x() + (pos.y() * 2)));
-    realPos.setY(static_cast<int>((pos.y() * 2) - pos.x()));
+    realPos.setX(static_cast<int>(position.x() + (position.y() * 2)));
+    realPos.setY(static_cast<int>((position.y() * 2) - position.x()));
 
     int tile_no = 0;
 
@@ -114,30 +116,69 @@ void MainWindow::onMapItemClicked(QPointF pos)
     }
 }
 
-void MainWindow::onListItemSelected(void)
+void MainWindow::onListItemSelected(const Qt::MouseButton button)
 {
-    foreach (const QListWidgetItem* const it, ui.tileList->selectedItems())
+    QListWidget* listWidget;
+
+    switch (button)
     {
-        if (it != nullptr)
+        case Qt::LeftButton:
+            listWidget = ui.tileList;
+        break;
+
+        case Qt::RightButton:
+            listWidget = ui.buildingList;
+        break;
+
+        default:
+            listWidget = nullptr;
+        break;
+    }
+
+    if (listWidget != nullptr)
+    {
+        foreach (const QListWidgetItem* const it, listWidget->selectedItems())
         {
-            if (selected_item != -1)
+            if (it != nullptr)
             {
-                const int map_buffer_pos = static_cast<int>(DATA_HEADER_SIZE
-                                            + (static_cast<unsigned long>(selected_item + 1) * sizeof(quint16)));
-                //map_buffer_pos++; // MSB: building data, LSB: terrain data.
-
-                if (map_buffer_pos < map_buffer.count())
+                if (selected_item != -1)
                 {
-                    const char row = static_cast<char>(ui.tileList->row(it));
+                    int map_buffer_pos;
 
-                    map_buffer[map_buffer_pos] = row;
-
-                    if (ui.mirror_CheckBox->isChecked() )
+                    // MSB: building data, LSB: terrain data.
+                    switch (button)
                     {
-                        map_buffer[map_buffer_pos] = map_buffer[map_buffer_pos] | TILE_MIRROR_FLAG;
+                        case Qt::LeftButton:
+                            map_buffer_pos = static_cast<int>(DATA_HEADER_SIZE
+                                            + (static_cast<unsigned long>(selected_item + 1) * sizeof(quint16)));
+                        break;
+
+                        case Qt::RightButton:
+                            map_buffer_pos = static_cast<int>(DATA_HEADER_SIZE
+                                            + (static_cast<unsigned long>(selected_item + 1) * sizeof(quint16))) - 1;
+                        break;
+
+                        default:
+                            map_buffer_pos = -1;
+                        break;
                     }
 
-                    processMapFile(map_buffer);
+                    if (map_buffer_pos != -1)
+                    {
+                        if (map_buffer_pos < map_buffer.count())
+                        {
+                            const char row = static_cast<char>(listWidget->row(it));
+
+                            map_buffer[map_buffer_pos] = row;
+
+                            if (ui.mirror_CheckBox->isChecked() )
+                            {
+                                map_buffer[map_buffer_pos] = map_buffer[map_buffer_pos] | TILE_MIRROR_FLAG;
+                            }
+
+                            processMapFile(map_buffer);
+                        }
+                    }
                 }
             }
         }
@@ -317,12 +358,6 @@ void MainWindow::parseMapData(QDataStream& ds)
             char byte[2];
             ds.readRawData(byte, 2);
 
-            qDebug() << "i = " + QString::number(i);
-            qDebug() << "j = " + QString::number(j);
-            qDebug() << QString::number(byte[0]);
-            qDebug() << QString::number(byte[1]);
-            qDebug() << "";
-
             buildingData.append(static_cast<quint8>(byte[0]));
             addTile(static_cast<quint8>(byte[1]), i, j);
         }
@@ -489,7 +524,7 @@ void MainWindow::addBuilding(quint8 CurrentBuilding, const int i, const int j)
             NODATA,
             BUILDING_DATA(BUILDING_TERMINAL),
             BUILDING_DATA(BUILDING_TERMINAL_2),
-            BUILDING_DATA(BUILDING_GATE),
+            BUILDING_DATA(BUILDING_GATE)
         };
 
         enum
@@ -506,18 +541,20 @@ void MainWindow::addBuilding(quint8 CurrentBuilding, const int i, const int j)
                 // Determine rendering order depending on Y value.
                 const short x_bldg_offset = GameBuildingData[CurrentBuildingNoMirror].IsoPos.x;
                 const short y_bldg_offset = GameBuildingData[CurrentBuildingNoMirror].IsoPos.y;
-                const short z_bldg_offset = GameBuildingData[CurrentBuildingNoMirror].IsoPos.z;
+                // Question: why is it needed to substract 16 to "z"?
+                const short z_bldg_offset = GameBuildingData[CurrentBuildingNoMirror].IsoPos.z - 16;
 
                 IsometricPos buildingIsoPos;
 
                 buildingIsoPos.x = static_cast<short>(i << TILE_SIZE_BIT_SHIFT) + x_bldg_offset;
-                buildingIsoPos.y = static_cast<short>(j << TILE_SIZE_BIT_SHIFT) - y_bldg_offset;
+                // Question: why is it needed to substract 1 to "j"?
+                buildingIsoPos.y = static_cast<short>((j - 1) << TILE_SIZE_BIT_SHIFT) + y_bldg_offset;
                 buildingIsoPos.z = z_bldg_offset;
 
                 // Isometric -> Cartesian conversion
-                CartesianPos buildingCartPos = isometricToCartesian(buildingIsoPos);
+                const CartesianPos buildingCartPos = isometricToCartesian(buildingIsoPos);
 
-                QPixmap p = QPixmap(buildingPath);
+                const QPixmap p = QPixmap(buildingPath);
 
                 QImage cropped = p.copy(GameBuildingData[CurrentBuildingNoMirror].u,
                                         GameBuildingData[CurrentBuildingNoMirror].v,
@@ -807,22 +844,20 @@ void MainWindow::loadTilesetData(void)
     }
 }
 
-void MainWindow::onAirportNameModified(QString name)
+void MainWindow::onAirportNameModified(const QString name)
 {
-    if (map_buffer.isEmpty() )
+    if (not map_buffer.isEmpty())
     {
-        return;
-    }
-
-    for (int i = 0x04, j = 0; i < 0x1C; i++)
-    {
-        if (j < name.count() )
+        for (int i = 0x04, j = 0; i < 0x1C; i++)
         {
-            map_buffer[i] = name.at(j++).toLatin1();
-        }
-        else
-        {
-            map_buffer[i] = '\0';
+            if (j < name.count())
+            {
+                map_buffer[i] = name.at(j++).toLatin1();
+            }
+            else
+            {
+                map_buffer[i] = '\0';
+            }
         }
     }
 }

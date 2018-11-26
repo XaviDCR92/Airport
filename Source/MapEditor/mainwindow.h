@@ -85,12 +85,12 @@ private slots:
     void loadMap(void);
     void onCreateMap(void);
     void processMapFile(const QByteArray &);
-    void onMapItemClicked(QPointF);
+    void onMapItemClicked(QPointF position);
     void onNoItemSelected(void);
-    void onListItemSelected(void);
+    void onListItemSelected(const Qt::MouseButton button);
     void onSaveMap(void);
     void onShowNumbers(int);
-    void onAirportNameModified(QString);
+    void onAirportNameModified(const QString);
     void showError(const QString& error);
     void moveUp(void);
 };

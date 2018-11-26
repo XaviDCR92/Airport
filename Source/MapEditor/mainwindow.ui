@@ -76,9 +76,6 @@
           <property name="text">
            <string>Show numbers on map</string>
           </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
          </widget>
         </item>
         <item>
