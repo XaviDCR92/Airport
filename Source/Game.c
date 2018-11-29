@@ -172,7 +172,7 @@ static void GameMinimumSpawnTimeout(void);
 static void GameRenderBuildingAircraft(TYPE_PLAYER* const ptrPlayer);
 static void GameGetAircraftTilemap(const uint8_t i);
 static bool GameWaypointCheckExisting(TYPE_PLAYER* const ptrPlayer, uint16_t temp_tile);
-static void GameDrawBackground(TYPE_PLAYER* const ptrPlayer);
+static void GameDrawBackground(void);
 static DIRECTION GameGetRunwayDirection(uint16_t rwyHeader);
 static DIRECTION GameGetParkingDirection(uint16_t parkingTile);
 
@@ -940,8 +940,7 @@ void GameGraphics(void)
             // the whole screen as usual.
 
             // Render background first.
-
-            GameDrawBackground(ptrPlayer);
+            GameDrawBackground();
 
             // Then ground tiles must be rendered.
 
@@ -962,8 +961,8 @@ void GameGraphics(void)
 
             if (split_screen)
             {
-                //~ GfxDrawScene_NoSwap();
-                //~ while (GsIsDrawing());
+                GfxDrawScene_NoSwap();
+                while (GsIsDrawing());
             }
         }
     }
@@ -985,7 +984,7 @@ void GameGraphics(void)
 
     if (split_screen)
     {
-        //~ GfxDrawScene_NoSwap();
+        GfxDrawScene_NoSwap();
     }
 
     GfxDrawScene();
@@ -1005,7 +1004,7 @@ void GameGraphics(void)
  *
  * *******************************************************************/
 
-void GameDrawBackground(TYPE_PLAYER* const ptrPlayer)
+static void GameDrawBackground(void)
 {
     enum
     {
@@ -1026,17 +1025,13 @@ void GameDrawBackground(TYPE_PLAYER* const ptrPlayer)
         BG_POLY4_B3 = 80
     };
 
-    static const GsGPoly4 BgPoly4 =
+    static GsGPoly4 BgPoly4 =
     {
         .x[0] = 0,
-        .x[1] = X_SCREEN_RESOLUTION,
         .x[2] = 0,
-        .x[3] = X_SCREEN_RESOLUTION,
 
         .y[0] = 0,
         .y[1] = 0,
-        .y[2] = Y_SCREEN_RESOLUTION,
-        .y[3] = Y_SCREEN_RESOLUTION,
 
         .r[0] = BG_POLY4_R0,
         .g[0] = BG_POLY4_G0,
@@ -1054,6 +1049,12 @@ void GameDrawBackground(TYPE_PLAYER* const ptrPlayer)
         .g[3] = BG_POLY4_G3,
         .b[3] = BG_POLY4_B3
     };
+
+    BgPoly4.x[1] = GfxGetDrawEnvWidth();
+    BgPoly4.x[3] = BgPoly4.x[1];
+
+    BgPoly4.y[2] = GfxGetDrawEnvHeight();
+    BgPoly4.y[3] = BgPoly4.y[2];
 
     GsSortGPoly4((GsGPoly4*)&BgPoly4);
 }

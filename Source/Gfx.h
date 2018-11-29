@@ -114,6 +114,9 @@ void GfxDrawScene_NoSwap(void);
 
 void GfxDevMenuEnable(void);
 
+short GfxGetDrawEnvWidth(void);
+short GfxGetDrawEnvHeight(void);
+
 /* *************************************
  * 	Global variables
  * *************************************/

@@ -11,7 +11,7 @@ GNU_SIZE = mipsel-unknown-elf-size
 
 # Custom define flags for GCC
 DEFINE= -DFIXMATH_FAST_SIN -D_PAL_MODE_
-DEFINE += -DPSXSDK_DEBUG
+#DEFINE += -DPSXSDK_DEBUG
 DEFINE +=  -DNO_CDDA
 DEFINE +=  -DNO_INTRO
 

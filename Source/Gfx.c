@@ -909,7 +909,7 @@ void GfxSetSplitScreen(uint8_t playerIndex)
 		break;
 	}
 
-	GsSetDrawEnv_DMA(&DrawEnv);
+	GsSetDrawEnv(&DrawEnv);
 }
 
 void GfxDisableSplitScreen(void)
@@ -918,4 +918,14 @@ void GfxDisableSplitScreen(void)
 	DrawEnv.w = X_SCREEN_RESOLUTION;
 
 	GsSetDrawEnv_DMA(&DrawEnv);
+}
+
+short GfxGetDrawEnvWidth(void)
+{
+    return DrawEnv.w;
+}
+
+short GfxGetDrawEnvHeight(void)
+{
+    return DrawEnv.h;
 }
