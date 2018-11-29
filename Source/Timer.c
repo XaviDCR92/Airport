@@ -149,7 +149,14 @@ void TimerHandler(void)
 
 void TimerRestart(TYPE_TIMER* timer)
 {
-	timer->time = timer->orig_time;
+    if (timer != NULL)
+    {
+        timer->time = timer->orig_time;
+    }
+    else
+    {
+        Serial_printf("TimerRestart: invalid TYPE_TIMER instance\n");
+    }
 }
 
 /* *********************************************************************

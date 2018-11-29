@@ -11,6 +11,7 @@
 #include <string.h>
 #include <types.h>
 #include <fixmath.h>
+#include <limits.h>
 #include "Serial.h"
 
 /* *************************************

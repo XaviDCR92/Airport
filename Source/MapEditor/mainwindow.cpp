@@ -482,6 +482,11 @@ void MainWindow::addBuilding(quint8 CurrentBuilding, const int i, const int j)
             BUILDING_ATC_TOWER_V = 0,
             BUILDING_ATC_TOWER_W = 29,
             BUILDING_ATC_TOWER_H = 34,
+
+            BUILDING_ATC_LOC_U = 87,
+            BUILDING_ATC_LOC_V = 0,
+            BUILDING_ATC_LOC_W = 10,
+            BUILDING_ATC_LOC_H = 34
         };
 
         enum
@@ -503,6 +508,9 @@ void MainWindow::addBuilding(quint8 CurrentBuilding, const int i, const int j)
 
             BUILDING_ATC_TOWER_ORIGIN_X = 12,
             BUILDING_ATC_TOWER_ORIGIN_Y = 20,
+
+            BUILDING_ATC_LOC_ORIGIN_X = 6,
+            BUILDING_ATC_LOC_ORIGIN_Y = 32
         };
 
         static const struct
@@ -521,7 +529,7 @@ void MainWindow::addBuilding(quint8 CurrentBuilding, const int i, const int j)
             BUILDING_DATA(BUILDING_HANGAR),
             BUILDING_DATA(BUILDING_ILS),
             BUILDING_DATA(BUILDING_ATC_TOWER),
-            NODATA,
+            BUILDING_DATA(BUILDING_ATC_LOC),
             BUILDING_DATA(BUILDING_TERMINAL),
             BUILDING_DATA(BUILDING_TERMINAL_2),
             BUILDING_DATA(BUILDING_GATE)
@@ -574,6 +582,11 @@ void MainWindow::addBuilding(quint8 CurrentBuilding, const int i, const int j)
                 }
 
                 cropped = cropped.convertToFormat(QImage::Format_ARGB32); // or maybe other format
+
+                if (CurrentBuilding & TILE_MIRROR_FLAG)
+                {
+                    cropped = cropped.mirrored(true, false);
+                }
 
                 for (int i = 0; i < cropped.width(); i++)
                 {

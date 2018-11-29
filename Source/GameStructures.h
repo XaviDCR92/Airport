@@ -36,7 +36,7 @@ typedef enum t_fldir
 
 typedef enum t_flstate
 {
-	STATE_IDLE = 0,
+	STATE_IDLE,
 	STATE_PARKED,
 	STATE_UNBOARDING,
 	STATE_TAXIING,
@@ -113,11 +113,11 @@ typedef enum t_livery
 
 typedef enum t_direction
 {
-	NO_DIRECTION = 0,
+	NO_DIRECTION,
 	DIR_NORTH,
 	DIR_SOUTH,
 	DIR_EAST,
-	DIR_WEST,
+	DIR_WEST
 }DIRECTION;
 
 typedef enum t_aircraftAttitude
@@ -171,7 +171,7 @@ typedef struct
 		bool Unboarding;
 
 	// Stores indexes for player-specific active aircraft
-	// Used to relate SelectedAircraft agains FlightData index
+	// Used to relate SelectedAircraft against FlightData index
 	uint8_t	ActiveAircraftList[GAME_MAX_AIRCRAFT];
 	// Flight direction to be managed by player (see 2-player mode)
 	FL_DIR	FlightDirection;
@@ -212,13 +212,15 @@ typedef struct
     uint16_t RwyArray[GAME_MAX_RWY_LENGTH];
     // Remaining time for next aircraft (if any).
     uint16_t NextAircraftTime;
+    // Number of remaining aircraft in STATE_IDLE.
+    uint16_t RemainingAircraft;
 
     // Pad callbacks.
 	bool	(*const PadKeyPressed_Callback)(unsigned short);
 	bool	(*const PadKeyReleased_Callback)(unsigned short);
 	bool	(*const PadKeySinglePress_Callback)(unsigned short);
 	bool	(*const PadDirectionKeyPressed_Callback)(void);
-	unsigned short	(*PadLastKeySinglePressed_Callback)(void);
+	unsigned short	(*const PadLastKeySinglePressed_Callback)(void);
 }TYPE_PLAYER;
 
 typedef enum t_fontflags

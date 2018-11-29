@@ -10,7 +10,6 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = MapEditor
 TEMPLATE = app
-CONFIG += static
 
 QMAKE_CXXFLAGS += -funsigned-char
 

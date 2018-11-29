@@ -441,6 +441,8 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
         loaded = true;
 
         LOAD_FILES(GameFileList, GameFileDest);
+
+        GameSpawnMinTime = TimerCreate(GAME_MINIMUM_PARKING_SPAWN_TIME, false, GameMinimumSpawnTimeout);
     }
 
     LoadMenu(   &pGameCfg->PLTPath,
@@ -511,6 +513,7 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
         memset(&PlayerData[i].Waypoints, 0, sizeof (uint16_t) * PLAYER_MAX_WAYPOINTS);
         PlayerData[i].WaypointIdx = 0;
         PlayerData[i].LastWaypointIdx = 0;
+        PlayerData[i].RemainingAircraft = 0;
     }
 
     aircraftCreated = false;
@@ -534,11 +537,6 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
     GameMouseSpr.r = NORMAL_LUMINANCE;
     GameMouseSpr.g = NORMAL_LUMINANCE;
     GameMouseSpr.b = NORMAL_LUMINANCE;
-
-    if (GameSpawnMinTime != NULL)
-    {
-        GameSpawnMinTime = TimerCreate(GAME_MINIMUM_PARKING_SPAWN_TIME, false, &GameMinimumSpawnTimeout);
-    }
 
     spawnMinTimeFlag = false;
 
@@ -831,17 +829,14 @@ void GameClock(void)
 {
     if (System1SecondTick())
     {
-        GameMinutes++;
-
-        if (GameMinutes >= 60)
+        if (++GameMinutes >= 60)
         {
-            GameHour++;
             GameMinutes = 0;
-        }
 
-        if (GameHour >= 24)
-        {
-            GameHour = 0;
+            if (++GameHour >= 24)
+            {
+                GameHour = 0;
+            }
         }
     }
 }
@@ -867,24 +862,27 @@ static void GameClockFlights(const uint8_t i)
 {
     if (System1SecondTick())
     {
-        if (    (FlightData.Minutes[i] == 0)
-                    &&
-            (FlightData.Hours[i] > 0)   )
+        if (FlightData.State[i] != STATE_IDLE)
         {
-            FlightData.Minutes[i] = 60;
-            FlightData.Hours[i]--;
+            if (FlightData.RemainingTime[i] != 0)
+            {
+                FlightData.RemainingTime[i]--;
+            }
         }
-
-        if (FlightData.Minutes[i] > 0)
+        else
         {
-            FlightData.Minutes[i]--;
-        }
+            if ((FlightData.Minutes[i] == 0)
+                        &&
+                FlightData.Hours[i])
+            {
+                FlightData.Minutes[i] = 60;
+                FlightData.Hours[i]--;
+            }
 
-        if ( (FlightData.State[i] != STATE_IDLE)
-                            &&
-            (FlightData.RemainingTime[i] > 0) )
-        {
-            FlightData.RemainingTime[i]--;
+            if (FlightData.Minutes[i])
+            {
+                FlightData.Minutes[i]--;
+            }
         }
     }
 }
@@ -1150,6 +1148,11 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* const ptrPlayer)
         BUILDING_ATC_TOWER_V = 0,
         BUILDING_ATC_TOWER_W = 29,
         BUILDING_ATC_TOWER_H = 34,
+
+        BUILDING_ATC_LOC_U = 87,
+        BUILDING_ATC_LOC_V = 0,
+        BUILDING_ATC_LOC_W = 10,
+        BUILDING_ATC_LOC_H = 34
     };
 
     enum
@@ -1171,6 +1174,9 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* const ptrPlayer)
 
         BUILDING_ATC_TOWER_ORIGIN_X = 12,
         BUILDING_ATC_TOWER_ORIGIN_Y = 20,
+
+        BUILDING_ATC_LOC_ORIGIN_X = 6,
+        BUILDING_ATC_LOC_ORIGIN_Y = 32
     };
 
     static const struct
@@ -1201,6 +1207,13 @@ void GameRenderBuildingAircraft(TYPE_PLAYER* const ptrPlayer)
         {
             .IsoPos.x = BUILDING_ATC_LOC_OFFSET_X,
             .IsoPos.y = BUILDING_ATC_LOC_OFFSET_Y,
+            .orig_x = BUILDING_ATC_LOC_ORIGIN_X,
+            .orig_y = BUILDING_ATC_LOC_ORIGIN_Y,
+            .u = BUILDING_ATC_LOC_U,
+            .v = BUILDING_ATC_LOC_V,
+            .w = BUILDING_ATC_LOC_W,
+            .h = BUILDING_ATC_LOC_H,
+            // z coordinate set to 0 by default.
         },
 
         [BUILDING_ILS] =
@@ -1549,83 +1562,82 @@ static void GameAircraftState(const uint8_t i)
                     &&
             (FlightData.State[i] == STATE_IDLE)
                     &&
-            (FlightData.RemainingTime[i] > 0)
-                    &&
-            (spawnMinTimeFlag == false))
+            (FlightData.RemainingTime[i] != 0))
         {
-            if ( (FlightData.FlightDirection[i] == DEPARTURE)
-                                &&
-                (FlightData.Parking[i] != 0)                )
+            Serial_printf("Aircraft %d should now start...\n", i);
+            if (spawnMinTimeFlag == false)
             {
-                uint8_t j;
-                bool bParkingBusy = false;
-
-                for (j = 0; j < FlightData.nAircraft; j++)
+                if ((FlightData.FlightDirection[i] == DEPARTURE)
+                                    &&
+                     FlightData.Parking[i])
                 {
-                    if (AircraftFromFlightDataIndex(j)->State != STATE_IDLE)
+                    uint8_t j;
+                    bool bParkingBusy = false;
+
+                    for (j = 0; j < FlightData.nAircraft; j++)
                     {
-                        const uint16_t* const targets = AircraftGetTargets(j);
-
-                        if (targets != NULL)
+                        if (AircraftFromFlightDataIndex(j)->State != STATE_IDLE)
                         {
-                            const uint16_t tile = AircraftGetTileFromFlightDataIndex(j);
+                            const uint16_t* const targets = AircraftGetTargets(j);
 
-                            if (tile == FlightData.Parking[i])
+                            if (targets != NULL)
                             {
-                                bParkingBusy = true;
-                            }
-                            else if (SystemContains_u16(FlightData.Parking[i], targets, AIRCRAFT_MAX_TARGETS))
-                            {
-                                bParkingBusy = true;
+                                const uint16_t tile = AircraftGetTileFromFlightDataIndex(j);
+
+                                if (tile == FlightData.Parking[i])
+                                {
+                                    bParkingBusy = true;
+                                }
+                                else if (SystemContains_u16(FlightData.Parking[i], targets, AIRCRAFT_MAX_TARGETS))
+                                {
+                                    bParkingBusy = true;
+                                }
                             }
                         }
                     }
+
+                    if (bParkingBusy == false)
+                    {
+                        uint16_t target[2] = {0};
+                        // Arrays are copied to AircraftAddNew, so we create a first and only
+                        // target which is the parking tile itself, and the second element
+                        // is just the NULL character.
+                        // Not an ideal solution, but the best one currently available.
+
+                        FlightData.State[i] = STATE_PARKED;
+
+                        aircraftCreated = true;
+
+                        // Create notification request for incoming aircraft
+                        GameGuiBubbleShow();
+
+                        target[0] = FlightData.Parking[i];
+
+                        if (AircraftAddNew(&FlightData, i, target, GameGetParkingDirection(levelBuffer[target[0]])) == false)
+                        {
+                            Serial_printf("Exceeded maximum aircraft number!\n");
+                            return;
+                        }
+                    }
                 }
-
-                if (bParkingBusy == false)
+                else if (FlightData.FlightDirection[i] == ARRIVAL)
                 {
-                    uint16_t target[2] = {0};
-                    // Arrays are copied to AircraftAddNew, so we create a first and only
-                    // target which is the parking tile itself, and the second element
-                    // is just the NULL character.
-                    // Not an ideal solution, but the best one currently available.
+                    const uint32_t idx = SystemRand(SOUND_M1_INDEX, ARRAY_SIZE(ApproachSnds));
 
-                    FlightData.State[i] = STATE_PARKED;
-
+                    FlightData.State[i] = STATE_APPROACH;
                     aircraftCreated = true;
+
+                    // Play chatter sound.
+                    SfxPlaySound(&ApproachSnds[idx]);
 
                     // Create notification request for incoming aircraft
                     GameGuiBubbleShow();
-
-                    target[0] = FlightData.Parking[i];
-
-                    Serial_printf("Target assigned = %d\n", target[0]);
-
-                    if (AircraftAddNew(&FlightData, i, target, GameGetParkingDirection(levelBuffer[target[0]])) == false)
-                    {
-                        Serial_printf("Exceeded maximum aircraft number!\n");
-                        return;
-                    }
                 }
-            }
-            else if (FlightData.FlightDirection[i] == ARRIVAL)
-            {
-                const uint32_t idx = SystemRand(SOUND_M1_INDEX, ARRAY_SIZE(ApproachSnds));
-
-                Serial_printf("Flight %d set to STATE_APPROACH.\n", i);
-                FlightData.State[i] = STATE_APPROACH;
-                aircraftCreated = true;
-
-                // Play chatter sound.
-                SfxPlaySound(&ApproachSnds[idx]);
-
-                // Create notification request for incoming aircraft
-                GameGuiBubbleShow();
             }
         }
         else if ( (FlightData.State[i] != STATE_IDLE)
                             &&
-            (FlightData.RemainingTime[i] == 0)  )
+                  (FlightData.RemainingTime[i] == 0))
         {
             // Player(s) lost a flight!
             GameRemoveFlight(i, false);
@@ -2600,17 +2612,22 @@ static void GameSelectAircraftFromList(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT
         }
         else if (ptrPlayer->PadKeySinglePress_Callback(PAD_L1))
         {
-            FL_STATE* ptrAircraftState = &FlightData.State[ptrPlayer->FlightDataSelectedAircraft];
+            FL_STATE* const ptrAircraftState = &FlightData.State[ptrPlayer->FlightDataSelectedAircraft];
 
-            if (*ptrAircraftState == STATE_TAXIING)
+            switch (*ptrAircraftState)
             {
-                *ptrAircraftState = STATE_USER_STOPPED;
-            }
-            else if (   (*ptrAircraftState == STATE_USER_STOPPED)
-                                            ||
-                        (*ptrAircraftState == STATE_AUTO_STOPPED)   )
-            {
-                *ptrAircraftState = STATE_TAXIING;
+                case STATE_TAXIING:
+                    *ptrAircraftState = STATE_USER_STOPPED;
+                break;
+
+                case STATE_USER_STOPPED:
+                    // Fall through.
+                case STATE_AUTO_STOPPED:
+                    *ptrAircraftState = STATE_TAXIING;
+                break;
+
+                default:
+                break;
             }
         }
     }
@@ -3767,6 +3784,8 @@ static void GameCreateTakeoffWaypoints(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT
             return;
         }
 
+        DEBUG_PRINT_VAR(AircraftGetTileFromFlightDataIndex(aircraftIdx));
+
         for (currentTile = (AircraftGetTileFromFlightDataIndex(aircraftIdx) + rwyStep);
             ((levelBuffer[currentTile] & ~(TILE_MIRROR_FLAG)) != TILE_RWY_START_1)
                                 &&
@@ -3786,14 +3805,15 @@ static void GameCreateTakeoffWaypoints(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT
         }
 
         for (   currentTile = (AircraftGetTileFromFlightDataIndex(aircraftIdx) + rwyStep);
-                (levelBuffer[currentTile] & ~(TILE_MIRROR_FLAG)) != TILE_RWY_EXIT;
+                ((levelBuffer[currentTile] & ~(TILE_MIRROR_FLAG)) != TILE_RWY_EXIT)
+                            &&
+                ((levelBuffer[currentTile] & ~(TILE_MIRROR_FLAG)) != TILE_RWY_EXIT_2);
                 currentTile += rwyStep  )
         {
 
         }
 
         targets[0] = currentTile;
-
         AircraftAddTargets(AircraftFromFlightDataIndex(aircraftIdx), targets);
     }
 }
@@ -3820,7 +3840,7 @@ static void GameCreateTakeoffWaypoints(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT
 static void GameGetRunwayEntryTile(uint8_t aircraftIdx, TYPE_RWY_ENTRY_DATA* ptrRwyEntry)
 {
     // Look for aircraft direction by searching TILE_RWY_EXIT
-    uint16_t currentTile = AircraftGetTileFromFlightDataIndex(aircraftIdx) & (uint16_t)~(TILE_MIRROR_FLAG);
+    const uint16_t currentTile = AircraftGetTileFromFlightDataIndex(aircraftIdx);
     int16_t step = 0;
     uint16_t i;
 
@@ -3865,7 +3885,6 @@ static void GameGetRunwayEntryTile(uint8_t aircraftIdx, TYPE_RWY_ENTRY_DATA* ptr
             ptrRwyEntry->rwyEntryTile = 0;
             ptrRwyEntry->Direction = NO_DIRECTION;
             ptrRwyEntry->rwyStep = 0;
-            Serial_printf("GameGetRunwayEntryTile(): could not determine aircraft direction.\n");
             return;
         }
 
@@ -3958,7 +3977,7 @@ bool GameInsideLevelFromIsoPos(TYPE_ISOMETRIC_FIX16_POS* ptrIsoPos)
  *
  * *******************************************************************************************/
 
-void GameRemoveFlight(uint8_t idx, bool successful)
+void GameRemoveFlight(const uint8_t idx, const bool successful)
 {
     uint8_t i;
 
@@ -4019,6 +4038,13 @@ void GameRemoveFlight(uint8_t idx, bool successful)
 
                     if (FlightData.State[idx] != STATE_APPROACH)
                     {
+                        if (FlightData.State[idx] == STATE_UNBOARDING)
+                        {
+                            ptrPlayer->Unboarding = false;
+                            ptrPlayer->LockTarget = false;
+                            ptrPlayer->LockedAircraft = FLIGHT_DATA_INVALID_IDX;
+                        }
+
                         if (AircraftRemove(idx) == false)
                         {
                             Serial_printf("Something went wrong when removing aircraft!\n");
@@ -4106,6 +4132,7 @@ void GameActiveAircraftList(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* cons
     // Then, rebuild aircraft list for current player.
     memset(ptrPlayer->ActiveAircraftList, 0, GAME_MAX_AIRCRAFT);
     ptrPlayer->ActiveAircraft = 0;
+    ptrPlayer->RemainingAircraft = 0;
 
     for (i = 0; i < FlightData.nAircraft; i++)
     {
@@ -4115,6 +4142,10 @@ void GameActiveAircraftList(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* cons
         {
             ptrPlayer->ActiveAircraftList[j++] = i;
             ptrPlayer->ActiveAircraft++;
+        }
+        else if (ptrFlightData->State[i] == STATE_IDLE)
+        {
+            ptrPlayer->RemainingAircraft++;
         }
     }
 
@@ -4162,7 +4193,7 @@ void GameActiveAircraftList(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* cons
  *
  * *******************************************************************************************/
 
-static void GameRemainingAircraft(uint8_t i)
+static void GameRemainingAircraft(const uint8_t i)
 {
     // Reset iterator when starting from first element.
 
@@ -4171,7 +4202,9 @@ static void GameRemainingAircraft(uint8_t i)
         FlightData.nRemainingAircraft = FlightData.nAircraft;
     }
 
-    if (FlightData.Finished[i])
+    if ((FlightData.State[i] != STATE_IDLE)
+            ||
+        FlightData.Finished[i])
     {
         FlightData.nRemainingAircraft--;
     }

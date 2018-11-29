@@ -83,9 +83,13 @@ LEVEL_OBJECTS = $(addprefix $(OBJ_LEVELS_DIR)/,	\
 							LEVEL1.LVL			\
 							LEVEL2.LVL			\
 							LEVEL3.LVL			\
+							LEVEL18.LVL			\
+							XAMI.LVL			\
 							LEVEL1.PLT			\
 							LEVEL2.PLT			\
 							LEVEL3.PLT			\
+							LEVEL18.PLT			\
+							XAMI.PLT			\
 							EASY.PLT			\
 							TUTORIA1.PLT)
 

@@ -273,7 +273,7 @@ bool PltParserLoadFile(const char* strPath, TYPE_FLIGHT_DATA* const ptrFlightDat
 						ptrFlightData->Hours[aircraftIndex] = (uint8_t)atoi(strHour);
 						ptrFlightData->Minutes[aircraftIndex] = (uint8_t)atoi(strMinutes);
 
-						Serial_printf("Aircraft %d time set to %.2d:%.2d.\n",	aircraftIndex,
+						Serial_printf("Aircraft %d time set to %02d:%02d.\n",	aircraftIndex,
 																				ptrFlightData->Hours[aircraftIndex],
 																				ptrFlightData->Minutes[aircraftIndex]	);
 					break;
@@ -312,6 +312,8 @@ bool PltParserLoadFile(const char* strPath, TYPE_FLIGHT_DATA* const ptrFlightDat
 
 void PltParserResetBuffers(TYPE_FLIGHT_DATA* const ptrFlightData)
 {
+    bzero(ptrFlightData, sizeof (TYPE_FLIGHT_DATA));
+#if 0
 	uint8_t i;
 
 	for (i = 0; i < GAME_MAX_AIRCRAFT ; i++)
@@ -326,6 +328,7 @@ void PltParserResetBuffers(TYPE_FLIGHT_DATA* const ptrFlightData)
 	memset(ptrFlightData->State,STATE_IDLE,GAME_MAX_AIRCRAFT);
 	memset(ptrFlightData->Parking,0,GAME_MAX_AIRCRAFT);
 	memset(ptrFlightData->Finished,0,GAME_MAX_AIRCRAFT);
+#endif
 }
 
 uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)

@@ -385,7 +385,7 @@ bool GameGuiPauseDialog(const TYPE_PLAYER* const ptrPlayer)
 void GameGuiCalculateNextAircraftTime(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* const ptrFlightData)
 {
     uint8_t i;
-    uint16_t minRemainingTime = 0;
+    uint16_t minRemainingTime = USHRT_MAX;
 
     for (i = 0; i < GAME_MAX_AIRCRAFT; i++)
     {
@@ -397,11 +397,9 @@ void GameGuiCalculateNextAircraftTime(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_
                                     ||
                     (ptrFlightData->Minutes[i] != 0)    )   )
         {
-            uint16_t seconds = (ptrFlightData->Hours[i] * 60) + (ptrFlightData->Minutes[i]);
+            const uint16_t seconds = (ptrFlightData->Hours[i] * 60) + (ptrFlightData->Minutes[i]);
 
-            if (    (minRemainingTime == 0)
-                                ||
-                    (seconds < minRemainingTime)    )
+            if (seconds < minRemainingTime)
             {
                 minRemainingTime = seconds;
             }
@@ -591,17 +589,29 @@ void GameGuiAircraftList(TYPE_PLAYER* const ptrPlayer, TYPE_FLIGHT_DATA* const p
             },
         };
 
-        FontPrintText(&SmallFont,
-                      posData.remainingTime.x,
-                      posData.remainingTime.y,
-                      "Remaining aircraft: %d",
-                      ptrFlightData->nRemainingAircraft);
+        if (ptrPlayer->RemainingAircraft
+                    &&
+            (ptrPlayer->NextAircraftTime != USHRT_MAX))
+        {
+            FontPrintText(&SmallFont,
+                          posData.remainingTime.x,
+                          posData.remainingTime.y,
+                          "Remaining aircraft: %d",
+                          ptrPlayer->RemainingAircraft);
 
-        FontPrintText(&SmallFont,
-                      posData.aircraftTime.x,
-                      posData.aircraftTime.y,
-                      "Next aircraft: %d sec",
-                      ptrPlayer->NextAircraftTime);
+            FontPrintText(&SmallFont,
+                          posData.aircraftTime.x,
+                          posData.aircraftTime.y,
+                          "Next aircraft: %d sec",
+                          ptrPlayer->NextAircraftTime);
+        }
+        else
+        {
+            FontPrintText(&SmallFont,
+                          posData.remainingTime.x,
+                          posData.remainingTime.y,
+                          "No aircraft left");
+        }
 
         if (ptrPlayer->ActiveAircraft != 0)
         {

@@ -163,6 +163,7 @@ bool AircraftAddNew(    TYPE_FLIGHT_DATA* const ptrFlightData,
 
                     ptrAircraft->IsoPos.z = targets[0] % level_columns;
                     ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 2;
+                    ptrAircraft->IsoPos.z += 8;
                     ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
                 break;
 
@@ -176,6 +177,7 @@ bool AircraftAddNew(    TYPE_FLIGHT_DATA* const ptrFlightData,
 
                     ptrAircraft->IsoPos.z = targets[0] / level_columns;
                     ptrAircraft->IsoPos.z <<= TILE_SIZE_BIT_SHIFT - 2;
+                    ptrAircraft->IsoPos.z += 8;
                     ptrAircraft->IsoPos.z = fix16_from_int(ptrAircraft->IsoPos.z);
                 break;
 
@@ -253,7 +255,7 @@ static AIRCRAFT_LIVERY AircraftLiveryFromFlightNumber(char* strFlightNumber)
     int32_t liveryIndex;
     char strLivery[4];
 
-    memset(strLivery, 0, 4 * sizeof (char) );
+    memset(strLivery, 0, ARRAY_SIZE(strLivery) );
 
     strncpy(strLivery, strFlightNumber, 3);
 

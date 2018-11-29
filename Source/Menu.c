@@ -32,13 +32,16 @@ typedef enum t_levelId
     LEVEL1 = 0,
     LEVEL2,
     LEVEL3,
+    LEVEL4,
+    LEVEL5,
+
     MAX_LEVELS
 }LEVEL_ID;
 
 typedef struct t_lvlpltdata
 {
     LEVEL_ID levelID;
-    const char** fileNames[];
+    const char* const* fileNames[];
 }TYPE_LVL_PLT_DATA;
 
 typedef enum
@@ -156,7 +159,9 @@ static const char* MainMenuLevelList[] =
 {
     [LEVEL1] = "DATA\\LEVELS\\LEVEL1.LVL",
     [LEVEL2] = "DATA\\LEVELS\\LEVEL2.LVL",
-    [LEVEL3] = "DATA\\LEVELS\\LEVEL3.LVL"
+    [LEVEL3] = "DATA\\LEVELS\\LEVEL3.LVL",
+    [LEVEL4] = "DATA\\LEVELS\\XAMI.LVL",
+    [LEVEL5] = "DATA\\LEVELS\\LEVEL18.LVL"
 };
 
 static const char** MainMenuPltList[] =
@@ -178,6 +183,18 @@ static const char** MainMenuPltList[] =
     [LEVEL3] = (const char*[])
     {
         "DATA\\LEVELS\\LEVEL3.PLT",
+        NULL
+    },
+
+    [LEVEL4]  = (const char*[])
+    {
+        "DATA\\LEVELS\\XAMI.PLT",
+        NULL
+    },
+
+    [LEVEL5]  = (const char*[])
+    {
+        "DATA\\LEVELS\\LEVEL18.PLT",
         NULL
     }
 };
@@ -542,7 +559,7 @@ static void MainMenuRenderLevelList(void)
         for (i = LEVEL1; i < MAX_LEVELS; i++)
         {
             char baseName[32];
-            const size_t maxLength = sizeof (baseName) / sizeof (baseName[0]);
+            const size_t maxLength = ARRAY_SIZE(baseName);
 
             // Update "baseName" with file name + extension.
             SystemGetFileBasename(MainMenuLevelList[i], baseName, maxLength);
