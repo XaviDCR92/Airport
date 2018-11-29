@@ -22,9 +22,7 @@
 *.la
 *.lo
 
-# PSX disk images
-*.bin
-*.cue
+# PSX intermediate disk images
 *.iso
 
 # Shared objects (inc. Windows DLLs)
@@ -34,7 +32,6 @@
 *.dylib
 
 # Executables
-*.exe
 *.out
 *.app
 *.i*86
