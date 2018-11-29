@@ -143,7 +143,6 @@ static void MainMenuRenderLevelList(void);
  * **************************************/
 
 static GsSprite MenuSpr;
-static GsSprite MenuStarSpr;
 static SsVag BellSnd;
 static SsVag AcceptSnd;
 static TYPE_CHEAT TestCheat;
@@ -257,7 +256,6 @@ static void MainMenuInit(void)
         "DATA\\SOUNDS\\BELL.VAG",
         "DATA\\SOUNDS\\ACCEPT.VAG",
         "DATA\\SPRITES\\BUTTONS.TIM",
-        "DATA\\SPRITES\\MENUSTAR.TIM",
 #ifndef NO_INTRO
         "DATA\\SPRITES\\PSXDISK.TIM",
         "DATA\\FONTS\\INTROFNT.TIM",
@@ -274,7 +272,6 @@ static void MainMenuInit(void)
         &BellSnd,
         &AcceptSnd,
         &PSXButtons,
-        &MenuStarSpr,
 #ifndef NO_INTRO
         &PsxDisk,
         &PSXSDKIntroFont,
@@ -317,21 +314,6 @@ static void MainMenuInit(void)
     menuLevel = PLAY_OPTIONS_LEVEL;
 
     MainMenuMinimumBtn = PLAY_BUTTON_INDEX;
-
-    {
-        enum
-        {
-            MENU_STAR_X = 32,
-            MENU_STAR_Y = Y_SCREEN_RESOLUTION - 32,
-        };
-
-        MenuStarSpr.x = MENU_STAR_X;
-        MenuStarSpr.y = MENU_STAR_Y;
-    }
-
-    MenuStarSpr.mx = MenuStarSpr.w >> 1;
-    MenuStarSpr.my = MenuStarSpr.h >> 1;
-    MenuStarSpr.rotate = 0;
 
     SelectedLevel = LEVEL1;
 
@@ -418,8 +400,6 @@ void MainMenu(void)
         MainMenuButtonHandler();
 
         GsSortCls(MAIN_MENU_BG_R, MAIN_MENU_BG_G, MAIN_MENU_BG_B);
-
-        MenuStarSpr.rotate += ROTATE_ONE;
 
         switch(menuLevel)
         {

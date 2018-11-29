@@ -13,7 +13,7 @@ GNU_SIZE = mipsel-unknown-elf-size
 DEFINE= -DFIXMATH_FAST_SIN -D_PAL_MODE_
 #DEFINE += -DPSXSDK_DEBUG
 DEFINE +=  -DNO_CDDA
-DEFINE +=  -DNO_INTRO
+#DEFINE +=  -DNO_INTRO
 
 # Compiler flags
 LIBS= -lfixmath
@@ -27,7 +27,7 @@ CDROM_ROOT=$(PROJECT_DIR)/cdimg
 BIN_TARGET_PATH = $(PROJECT_DIR)/Bin
 
 #Uncomment this DEFINE below to use Airport together with OpenSend + QPSXSerial toolchain.
-#DEFINE +=  -DSERIAL_INTERFACE
+DEFINE +=  -DSERIAL_INTERFACE
 
 # PSXSDK tools definitions
 # ELF2EXE:
