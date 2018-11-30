@@ -91,13 +91,19 @@ static GsSprite LoadMenuTitleSpr;
 static GsLine LoadMenuBarLines[LOADING_BAR_N_LINES];
 static GsRectangle LoadMenuBarRect;
 
-static const char* LoadMenuFiles[] = {  "DATA\\SPRITES\\PLANE.TIM",
-                                        "DATA\\SPRITES\\LOADING.TIM",
-                                        "DATA\\FONTS\\FONT_2.FNT" };
+static const char* LoadMenuFiles[] =
+{
+    "DATA\\SPRITES\\PLANE.TIM",
+    "DATA\\SPRITES\\LOADING.TIM",
+    "DATA\\FONTS\\FONT_2.FNT"
+};
 
-static void* LoadMenuDest[] = { (GsSprite*)&LoadMenuPlaneSpr,
-                                (GsSprite*)&LoadMenuTitleSpr,
-                                (TYPE_FONT*)&SmallFont      };
+static void* const LoadMenuDest[] =
+{
+    &LoadMenuPlaneSpr,
+    &LoadMenuTitleSpr,
+    &SmallFont
+};
 
 static const char* strCurrentFile;
 
@@ -239,8 +245,6 @@ void LoadMenuInit(void)
 
     GfxSetGlobalLuminance(0);
 
-    Serial_printf("I_MASK = 0x%08X\n", (*(unsigned int*)0x1F801074));
-
     SetVBlankHandler(&ISR_LoadMenuVBlank);
 }
 
@@ -250,7 +254,9 @@ void LoadMenuEnd(void)
     load_menu_running = false;
 
     while (LoadMenuISRHasEnded() == false);
-    Serial_printf("Set default VBlank handler.\n");
+
+    while (GfxIsGPUBusy());
+
     SetVBlankHandler(&ISR_SystemDefaultVBlank);
 
     GfxSetGlobalLuminance(NORMAL_LUMINANCE);

@@ -16,8 +16,9 @@
 
 #define END_STACK_PATTERN (uint32_t) 0x18022015
 #define BEGIN_STACK_ADDRESS (uint32_t*) 0x801FFF00
-#define STACK_SIZE (4 << 10)    // 4 KB
+#define STACK_SIZE (6 << 10)    // 6 KiB
 #define I_MASK (*(volatile unsigned int*)0x1F801074)
+#define I_STAT (*(volatile unsigned int*)0x1F801070)
 
 /* *************************************
  *  Local Prototypes
@@ -987,7 +988,7 @@ void SystemCyclicHandler(void)
  * ****************************************************************************************/
 void SystemDisableVBlankInterrupt(void)
 {
-    I_MASK &= ~(0x0001);
+    I_MASK &= ~1;
 }
 
 /* ****************************************************************************************
@@ -1002,7 +1003,7 @@ void SystemDisableVBlankInterrupt(void)
  * ****************************************************************************************/
 void SystemEnableVBlankInterrupt(void)
 {
-    I_MASK |= (0x0001);
+    I_MASK |= 1;
 }
 
 /* ****************************************************************************************

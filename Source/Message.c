@@ -44,7 +44,7 @@ bool MessageCreate(TYPE_MESSAGE_DATA* ptrMessage)
 
 		if (m->used == false)
 		{
-			memcpy(m, ptrMessage, sizeof (TYPE_MESSAGE_DATA));
+			memmove(m, ptrMessage, sizeof (TYPE_MESSAGE_DATA));
 
 			m->used = true;
 

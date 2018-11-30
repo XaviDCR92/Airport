@@ -138,7 +138,7 @@ bool AircraftAddNew(    TYPE_FLIGHT_DATA* const ptrFlightData,
     {
         TYPE_AIRCRAFT_DATA* const ptrAircraft = &AircraftData[aircraftIndex];
 
-        memcpy(ptrAircraft->Target, targets, sizeof (uint16_t) * AIRCRAFT_MAX_TARGETS);
+        memmove(ptrAircraft->Target, targets, sizeof (uint16_t) * AIRCRAFT_MAX_TARGETS);
 
         ptrAircraft->TargetIdx = 0;
         ptrAircraft->Livery = AircraftLiveryFromFlightNumber(ptrFlightData->strFlightNumber[FlightDataIndex]);
@@ -820,7 +820,7 @@ TYPE_ISOMETRIC_POS AircraftGetIsoPos(const uint8_t FlightDataIdx)
 
 void AircraftAddTargets(TYPE_AIRCRAFT_DATA* const ptrAircraft, const uint16_t* const targets)
 {
-    memcpy(ptrAircraft->Target, targets, sizeof (uint16_t) * AIRCRAFT_MAX_TARGETS);
+    memmove(ptrAircraft->Target, targets, sizeof (uint16_t) * AIRCRAFT_MAX_TARGETS);
     ptrAircraft->TargetIdx = 0;
 }
 

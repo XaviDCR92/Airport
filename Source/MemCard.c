@@ -409,7 +409,7 @@ bool MemCardGetBlockStateFileName(TYPE_BLOCK_DATA * ptrBlockData)
 	{
 		memset(ptrBlockData->FileName, 0 , MEMCARD_FILENAME_SIZE);
 
-		memcpy(ptrBlockData->FileName, &DataBuffer[0x0A], MEMCARD_FILENAME_SIZE);
+		memmove(ptrBlockData->FileName, &DataBuffer[0x0A], MEMCARD_FILENAME_SIZE);
 
 		Serial_printf("File name: %s\n", ptrBlockData->FileName);
 	}
@@ -492,7 +492,7 @@ bool MemCardGetInitialFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 
 	for (i = 0; i < ptrBlockData->IconNumber; i++)
 	{
-		memcpy(ptrBlockData->CLUT[i],&DataBuffer[0x60], MEMCARD_CLUT_SIZE);
+		memmove(ptrBlockData->CLUT[i],&DataBuffer[0x60], MEMCARD_CLUT_SIZE);
 	}
 
 	return true;
@@ -526,8 +526,8 @@ bool MemCardGetIconFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 
 			for (i = 0; i < MEMCARD_NUMBER_OF_ICONS; i++)
 			{
-				memcpy(ptrBlockData->CLUT[i], ptrReferenceBlock->CLUT[i], MEMCARD_CLUT_SIZE);
-				memcpy(ptrBlockData->Icons[i], ptrReferenceBlock->Icons[i], MEMCARD_ICON_SIZE);
+				memmove(ptrBlockData->CLUT[i], ptrReferenceBlock->CLUT[i], MEMCARD_CLUT_SIZE);
+				memmove(ptrBlockData->Icons[i], ptrReferenceBlock->Icons[i], MEMCARD_ICON_SIZE);
 			}
 
 			if (ptrBlockData->BlockCount == LAST_BLOCK)
@@ -553,7 +553,7 @@ bool MemCardGetIconFrameInfo(TYPE_BLOCK_DATA * ptrBlockData)
 					return false;
 				}
 
-				memcpy(ptrBlockData->Icons[i - 1 /* ICON_FRAME_# - 1 */], DataBuffer, MEMCARD_SECTOR_SIZE);
+				memmove(ptrBlockData->Icons[i - 1 /* ICON_FRAME_# - 1 */], DataBuffer, MEMCARD_SECTOR_SIZE);
 
 				for (j = 0; j < MEMCARD_SECTOR_SIZE; j++)
 				{

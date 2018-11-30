@@ -326,9 +326,9 @@ static void MenuCheatInit(void)
 {
     TestCheat.Callback = &MenuTestCheat;
     memset(TestCheat.Combination,0,CHEAT_ARRAY_SIZE);
-    //memcpy(myarray, (int [5]){a,b,c,d,e}, 5*sizeof (int));
+    //memmove(myarray, (int [5]){a,b,c,d,e}, 5*sizeof (int));
 
-    memcpy( TestCheat.Combination,
+    memmove( TestCheat.Combination,
             (unsigned short[CHEAT_ARRAY_SIZE])
             {   PAD_CIRCLE, PAD_CIRCLE, PAD_CROSS, PAD_TRIANGLE,
                 PAD_TRIANGLE, PAD_TRIANGLE, 0 , 0 ,
@@ -341,7 +341,7 @@ static void MenuCheatInit(void)
     StackCheckCheat.Callback = &SystemPrintStackPointerAddress;
     memset(StackCheckCheat.Combination, 0, CHEAT_ARRAY_SIZE);
 
-    memcpy( StackCheckCheat.Combination,
+    memmove( StackCheckCheat.Combination,
             (unsigned short[CHEAT_ARRAY_SIZE])
             {   PAD_TRIANGLE, PAD_TRIANGLE, PAD_CROSS, PAD_TRIANGLE,
                 PAD_L1, PAD_R1, 0 , 0 ,
@@ -354,7 +354,7 @@ static void MenuCheatInit(void)
     DevMenuCheat.Callback = &SystemDevMenuToggle;
     memset(DevMenuCheat.Combination, 0 , CHEAT_ARRAY_SIZE);
 
-    memcpy( DevMenuCheat.Combination,
+    memmove( DevMenuCheat.Combination,
             (unsigned short[CHEAT_ARRAY_SIZE])
             {   PAD_SQUARE, PAD_SQUARE, PAD_CROSS, PAD_CROSS,
                 PAD_CIRCLE, PAD_CIRCLE, PAD_TRIANGLE , PAD_TRIANGLE ,
@@ -367,7 +367,7 @@ static void MenuCheatInit(void)
     SerialCheat.Callback = &SystemReturnToLoader;
     memset(SerialCheat.Combination, 0 , CHEAT_ARRAY_SIZE);
 
-    memcpy( SerialCheat.Combination,
+    memmove( SerialCheat.Combination,
             (unsigned short[CHEAT_ARRAY_SIZE])
             {   PAD_SQUARE, PAD_SQUARE, PAD_SQUARE, PAD_SQUARE,
                 PAD_CIRCLE, PAD_CIRCLE, PAD_CIRCLE , PAD_CIRCLE ,
@@ -387,6 +387,8 @@ void MainMenu(void)
 #endif //PSXSDK_DEBUG
 
     GfxSetGlobalLuminance(NORMAL_LUMINANCE);
+
+    while (GfxIsGPUBusy());
 
     while (1)
     {

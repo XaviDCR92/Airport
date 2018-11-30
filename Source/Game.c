@@ -1483,7 +1483,7 @@ static void GameLoadLevel(const char* path)
 
     memset(LevelHeader,0, LEVEL_MAGIC_NUMBER_SIZE + 1);
 
-    memcpy(LevelHeader,ptrBuffer,LEVEL_MAGIC_NUMBER_SIZE);
+    memmove(LevelHeader,ptrBuffer,LEVEL_MAGIC_NUMBER_SIZE);
 
     LevelHeader[LEVEL_MAGIC_NUMBER_SIZE] = '\0';
 
@@ -1513,7 +1513,7 @@ static void GameLoadLevel(const char* path)
 
     memset(GameLevelTitle,0,LEVEL_TITLE_SIZE);
 
-    memcpy(GameLevelTitle,&ptrBuffer[i],LEVEL_TITLE_SIZE);
+    memmove(GameLevelTitle,&ptrBuffer[i],LEVEL_TITLE_SIZE);
 
     Serial_printf("Game level title: %s\n",GameLevelTitle);
 
@@ -1565,7 +1565,6 @@ static void GameAircraftState(const uint8_t i)
                     &&
             (FlightData.RemainingTime[i] != 0))
         {
-            Serial_printf("Aircraft %d should now start...\n", i);
             if (spawnMinTimeFlag == false)
             {
                 if ((FlightData.FlightDirection[i] == DEPARTURE)
@@ -1575,23 +1574,30 @@ static void GameAircraftState(const uint8_t i)
                     uint8_t j;
                     bool bParkingBusy = false;
 
+                    DEBUG_PRINT_VAR(FlightData.nAircraft);
+
                     for (j = 0; j < FlightData.nAircraft; j++)
                     {
-                        if (AircraftFromFlightDataIndex(j)->State != STATE_IDLE)
+                        TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(j);
+
+                        if (ptrAircraft != NULL)
                         {
-                            const uint16_t* const targets = AircraftGetTargets(j);
-
-                            if (targets != NULL)
+                            if (ptrAircraft->State != STATE_IDLE)
                             {
-                                const uint16_t tile = AircraftGetTileFromFlightDataIndex(j);
+                                const uint16_t* const targets = AircraftGetTargets(j);
 
-                                if (tile == FlightData.Parking[i])
+                                if (targets != NULL)
                                 {
-                                    bParkingBusy = true;
-                                }
-                                else if (SystemContains_u16(FlightData.Parking[i], targets, AIRCRAFT_MAX_TARGETS))
-                                {
-                                    bParkingBusy = true;
+                                    const uint16_t tile = AircraftGetTileFromFlightDataIndex(j);
+
+                                    if (tile == FlightData.Parking[i])
+                                    {
+                                        bParkingBusy = true;
+                                    }
+                                    else if (SystemContains_u16(FlightData.Parking[i], targets, AIRCRAFT_MAX_TARGETS))
+                                    {
+                                        bParkingBusy = true;
+                                    }
                                 }
                             }
                         }
@@ -1623,7 +1629,7 @@ static void GameAircraftState(const uint8_t i)
                 }
                 else if (FlightData.FlightDirection[i] == ARRIVAL)
                 {
-                    const uint32_t idx = SystemRand(SOUND_M1_INDEX, ARRAY_SIZE(ApproachSnds));
+                    const uint32_t idx = SystemRand(SOUND_M1_INDEX, MAX_RADIO_CHATTER_SOUNDS - 1);
 
                     FlightData.State[i] = STATE_APPROACH;
                     aircraftCreated = true;

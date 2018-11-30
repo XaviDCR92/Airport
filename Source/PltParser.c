@@ -436,13 +436,13 @@ uint8_t* PltParserGenerateFile(TYPE_PLT_CONFIG* ptrPltConfig)
 		{
 			// Set departure flight
 
-			memcpy(&PltBuffer[i], "DEPARTURE", sizeof ("DEPARTURE") * sizeof (uint8_t) );
+			memmove(&PltBuffer[i], "DEPARTURE", sizeof ("DEPARTURE") * sizeof (uint8_t) );
 			i += strlen("DEPARTURE");
 		}
 		else
 		{
 			// Set arrival flight
-			memcpy(&PltBuffer[i], "ARRIVAL", sizeof ("ARRIVAL") * sizeof (uint8_t) );
+			memmove(&PltBuffer[i], "ARRIVAL", sizeof ("ARRIVAL") * sizeof (uint8_t) );
 			i += strlen("ARRIVAL");
 		}
 	}

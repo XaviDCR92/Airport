@@ -31,7 +31,6 @@ typedef enum
 
 static volatile SERIAL_STATE SerialState;
 static volatile bool serial_busy;
-static void ISR_Serial(void);
 
 /* *************************************
  *  Local Prototypes
@@ -39,14 +38,7 @@ static void ISR_Serial(void);
 
 void SerialInit(void)
 {
-    SetSIOHandler(&ISR_Serial);
-
     SIOStart(115200);
-}
-
-static void ISR_Serial(void)
-{
-    Serial_printf("SIO\n");
 }
 
 bool SerialRead(uint8_t* ptrArray, size_t nBytes)

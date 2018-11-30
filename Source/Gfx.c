@@ -13,7 +13,7 @@
  * 	Defines
  * *************************************/
 
-#define PRIMITIVE_LIST_SIZE 0x1000
+#define PRIMITIVE_LIST_SIZE 0x2000
 #define DOUBLE_BUFFERING_SWAP_Y	256
 #define UPLOAD_IMAGE_FLAG 1
 #define MAX_LUMINANCE 0xFF
