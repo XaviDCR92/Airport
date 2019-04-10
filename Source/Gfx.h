@@ -12,7 +12,7 @@
  * 	Defines
  * *************************************/
 
-#define X_SCREEN_RESOLUTION 	384
+#define X_SCREEN_RESOLUTION 	368
 #define Y_SCREEN_RESOLUTION 	240
 #define VRAM_W					1024
 #define VRAM_H					512
