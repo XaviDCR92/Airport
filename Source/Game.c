@@ -4017,9 +4017,6 @@ void GameRemoveFlight(const uint8_t idx, const bool successful)
                 {
                     uint8_t k;
 
-                    memset(ptrPlayer->UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS);
-                    ptrPlayer->UnboardingSequenceIdx = 0;
-
                     for (k = 0; k < GAME_MAX_RUNWAYS; k++)
                     {
                         const uint16_t* const targets = AircraftGetTargets(idx);
@@ -4047,6 +4044,8 @@ void GameRemoveFlight(const uint8_t idx, const bool successful)
                     {
                         if (FlightData.State[idx] == STATE_UNBOARDING)
                         {
+                            memset(ptrPlayer->UnboardingSequence, 0, GAME_MAX_SEQUENCE_KEYS);
+                            ptrPlayer->UnboardingSequenceIdx = 0;
                             ptrPlayer->Unboarding = false;
                             ptrPlayer->LockTarget = false;
                             ptrPlayer->LockedAircraft = FLIGHT_DATA_INVALID_IDX;
