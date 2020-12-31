@@ -27,8 +27,4 @@
 #define REFRESH_FREQUENCY 50 //50 Hz PAL / 60 Hz NTSC
 #define DEBUG_PRINT_VAR(var) Serial_printf(#var " = %d\n", var);
 
-#if (PSXSDK_VERSION != 0x0599)
-#error "Wrong PSXSDK version! Please use version 0.5.99."
-#endif
-
 #endif // GLOBAL_INC__H__
