@@ -1,9 +1,6 @@
 # Project-wise definitions
 PROJECT = AIRPORT
 
-# Make flags
-MAKEFLAGS := -j$(NUMBER_OF_PROCESSORS)
-
 # GNU Toolchain definitions
 CC = psx-gcc
 LINKER = psx-gcc
@@ -23,7 +20,6 @@ MKDIR = mkdir
 MKDIR_FLAGS = -p
 
 # Path definitions
-PSXSDK_PATH = $(HOME)/psxsdk
 PATH := $(PATH):$(PSXSDK_PATH)/bin/
 PROJECT_DIR = ~/Airport
 CDROM_ROOT=$(PROJECT_DIR)/cdimg
