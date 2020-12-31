@@ -362,7 +362,7 @@ bool GameGuiPauseDialog(const TYPE_PLAYER* const ptrPlayer)
 
         GfxSortSprite(&SecondDisplay);
 
-        GsSortGPoly4((GsGPoly4*)&PauseRect);
+        GsSortGPoly4(&PauseRect);
 
         GfxDrawScene_Slow();
 
@@ -1180,7 +1180,7 @@ bool GameGuiFinishedDialog(TYPE_PLAYER* const ptrPlayer)
 
         GfxSortSprite(&SecondDisplay);
 
-        GsSortGPoly4((GsGPoly4*)&PauseRect);
+        GsSortGPoly4(&PauseRect);
 
         FontPrintText(  &SmallFont,
                         AIRCRAFT_DATA_GSGPOLY4_X0 +
@@ -1220,7 +1220,7 @@ void GameGuiAircraftCollision(TYPE_PLAYER* const ptrPlayer)
     {
         GfxSortSprite(&SecondDisplay);
 
-        GsSortGPoly4((GsGPoly4*)&PauseRect);
+        GsSortGPoly4(&PauseRect);
 
         FontPrintText(  &SmallFont,
                         AIRCRAFT_DATA_GSGPOLY4_X0 + 8,
