@@ -37,6 +37,11 @@ enum
 /* *************************************
  * 	Local Variables
  * *************************************/
+TYPE_FONT RadioFont, SmallFont;
+
+/* *************************************
+ * 	Local Variables
+ * *************************************/
 
 static char _internal_text[FONT_INTERNAL_TEXT_BUFFER_MAX_SIZE];
 static volatile unsigned char _blend_effect_lum;

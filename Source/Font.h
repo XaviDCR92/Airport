@@ -33,7 +33,6 @@ void FontSetMaxCharPerLine(TYPE_FONT* ptrFont, uint8_t max);
  * 	Global variables
  * *************************************/
 
-TYPE_FONT RadioFont;
-TYPE_FONT SmallFont;
+extern TYPE_FONT RadioFont, SmallFont;
 
 #endif //FONT_HEADER__
