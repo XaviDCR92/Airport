@@ -79,13 +79,7 @@ void SystemInit(void)
     one_second_timer = 0;
 
     //PSXSDK init
-#ifdef SERIAL_INTERFACE
-    // PSX_INIT_SAVESTATE | PSX_INIT_CD flags are not needed
-    // when coming from OpenSend.
     PSX_InitEx(0);
-#else // SERIAL_INTERFACE
-    PSX_InitEx(PSX_INIT_SAVESTATE | PSX_INIT_CD);
-#endif // SERIAL_INTERFACE
 
     // SIO init
     SerialInit();
