@@ -1574,8 +1574,6 @@ static void GameAircraftState(const uint8_t i)
                     uint8_t j;
                     bool bParkingBusy = false;
 
-                    DEBUG_PRINT_VAR(FlightData.nAircraft);
-
                     for (j = 0; j < FlightData.nAircraft; j++)
                     {
                         TYPE_AIRCRAFT_DATA* ptrAircraft = AircraftFromFlightDataIndex(j);
