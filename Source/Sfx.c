@@ -78,7 +78,7 @@ bool SfxUploadSound_Ex(const char* file_path, SsVag* vag, uint8_t voiceIndex)
 
 		uint16_t percentage = SPUBytesUsed * 100 / SPU_MAX_ALLOWED_BYTES;
 
-		dprintf("SPU usage: %d%%\n", percentage);
+		Serial_printf("SPU usage: %d%%\n", percentage);
 	}
 
 #endif // PSXSDK_DEBUG

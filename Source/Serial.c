@@ -45,7 +45,6 @@ bool SerialRead(uint8_t* ptrArray, size_t nBytes)
 {
     if (nBytes == 0)
     {
-        dprintf("SerialRead: invalid size %d\n", nBytes);
         return false;
     }
 
@@ -67,7 +66,6 @@ bool SerialWrite(void* ptrArray, size_t nBytes)
 
     if (nBytes == 0)
     {
-        dprintf("SerialWrite: invalid size %d\n", nBytes);
         return false;
     }
 

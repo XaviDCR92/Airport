@@ -84,11 +84,11 @@ bool PltParserLoadFile(const char* strPath, TYPE_FLIGHT_DATA* const ptrFlightDat
 			{
                 int k;
 
-                dprintf("Buffer: ");
+                printf("Buffer: ");
 
                 for (k = 0; k < strlen(buffer); k++)
                 {
-                    dprintf("0x%02X ", buffer[k]);
+                    printf("0x%02X ", buffer[k]);
                 }
 				// Format should always be HH:MM (5 characters)
 				// Treat any other combination as possible error
