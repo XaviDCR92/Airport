@@ -403,7 +403,6 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
         "DATA\\SPRITES\\TILESET1.TIM",
         "DATA\\SPRITES\\TILESET2.TIM",
         "DATA\\SPRITES\\GAMEPLN.TIM",
-        "DATA\\SPRITES\\PLNBLUE.CLT",
         "DATA\\SPRITES\\MOUSE.TIM",
         "DATA\\SPRITES\\BLDNGS1.TIM",
         "DATA\\SOUNDS\\RCPW1A1.VAG",
@@ -418,7 +417,6 @@ void GameInit(const TYPE_GAME_CONFIGURATION* const pGameCfg)
         &GameTilesetSpr,
         &GameTileset2Spr,
         &GamePlaneSpr,
-        NULL, // CLT files must use NULL pointers
         &GameMouseSpr,
         &GameBuildingSpr,
         &ApproachSnds[SOUND_M1_INDEX],
