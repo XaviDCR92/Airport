@@ -141,7 +141,7 @@ static GsGPoly4 MemCardRect;
 static GsRectangle MemCardProgressBar;
 static GsLine MemCardProgressBarLines[MEMCARD_PROGRESS_BAR_N_LINES];
 static uint8_t IconIndex;
-static MEMCARD_STATUS MemCardStatus[MEMCARD_NUMBER_OF_SLOTS];
+static enum memcard_status MemCardStatus[MEMCARD_NUMBER_OF_SLOTS];
 
 // Local variables used to communicate between functions and ISR.
 // Names are pretty self-explanatory.
