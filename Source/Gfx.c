@@ -18,7 +18,6 @@
 #define UPLOAD_IMAGE_FLAG 1
 #define MAX_LUMINANCE 0xFF
 #define GPUSTAT (*(volatile unsigned int*)0x1F801814)
-#define D2_CHCR (*(volatile unsigned int*)0x1F8010A8)
 
 /* *************************************
  * 	Structs and enums
