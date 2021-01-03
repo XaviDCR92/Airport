@@ -1,0 +1,4 @@
+BOOT = cdrom:\airport.exe;1
+TCB = 4
+EVENT = 8
+STACK = 801FF800
