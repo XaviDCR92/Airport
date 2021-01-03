@@ -20,7 +20,6 @@ void PSXSDKIntro(void);
 extern GsSprite PsxDisk;
 extern GsSprite PSXSDKIntroFont;
 extern GsSprite GPL_Logo;
-extern GsSprite OpenSource_Logo;
 extern SsVag TrayClSnd;
 extern SsVag SpinDiskSnd;
 

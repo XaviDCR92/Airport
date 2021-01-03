@@ -91,14 +91,6 @@ enum
 	GPL_LOGO_Y = 16
 };
 
-enum
-{
-	OPEN_SOURCE_LOGO_LUMINANCE_STEP = 1,
-	OPEN_SOURCE_LOGO_LUMINANCE_TARGET = NORMAL_LUMINANCE,
-	OPEN_SOURCE_LOGO_X = X_SCREEN_RESOLUTION - 64 - 16,
-	OPEN_SOURCE_LOGO_Y = 16
-};
-
 /* *************************************
  * 	Local Prototypes
  * *************************************/
@@ -131,7 +123,6 @@ static const char* strPSXSDKIntroAuthor = {"BY NEXTVOLUME"};
 GsSprite PsxDisk;
 GsSprite PSXSDKIntroFont;
 GsSprite GPL_Logo;
-GsSprite OpenSource_Logo;
 SsVag TrayClSnd;
 SsVag SpinDiskSnd;
 
@@ -212,10 +203,6 @@ void PSXSDKIntro(void)
 				GPL_Logo.r = 0;
 				GPL_Logo.g = 0;
 				GPL_Logo.b = 0;
-
-				OpenSource_Logo.r = 0;
-				OpenSource_Logo.g = 0;
-				OpenSource_Logo.b = 0;
 			}
 			else if (	(PSXSDKIntroRandTextEvent)
 							&&
@@ -234,20 +221,9 @@ void PSXSDKIntro(void)
 
 					GPL_Logo.x = GPL_LOGO_X;
 					GPL_Logo.y = GPL_LOGO_Y;
-
-					if (OpenSource_Logo.r < OPEN_SOURCE_LOGO_LUMINANCE_TARGET)
-					{
-						OpenSource_Logo.r += OPEN_SOURCE_LOGO_LUMINANCE_STEP;
-						OpenSource_Logo.g += OPEN_SOURCE_LOGO_LUMINANCE_STEP;
-						OpenSource_Logo.b += OPEN_SOURCE_LOGO_LUMINANCE_STEP;
-					}
-
-					OpenSource_Logo.x = OPEN_SOURCE_LOGO_X;
-					OpenSource_Logo.y = OPEN_SOURCE_LOGO_Y;
 				}
 
 				GfxSortSprite(&GPL_Logo);
-				GfxSortSprite(&OpenSource_Logo);
 			}
 		}
 

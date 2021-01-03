@@ -260,7 +260,6 @@ static void MainMenuInit(void)
         "DATA\\SPRITES\\PSXDISK.TIM",
         "DATA\\FONTS\\INTROFNT.TIM",
         "DATA\\SPRITES\\GPL.TIM",
-        "DATA\\SPRITES\\OPENSRC.TIM",
         "DATA\\SOUNDS\\TRAYCL.VAG",
         "DATA\\SOUNDS\\SPINDISK.VAG"
 #endif // NO_INTRO
@@ -276,7 +275,6 @@ static void MainMenuInit(void)
         &PsxDisk,
         &PSXSDKIntroFont,
         &GPL_Logo,
-        &OpenSource_Logo,
         &TrayClSnd,
         &SpinDiskSnd
 #endif // NO_INTRO
