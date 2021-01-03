@@ -129,7 +129,7 @@ bool PadOneConnected(void)
 {
 	psx_pad_state PadOne = PadOneGetState();
 
-	if ( (PadOne.status != PAD_STATUS_OK)
+	if ( PadOne.status
                     &&
         (PadOneGetID() == PAD_FLOATING_ID)  )
 	{
@@ -143,7 +143,7 @@ bool PadTwoConnected(void)
 {
 	psx_pad_state PadTwo = PadTwoGetState();
 
-	if ( (PadTwo.status != PAD_STATUS_OK)
+	if ( PadTwo.status
                     &&
         (PadTwoGetID() == PAD_FLOATING_ID)  )
 	{
