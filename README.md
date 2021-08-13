@@ -1,4 +1,11 @@
-# Overview
+# Airport
+A free (as in free speech) video game for the original PlayStation written
+with [PSXSDK](https://github.com/XaviDCR92/psxsdk).
+
+![Screenshot of in-game footage](Documentation/screenshot.png)
+
+![Another screenshot of in-game footage](Documentation/screenshot-2.png)
+## Overview
 `Airport` is a free (as in freedom) video game for the original Sony
 Playstation aka PSX. The player puts himself/herself in the role of an Air
 Traffic Controller (ATC) where inbound and outbound flights must be brought to
@@ -21,7 +28,15 @@ compatible with [OpenSend](https://github.com/XaviDCR92/OpenSend), making it
 possible to stream game data from a computer over the serial port on the
 console, allowing quicker development under real hardware.
 
-# How to build
+## Running Airport from a prebuilt image
+
+Prebuilt images for common use can be found for each
+[release](https://github.com/XaviDCR92/Airport/releases). These images are
+tipically distributed as a `.bin`/`.cue` file pair that can be used by most
+PSX emulators out there, and can be also burnt into a CD-r and run under
+real hardware.
+
+## How to build
 `Airport` has moved from a `Makefile`-based build system towards `cmake` for
 convenience, easier deployment and generation of `compile_commands.json`,
 useful for improved text completion on some IDEs. `cmake >= 3.13` is required.
@@ -43,7 +58,7 @@ it into a CD-R to play it into a modchipped console.
 On the other hand, the map editor must be built using the Qt framework. Qt
 Creator automates the process and thus is the recommended way to go.
 
-# License
+## License
 `Airport` is licensed under the GPLv3 or later (read `LICENSE`) unless noted
 otherwise. Some assets with various permissive licenses are also used - see
 `LICENSE` files on each subfolder for further reference.
